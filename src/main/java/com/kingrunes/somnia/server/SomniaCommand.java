@@ -1,6 +1,7 @@
 package com.kingrunes.somnia.server;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.common.PacketHandler;
 import com.kingrunes.somnia.common.capability.CapabilityFatigue;
 import com.kingrunes.somnia.common.capability.IFatigue;
 import com.kingrunes.somnia.common.util.ListUtils;
@@ -94,6 +95,7 @@ public class SomniaCommand extends CommandBase
 					try
 					{
 						props.setFatigue(Double.parseDouble(args[2]));
+						Somnia.eventChannel.sendTo(PacketHandler.buildPropUpdatePacket(0x01, 0x00, props.getFatigue()), player);
 					}
 					catch (NumberFormatException nfe)
 					{
