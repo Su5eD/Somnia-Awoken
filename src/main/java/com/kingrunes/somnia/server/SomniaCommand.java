@@ -11,10 +11,14 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.List;
 
 public class SomniaCommand extends CommandBase
@@ -61,13 +65,16 @@ public class SomniaCommand extends CommandBase
 					throw new WrongUsageException(String.format(COMMAND_USAGE_FORMAT, COMMAND_NAME, COMMAND_USAGE_CONSOLE));
 			}
 			
-			if (args[1].equalsIgnoreCase("add"))
-				Somnia.instance.ignoreList.add(new WeakReference<EntityPlayerMP>(player));
+			if (args[1].equalsIgnoreCase("add")) {
+				if (ListUtils.containsRef(player, Somnia.instance.ignoreList))
+					sender.sendMessage(new TextComponentString("Override already exists"));
+				else Somnia.instance.ignoreList.add(new WeakReference<>(player));
+			}
 			else if (args[1].equalsIgnoreCase("remove"))
-				Somnia.instance.ignoreList.remove(ListUtils.<EntityPlayerMP>getWeakRef(player, Somnia.instance.ignoreList));
+				Somnia.instance.ignoreList.remove(ListUtils.getWeakRef(player, Somnia.instance.ignoreList));
 			else if (args[1].equalsIgnoreCase("list"))
 			{
-				List<EntityPlayerMP> players = ListUtils.<EntityPlayerMP>extractRefs(Somnia.instance.ignoreList);
+				List<EntityPlayerMP> players = ListUtils.extractRefs(Somnia.instance.ignoreList);
 				String[] astring = ListUtils.playersToStringArray(players);
 				ITextComponent chatComponent = new TextComponentString(astring.length > 0 ? joinNiceString(astring) : "Nothing to see here...");
 				sender.sendMessage(chatComponent);
@@ -108,5 +115,22 @@ public class SomniaCommand extends CommandBase
 			else
 				throw new WrongUsageException(getUsage(sender));
 		}
+	}
+
+	@Nonnull
+	private String getSecondLastWord(String[] arr) {
+		if (arr.length <= 1) return "";
+		return arr[arr.length - 2];
+	}
+
+	@Override
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
+		String arg = getSecondLastWord(args);
+		if ("fatigue".equals(arg))
+			return Collections.singletonList("set");
+		else if ("override".equals(arg)) return getListOfStringsMatchingLastWord(args, "add", "remove", "list");
+		else if (args.length == 3 && !arg.equals("list")) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+
+		return args.length < 2 ? getListOfStringsMatchingLastWord(args, "fatigue", "override") : Collections.emptyList();
 	}
 }
