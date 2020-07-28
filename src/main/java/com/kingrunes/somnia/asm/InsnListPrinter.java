@@ -1,5 +1,6 @@
 package com.kingrunes.somnia.asm;
 
+import com.kingrunes.somnia.Somnia;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -17,9 +18,9 @@ public class InsnListPrinter
 		{
 			ain = iter.next();
 			if (ain instanceof MethodInsnNode)
-				System.out.println("[DEBUG] " + ((MethodInsnNode)ain).name + " @ " + i);
+				Somnia.logger.debug(((MethodInsnNode)ain).name + " @ " + i);
 			else
-				System.out.println("[DEBUG] " + ain.toString() + " @ " + i);
+				Somnia.logger.debug(ain.toString() + " @ " + i);
 			i++;
 		}
 	}

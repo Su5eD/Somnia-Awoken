@@ -1,5 +1,6 @@
 package com.kingrunes.somnia.common.util;
 
+import com.kingrunes.somnia.Somnia;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.launchwrapper.Launch;
@@ -18,8 +19,8 @@ public class ClassUtils
 		if (mcp == null)
 		{
 			mcp = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
-			
-			System.out.println("[Somnia] Running in a" + (mcp ? " deobfuscated" : "n obfuscated") + " environment!");
+
+			Somnia.logger.debug("Running in a" + (mcp ? " deobfuscated" : "n obfuscated") + " environment!");
 		}
 		
 		return mcp;

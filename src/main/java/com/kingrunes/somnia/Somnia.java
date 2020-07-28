@@ -25,6 +25,8 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
 import java.lang.ref.WeakReference;
@@ -47,6 +49,8 @@ public class Somnia
 	@SidedProxy(serverSide="com.kingrunes.somnia.common.CommonProxy", clientSide="com.kingrunes.somnia.client.ClientProxy")
 	public static CommonProxy proxy;
 
+	public static Logger logger;
+
 	//public static final SimpleNetworkWrapper networkWrapper = NetworkRegistry.INSTANCE.newSimpleChannel(MOD_ID);
 	public static FMLEventChannel eventChannel;
 	
@@ -54,13 +58,15 @@ public class Somnia
 	
 	public Somnia()
 	{
-		this.tickHandlers = new ArrayList<ServerTickHandler>();
-		this.ignoreList = new ArrayList<WeakReference<EntityPlayerMP>>();
+		this.tickHandlers = new ArrayList<>();
+		this.ignoreList = new ArrayList<>();
 	}
 	
 	@EventHandler
     public void preInit(FMLPreInitializationEvent event)
 	{
+		logger = LogManager.getLogger();
+		logger.info("------ Pre-Init -----");
 		event.getModMetadata().version = VERSION;
         proxy.configure(event.getSuggestedConfigurationFile());
     }
@@ -68,10 +74,9 @@ public class Somnia
 	@EventHandler
 	public void init(FMLInitializationEvent event) 
 	{
+		logger.info("------ Init -----");
 		eventChannel = NetworkRegistry.INSTANCE.newEventDrivenChannel(MOD_ID);
 		eventChannel.register(new PacketHandler());
-
-		//networkWrapper.registerMessage(SyncPacketHandler.class, SyncPacket.class, 0, Side.CLIENT);
 
 		proxy.register();
 	}

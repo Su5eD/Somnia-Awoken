@@ -1,5 +1,6 @@
 package com.kingrunes.somnia.asm;
 
+import com.kingrunes.somnia.Somnia;
 import org.objectweb.asm.ClassWriter;
 
 public class SomniaClassWriter extends ClassWriter
@@ -15,15 +16,15 @@ public class SomniaClassWriter extends ClassWriter
 	@Override
 	protected String getCommonSuperClass(String a, String b)
 	{
-		System.out.println("[SOMNIA] [DEBUG] a = " + a + " b = " + b);
+		Somnia.logger.debug("a = " + a + " b = " + b);
 		if (precalculatedCommonSuperClass != null)
 		{
-			System.out.println("[Somnia] Overriding common superclass with: " + precalculatedCommonSuperClass);
+			Somnia.logger.debug("Overriding common superclass with: " + precalculatedCommonSuperClass);
 		}
 		else
 		{
 			precalculatedCommonSuperClass = super.getCommonSuperClass(a, b);
-			System.out.println("[Somnia] [DEBUG] a = " + a + " b = " + b + " output = " + precalculatedCommonSuperClass);
+			Somnia.logger.debug("a = " + a + " b = " + b + " output = " + precalculatedCommonSuperClass);
 		}
 		return precalculatedCommonSuperClass;
 	}
