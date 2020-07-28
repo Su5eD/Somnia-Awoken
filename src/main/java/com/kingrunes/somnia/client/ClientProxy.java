@@ -148,5 +148,6 @@ public class ClientProxy extends CommonProxy
 	public void handleGUIClosePacket(EntityPlayerMP player)
 	{
 		Minecraft.getMinecraft().displayGuiScreen(null);
+		player.wakeUpPlayer(true, true, true);
 	}
 }

@@ -109,7 +109,7 @@ public class ForgeEventHandler
 	}
 
 	private void sync(EntityPlayer player) {
-		if (!player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)) return;
-		//Somnia.networkWrapper.sendTo(new SyncPacket(player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).serializeNBT()), (EntityPlayerMP) player);
+		if (!player.hasCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null) || !(player instanceof EntityPlayerMP)) return;
+		Somnia.eventChannel.sendTo(PacketHandler.buildPropUpdatePacket(0x01, 0x00, player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).getFatigue()), (EntityPlayerMP) player);
 	}
 }

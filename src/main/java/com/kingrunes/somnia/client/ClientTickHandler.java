@@ -2,12 +2,14 @@ package com.kingrunes.somnia.client;
 
 import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.client.gui.GuiSomnia;
+import com.kingrunes.somnia.common.PacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiSleepMP;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.settings.GameSettings;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.SoundCategory;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -98,7 +100,7 @@ public class ClientTickHandler
 		if (Somnia.clientAutoWakeTime > -1 && mc.player.isPlayerSleeping() && mc.world.getTotalWorldTime() >= Somnia.clientAutoWakeTime)
 		{
 			Somnia.clientAutoWakeTime = -1;
-			mc.player.wakeUpPlayer(true, true, true);
+			Somnia.eventChannel.sendToServer(PacketHandler.buildGUIClosePacket());
 		}
 	}
 	

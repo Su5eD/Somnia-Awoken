@@ -165,7 +165,6 @@ public class GuiSomnia extends GuiSleepMP
 	
 	private void renderClock(int x, int y, float scale)
 	{
-		System.out.println("clock meta: "+clockItemStack.getMetadata());
 		glPushMatrix();
 		{
 			glTranslatef(x, y, 0.0f);
