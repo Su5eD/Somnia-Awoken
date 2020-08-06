@@ -1,12 +1,12 @@
 package com.kingrunes.somnia.server;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.common.CommonProxy;
+import com.kingrunes.somnia.common.PacketHandler;
+import com.kingrunes.somnia.common.PlayerSleepTickHandler;
 import com.kingrunes.somnia.common.capability.CapabilityFatigue;
 import com.kingrunes.somnia.common.capability.FatigueCapabilityProvider;
 import com.kingrunes.somnia.common.capability.IFatigue;
-import com.kingrunes.somnia.common.PacketHandler;
-import com.kingrunes.somnia.common.PlayerSleepTickHandler;
-import com.kingrunes.somnia.common.network.SyncPacket;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -14,18 +14,15 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class ForgeEventHandler
 {
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onEntityCapabilityAttach(AttachCapabilitiesEvent<Entity> event)
 	{
 		event.addCapability(new ResourceLocation(Somnia.MOD_ID, "fatigue"), new FatigueCapabilityProvider());
@@ -45,9 +42,9 @@ public class ForgeEventHandler
 		boolean isSleeping = PlayerSleepTickHandler.serverState.sleepOverride || player.isPlayerSleeping();
 		
 		if (isSleeping)
-			fatigue -= Somnia.proxy.fatigueReplenishRate;
+			fatigue -= CommonProxy.fatigueReplenishRate;
 		else
-			fatigue += Somnia.proxy.fatigueRate;
+			fatigue += CommonProxy.fatigueRate;
 		
 		if (fatigue > 100.0d)
 			fatigue = 100.0d;
@@ -61,7 +58,7 @@ public class ForgeEventHandler
 			Somnia.eventChannel.sendTo(PacketHandler.buildPropUpdatePacket(0x01, 0x00, fatigue), (EntityPlayerMP) player);
 			
 			// Side effects
-			if (Somnia.proxy.fatigueSideEffects)
+			if (CommonProxy.fatigueSideEffects)
 			{
 				int lastSideEffectStage = props.getSideEffectStage();
 				if (fatigue > 70.0d && lastSideEffectStage < 70)

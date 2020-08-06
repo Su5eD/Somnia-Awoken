@@ -1,6 +1,7 @@
 package com.kingrunes.somnia.common;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.capability.CapabilityFatigue;
 import com.kingrunes.somnia.common.capability.IFatigue;
 import com.kingrunes.somnia.common.util.ClassUtils;
@@ -8,6 +9,8 @@ import com.kingrunes.somnia.common.util.TimePeriod;
 import com.kingrunes.somnia.server.ForgeEventHandler;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,6 +23,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -35,27 +39,27 @@ public class CommonProxy
 {
 	private static final int CONFIG_VERSION = 2;
 	
-	public TimePeriod 	enterSleepPeriod;
+	public static TimePeriod 	enterSleepPeriod;
 	public TimePeriod 	validSleepPeriod;
 	
-	public double 		fatigueRate,
-						fatigueReplenishRate,
-						minimumFatigueToSleep,
-						baseMultiplier,
-						multiplierCap;
+	public static double 	fatigueRate,
+							fatigueReplenishRate,
+							minimumFatigueToSleep,
+							baseMultiplier,
+							multiplierCap;
 	
-	public boolean 		fatigueSideEffects,
-						tpsGraph,
-						secondsOnGraph,
-						sleepWithArmor,
-						vanillaBugFixes,
-						fading,
-						somniaGui,
-						muteSoundWhenSleeping,
-						ignoreMonsters,
-						disableCreatureSpawning,
-						disableRendering,
-						disableMoodSoundAndLightCheck;
+	public static boolean 	fatigueSideEffects,
+							tpsGraph,
+							secondsOnGraph,
+							sleepWithArmor,
+							vanillaBugFixes,
+							fading,
+							somniaGui,
+							muteSoundWhenSleeping,
+							ignoreMonsters,
+							disableCreatureSpawning,
+							disableRendering,
+							disableMoodSoundAndLightCheck;
 	
 	public String		displayFatigue;
 	
@@ -132,14 +136,51 @@ public class CommonProxy
 	{
 		MinecraftForge.EVENT_BUS.register(this);
 		
-		FMLCommonHandler.instance().bus().register(new PlayerSleepTickHandler());
+		MinecraftForge.EVENT_BUS.register(new PlayerSleepTickHandler());
 		
 		forgeEventHandler = new ForgeEventHandler();
 		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
-		FMLCommonHandler.instance().bus().register(forgeEventHandler);
+		MinecraftForge.EVENT_BUS.register(forgeEventHandler);
 		CapabilityFatigue.register();
 	}
-	
+
+	@SubscribeEvent
+	public void interactHook(PlayerInteractEvent event)
+	{
+		/*World world = event.getWorld();
+
+		BlockPos pos = event.getPos();
+
+		EntityPlayer player = event.getEntityPlayer();
+		IBlockState state = world.getBlockState(pos);
+
+		if (event instanceof PlayerInteractEvent.RightClickBlock && state.getBlock() == Blocks.BED)
+		{
+
+			if (state.getValue(BlockBed.PART) != BlockBed.EnumPartType.HEAD)
+			{
+				pos = pos.offset(state.getValue(BlockBed.FACING));
+				state = world.getBlockState(pos);
+
+				if (state.getBlock() != Blocks.BED)
+				{
+					event.setCanceled(true);
+					return;
+				}
+			}
+
+			if (world.isRemote && Math.abs(player.posX - (double) pos.getX()) < 3.0D && Math.abs(player.posY - (double) pos.getY()) < 2.0D && Math.abs(player.posZ - (double) pos.getZ()) < 3.0)
+			{
+				ItemStack currentItem = player.inventory.getCurrentItem();
+				GuiScreen guiScreen = Minecraft.getMinecraft().currentScreen;
+
+				// Wake at next sunrise/sunset (whichever comes first)
+				long totalWorldTime = world.getTotalWorldTime();
+				Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
+			}
+		}*/
+	}
+
 	@SubscribeEvent
 	public void worldLoadHook(WorldEvent.Load event)
 	{
@@ -147,7 +188,7 @@ public class CommonProxy
 		{
 			WorldServer worldServer = (WorldServer)event.getWorld();
 			Somnia.instance.tickHandlers.add(new ServerTickHandler(worldServer));
-			System.out.println("[Somnia] Registering tick handler for loading world!"); //TODO: Get a logger
+			Somnia.logger.info("Registering tick handler for loading world!");
 		}
 	}
 	
@@ -164,7 +205,7 @@ public class CommonProxy
 				serverTickHandler = iter.next();
 				if (serverTickHandler.worldServer == worldServer)
 				{
-					System.out.println("[Somnia] Removing tick handler for unloading world!");
+					Somnia.logger.info("Removing tick handler for unloading world!");
 					iter.remove();
 					break;
 				}
@@ -187,11 +228,15 @@ public class CommonProxy
 	@SubscribeEvent
 	public void sleepHook(PlayerSleepInBedEvent event)
 	{
-		onSleep(event);
+		//onSleep(event);
+		/*if(event.getResultStatus() == EntityPlayer.SleepResult.OTHER_PROBLEM && event.getEntityPlayer().world.isRemote)
+		{
+			event.getEntityPlayer().sendStatusMessage(new TextComponentTranslation("somnia.status.cooldown"), true);
+		}*/
 	}
 	
 	/*
-	 * This method reimplements the entire sleep checking logic, look away
+	 * This method re-implements the entire sleep checking logic, look away
 	 */
 	public void onSleep(PlayerSleepInBedEvent event)
 	{
@@ -201,13 +246,21 @@ public class CommonProxy
 		BlockPos pos = event.getPos();
 		EntityPlayer player = event.getEntityPlayer();
 
+
+		GuiScreen guiScreen = Minecraft.getMinecraft().currentScreen;
+		if (guiScreen instanceof GuiSelectWakeTime) {
+			event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
+			return;
+		}
+
 		if (!player.world.isRemote)
         {
 			IFatigue props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null);
 			if (props != null && props.getFatigue() < minimumFatigueToSleep)
 			{
+				System.out.println(props.getFatigue());
 				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
-				player.sendMessage(new TextComponentTranslation("somnia.status.cooldown"));
+				player.sendStatusMessage(new TextComponentTranslation("somnia.status.cooldown"), true);
 				return;
 			}
 			
@@ -220,7 +273,7 @@ public class CommonProxy
 			if (!sleepWithArmor && Somnia.doesPlayHaveAnyArmor(player))
 			{
 				event.setResult(EntityPlayer.SleepResult.OTHER_PROBLEM);
-				player.sendMessage(new TextComponentTranslation("somnia.status.armor"));
+				player.sendStatusMessage(new TextComponentTranslation("somnia.status.armor"), true);
 				return;
 			}
 			
@@ -242,7 +295,7 @@ public class CommonProxy
                 return;
             }
 
-            if (!this.ignoreMonsters)
+            if (!ignoreMonsters)
             {
 	            double d0 = 8.0D;
 	            double d1 = 5.0D;
@@ -263,49 +316,27 @@ public class CommonProxy
         }
 
         ClassUtils.setSize(player, 0.2F, 0.2F);
-//        event.entityPlayer.yOffset = 0.2F;
+
+		IBlockState state = player.world.getBlockState(pos);
 
         if (player.world.isBlockLoaded(pos))
         {
-			IBlockState state = player.world.getBlockState(pos);
-        	EnumFacing enumFacing = state.getBlock().getBedDirection(state, player.world, pos);
-            float f1 = 0.5F;
-            float f = 0.5F;
-            player.renderOffsetX = 0.0F;
-            player.renderOffsetZ = 0.0F;
+        	EnumFacing enumfacing = state.getBlock().getBedDirection(state, player.world, pos);
+			float f1 = 0.5F + (float)enumfacing.getFrontOffsetX() * 0.5F;
+			float f = 0.5F + (float)enumfacing.getFrontOffsetZ() * 0.5F;
+			player.renderOffsetX = -1.8F * (float)enumfacing.getFrontOffsetX();
+			player.renderOffsetZ = -1.8F * (float)enumfacing.getFrontOffsetZ();
 
-            switch (enumFacing) // FACING_LOOKUP isn't visible.. lets do this our own way
-            {
-                case SOUTH:
-                    f1 = 0.9F;
-                    player.renderOffsetX = -1.8F;
-                    break;
-                case NORTH:
-                    f = 0.1F;
-                    player.renderOffsetX = 1.8F;
-                    break;
-                case WEST:
-                    f1 = 0.1F;
-                    player.renderOffsetX = 1.8F;
-                    break;
-                case EAST:
-                    f = 0.9F;
-                    player.renderOffsetX = -1.8F;
-                    break;
-                default:
-                	break;
-            }
-
-//            ClassUtils.call_func_71013_b(event.entityPlayer, l);
-            player.setPosition(((float)pos.getX() + f), ((float)pos.getY() + 0.9375F), ((float)pos.getZ() + f1));
+			player.setPosition(((float)pos.getX() + f1), ((float)pos.getY() + 0.6875F), ((float)pos.getZ() + f));
         }
-        else
-        	player.setPosition(((float)pos.getX() + 0.5F), ((float)pos.getY() + 0.9375F), ((float)pos.getZ() + 0.5F));
+		else player.setPosition(((float)pos.getX() + 0.5F), ((float)pos.getY() + 0.6875F), ((float)pos.getZ() + 0.5F));
 
         ClassUtils.setSleeping(player, true);
         ClassUtils.setSleepTimer(player, 0);
         player.setPosition(pos.getX(), pos.getY(), pos.getZ());
         player.motionX = player.motionZ = player.motionY = 0.0D;
+        player.bedLocation = pos;
+        state.getBlock().setBedOccupied(player.world, pos, player, true);
 
         if (!player.world.isRemote)
         {
@@ -314,17 +345,14 @@ public class CommonProxy
 		
         event.setResult(EntityPlayer.SleepResult.OK);
         
-        if (player.world.isRemote)
-	        return;
-        
-        Somnia.eventChannel.sendTo(PacketHandler.buildGUIOpenPacket(), (EntityPlayerMP) player);
+        if (!player.world.isRemote) Somnia.eventChannel.sendToServer(PacketHandler.buildGUIOpenPacket());
 	}
 	
 	/*
 	 * The following methods are implemented client-side only
 	 */
 	
-	public void handleGUIOpenPacket() throws IOException
+	public void handleGUIOpenPacket()
 	{}
 
 	public void handlePropUpdatePacket(DataInputStream in) throws IOException

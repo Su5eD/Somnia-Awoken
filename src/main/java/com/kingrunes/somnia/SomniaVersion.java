@@ -5,15 +5,15 @@ public class SomniaVersion
 							// Incremented when a significant change to the mod is made, never reset
 	public static final int MAJOR_VERSION = 1,
 							// Incremented for new features or significant rewrites, reset with every new MAJOR_VERSION
-							MINOR_VERSION = 5,
+							MINOR_VERSION = 9,
 							// Incremented when a bugfix is made and the mod can be considered 'stable', reset with every new MINOR_VERSION
 							REVISION_VERSION = 0;
 							// Incremented automatically by the build system, never reset
 	
 							// Incremented when a significant change to the mod is made, never reset
-	public static final int CORE_MAJOR_VERSION = 1,
+	public static final int CORE_MAJOR_VERSION = 2,
 							// Incremented for new features or significant rewrites, reset with every new MAJOR_VERSION
-							CORE_MINOR_VERSION = 5,
+							CORE_MINOR_VERSION = 0,
 							// Incremented when a bugfix is made and the mod can be considered 'stable', reset with every new MINOR_VERSION
 							CORE_REVISION_VERSION = 0;
 							// Incremented automatically by the build system, never reset
@@ -50,6 +50,6 @@ public class SomniaVersion
 				return false;
 			}
 		}
-		return (MAJOR_VERSION < intArray[0] ? true : (MINOR_VERSION < intArray[1] ? true : (REVISION_VERSION < intArray[2] ? true : intArray.length >= 4 && BUILD < intArray[3])));
+		return (MAJOR_VERSION < intArray[0] || (MINOR_VERSION < intArray[1] || (REVISION_VERSION < intArray[2] || intArray.length >= 4 && BUILD < intArray[3])));
 	}
 }

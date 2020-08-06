@@ -1,12 +1,14 @@
 package com.kingrunes.somnia.asm;
 
+import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.kingrunes.somnia.SomniaVersion;
 import net.minecraftforge.fml.common.DummyModContainer;
 import net.minecraftforge.fml.common.LoadController;
 import net.minecraftforge.fml.common.ModMetadata;
+import scala.actors.threadpool.Arrays;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 public class SDummyContainer extends DummyModContainer
 {
@@ -14,15 +16,12 @@ public class SDummyContainer extends DummyModContainer
 	{
 		super(new ModMetadata());
 		ModMetadata meta = super.getMetadata();
-		meta.modId = "somnia_core";
+		meta.modId = "somniacore";
 		meta.name = "SomniaCore";
 		meta.version = SomniaVersion.getCoreVersionString();
-		meta.authorList = Arrays.asList("Kingrunes");
+		meta.authorList = Lists.newArrayList("Kingrunes", "Su5eD");
 		meta.description = "This mod modifies Minecraft to allow Somnia to hook in";
-		meta.url = "";
-		meta.updateUrl = "";
 		meta.screenshots = new String[0];
-		meta.logoFile = "";
 	}
 
 	@Override

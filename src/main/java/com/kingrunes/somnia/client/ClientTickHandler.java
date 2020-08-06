@@ -2,6 +2,7 @@ package com.kingrunes.somnia.client;
 
 import com.kingrunes.somnia.Somnia;
 import com.kingrunes.somnia.client.gui.GuiSomnia;
+import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -9,7 +10,6 @@ import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiSleepMP;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.SoundCategory;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -46,7 +46,7 @@ public class ClientTickHandler
 		
 		if (mc.currentScreen instanceof GuiSleepMP)
 		{
-			if (Somnia.proxy.vanillaBugFixes)
+			if (CommonProxy.vanillaBugFixes)
 			{
 				if (!moddedFOV)
 				{
@@ -73,7 +73,7 @@ public class ClientTickHandler
 		
 		if (mc.player.isPlayerSleeping())
 		{
-			if (Somnia.proxy.muteSoundWhenSleeping)
+			if (CommonProxy.muteSoundWhenSleeping)
 			{
 				if (!muted)
 				{
@@ -82,6 +82,7 @@ public class ClientTickHandler
 					gameSettings.setSoundLevel(SoundCategory.MASTER, .0f);
 				}
 			}
+			if (mc.player.isPlayerSleeping() && !net.minecraftforge.event.ForgeEventFactory.fireSleepingLocationCheck(mc.player, mc.player.bedLocation)) Somnia.eventChannel.sendToServer(PacketHandler.buildGUIClosePacket());
 		}
 		else
 		{
@@ -96,7 +97,6 @@ public class ClientTickHandler
 		 * Note the isPlayerSleeping() check. Without this, the mod exploits a bug which exists in vanilla Minecraft which
 		 * allows the player to teleport back to there bed from anywhere in the world at any time.
 		 */
-		
 		if (Somnia.clientAutoWakeTime > -1 && mc.player.isPlayerSleeping() && mc.world.getTotalWorldTime() >= Somnia.clientAutoWakeTime)
 		{
 			Somnia.clientAutoWakeTime = -1;
@@ -116,28 +116,26 @@ public class ClientTickHandler
 		String str = String.format(FATIGUE_FORMAT, ClientProxy.playerFatigue);
 		int x, y, stringWidth = fontRenderer.getStringWidth(str);
 		String param = Somnia.proxy.displayFatigue.toLowerCase();
-		if (param.equals("tl"))
-		{
-			x = 10;
-			y = 10;
+		switch (param) {
+			case "tl":
+				x = 10;
+				y = 10;
+				break;
+			case "tr":
+				x = scaledResolution.getScaledWidth() - stringWidth - 10;
+				y = 10;
+				break;
+			case "bl":
+				x = 10;
+				y = scaledResolution.getScaledHeight() - fontRenderer.FONT_HEIGHT - 10;
+				break;
+			case "br":
+				x = scaledResolution.getScaledWidth() - stringWidth - 10;
+				y = scaledResolution.getScaledHeight() - fontRenderer.FONT_HEIGHT - 10;
+				break;
+			default:
+				return;
 		}
-		else if (param.equals("tr"))
-		{
-			x = scaledResolution.getScaledWidth()-stringWidth-10;
-			y = 10;
-		}
-		else if (param.equals("bl"))
-		{
-			x = 10;
-			y = scaledResolution.getScaledHeight()-fontRenderer.FONT_HEIGHT-10;
-		}
-		else if (param.equals("br"))
-		{
-			x = scaledResolution.getScaledWidth()-stringWidth-10;
-			y = scaledResolution.getScaledHeight()-fontRenderer.FONT_HEIGHT-10;
-		}
-		else
-			return;
 		
 		fontRenderer.drawString(str, x, y, Integer.MIN_VALUE);
 	}

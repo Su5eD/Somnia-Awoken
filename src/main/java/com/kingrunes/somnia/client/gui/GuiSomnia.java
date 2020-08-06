@@ -7,7 +7,6 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiSleepMP;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -23,6 +22,8 @@ import static org.lwjgl.opengl.GL11.*;
 @SideOnly(Side.CLIENT)
 public class GuiSomnia extends GuiSleepMP
 {
+	public final boolean resetSpawn;
+
 	public static final String 	COLOR = new String(new char[]{ (char)167 }),
 								BLACK = COLOR+"0",
 								WHITE = COLOR+"f",
@@ -39,14 +40,22 @@ public class GuiSomnia extends GuiSleepMP
 								BYTES_RED = new byte[]{ (byte) 255, 0, 0 },
 								BYTES_GOLD = new byte[]{ (byte) 240, (byte) 200, 30 };
 	
-	private RenderItem presetIconRenderer = Minecraft.getMinecraft().getRenderItem();
-	private static ItemStack clockItemStack = new ItemStack(Items.CLOCK);
+	private final RenderItem presetIconRenderer = Minecraft.getMinecraft().getRenderItem();
+	private static final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
 
-	private List<Double> speedValues = new ArrayList<Double>();
+	private final List<Double> speedValues = new ArrayList<>();
 	
 	public String status = "Waiting...";
 	public double speed = 0;
-	public long startTicks = -1l;
+	public long startTicks = -1L;
+
+	public GuiSomnia() {
+		this(true);
+	}
+
+	public GuiSomnia(boolean resetSpawn) {
+		this.resetSpawn = resetSpawn;
+	}
 	
 	@Override
 	public boolean doesGuiPauseGame()
@@ -59,7 +68,9 @@ public class GuiSomnia extends GuiSleepMP
 	{
 		super.onGuiClosed();
 		if (this.mc.player != null) // save clients from outdated servers causing NPEs
-			this.mc.player.wakeUpPlayer(true, true, true);
+		{
+			this.mc.player.wakeUpPlayer(true, true, this.resetSpawn);
+		}
 	}
 	
 	@Override
@@ -70,11 +81,11 @@ public class GuiSomnia extends GuiSleepMP
 		boolean currentlySleeping = speed != .0d;
 		if (currentlySleeping)
 		{
-			if (startTicks == -1l)
+			if (startTicks == -1L)
 				startTicks = mc.world.getTotalWorldTime();
 		}
 		else
-			startTicks = -1l;
+			startTicks = -1L;
 		
 
 		/*
@@ -90,7 +101,7 @@ public class GuiSomnia extends GuiSleepMP
 		 * ETA
 		 * Clock
 		 */
-		if (startTicks != -1l && Somnia.clientAutoWakeTime != -1)
+		if (startTicks != -1L && Somnia.clientAutoWakeTime != -1)
 		{
 			// Progress Bar
 			this.mc.getTextureManager().bindTexture(Gui.ICONS);
@@ -98,7 +109,7 @@ public class GuiSomnia extends GuiSleepMP
 			double 	rel = mc.world.getTotalWorldTime()-startTicks,
 					diff = Somnia.clientAutoWakeTime-startTicks,
 					progress = rel / diff;
-			
+
 			int 	x = 20,
 					maxWidth = (this.width-(x*2));
 			
@@ -135,7 +146,7 @@ public class GuiSomnia extends GuiSleepMP
 		int amount = (int) (progress * maxWidth);
 		while (amount > 0)
 		{
-			this.drawTexturedModalRect(x, y, 0, 69, (amount > 180 ? 180 : amount), 5);
+			this.drawTexturedModalRect(x, y, 0, 69, (Math.min(amount, 180)), 5);
 			
 			amount -= 180;
 			x += 180;

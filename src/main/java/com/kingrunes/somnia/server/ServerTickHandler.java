@@ -7,7 +7,7 @@ import com.kingrunes.somnia.common.util.SomniaState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.server.SPacketTimeUpdate;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 
 import static com.kingrunes.somnia.common.util.SomniaState.*;
@@ -35,7 +36,7 @@ public class ServerTickHandler
 					liTps 				= 0, 		// Counts ticks
 					tps					= 0;		// Set per second to liTPS, used to work out actual multiplier to send to clients
 	
-	private double 	multiplier 			= Somnia.proxy.baseMultiplier;
+	private double 	multiplier 			= CommonProxy.baseMultiplier;
 	
 	public ServerTickHandler(WorldServer worldServer)
 	{
@@ -50,7 +51,6 @@ public class ServerTickHandler
 			
 			SomniaState prevState = currentState;
 			currentState = SomniaState.getState(this);
-			
 			
 			if (prevState != currentState)
 			{
@@ -86,12 +86,10 @@ public class ServerTickHandler
 			doMultipliedTicking();
 	}
 	
-	private void closeGuiWithMessage(String key)
+	private void closeGuiWithMessage(@Nullable String key)
 	{
 		FMLProxyPacket packet = PacketHandler.buildGUIClosePacket();
-		
-		ITextComponent chatComponent = new TextComponentTranslation(String.format(TRANSLATION_FORMAT, key), new Object[0]);
-		@SuppressWarnings("unchecked")
+
 		Iterator<EntityPlayer> iter = worldServer.playerEntities.iterator();
 		EntityPlayer ep;
 		while (iter.hasNext())
@@ -101,8 +99,10 @@ public class ServerTickHandler
 			{
 				Somnia.eventChannel.sendTo(packet, (EntityPlayerMP) ep);
 				if (ep.isPlayerSleeping()) // this if might stop random teleporting when players have already woken
+				{
 					ep.wakeUpPlayer(false, true, true); // Stop clients ignoring GUI close packets (major hax)
-				ep.sendMessage(chatComponent);
+				}
+				if (key != null) ep.sendMessage(new TextComponentTranslation(String.format(TRANSLATION_FORMAT, key)));
 			}
 		}
 	}
@@ -120,7 +120,6 @@ public class ServerTickHandler
 		 * We can't run 0.5 of a tick,
 		 * so we floor the multiplier and store the difference as overflow to be ran on the next tick
 		 */
-//		int liMultiplier = (int) Math.floor(multiplier);
 		double target = multiplier + overflow;
 		int liTarget = (int) Math.floor(target);
 		overflow = target - liTarget;
@@ -129,19 +128,21 @@ public class ServerTickHandler
 		for (int i=0; i<liTarget; i++)
 			doMultipliedServerTicking();
 		delta = System.currentTimeMillis() - delta;
-		
-		worldServer.getMinecraftServer().getPlayerList().sendPacketToAllPlayersInDimension(new SPacketTimeUpdate(worldServer.getTotalWorldTime(), worldServer.getWorldTime(), worldServer.getGameRules().getBoolean("doDaylightCycle")), worldServer.provider.getDimension());
+
+		MinecraftServer server = worldServer.getMinecraftServer();
+		if (server == null) return;
+		server.getPlayerList().sendPacketToAllPlayersInDimension(new SPacketTimeUpdate(worldServer.getTotalWorldTime(), worldServer.getWorldTime(), worldServer.getGameRules().getBoolean("doDaylightCycle")), worldServer.provider.getDimension());
 		
 		if (delta > (50.0d/activeTickHandlers))
 			multiplier -= .1d;
 		else
 			multiplier += .1d;
 		
-		if (multiplier > Somnia.proxy.multiplierCap)
-			multiplier = Somnia.proxy.multiplierCap;
+		if (multiplier > CommonProxy.multiplierCap)
+			multiplier = CommonProxy.multiplierCap;
 		
-		if (multiplier < Somnia.proxy.baseMultiplier)
-			multiplier = Somnia.proxy.baseMultiplier;
+		if (multiplier < CommonProxy.baseMultiplier)
+			multiplier = CommonProxy.baseMultiplier;
 		
 		long currentTimeMillis = System.currentTimeMillis();
 		if (currentTimeMillis-lastTpsMillis > 1000)

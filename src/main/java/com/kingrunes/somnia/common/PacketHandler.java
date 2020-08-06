@@ -3,9 +3,13 @@ package com.kingrunes.somnia.common;
 import com.kingrunes.somnia.Somnia;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientCustomPacketEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent;
@@ -51,6 +55,9 @@ public class PacketHandler
 			case 0x02:
 				handlePropUpdatePacket(in);
 				break;
+			case 0x03:
+				handleRightClickBlockPacket(player, in);
+				break;
 			}
 		}
 		catch (IOException e)
@@ -71,37 +78,22 @@ public class PacketHandler
 	}
 	
 	
-	private void handleGUIClosePacket(EntityPlayerMP player, DataInputStream in) throws IOException
+	private void handleGUIClosePacket(EntityPlayerMP player, DataInputStream in)
 	{
 		Somnia.proxy.handleGUIClosePacket(player);
 	}
-	//
-	
-	/*
-	 * Building
-	 */
-	
-	// TODO: Make caching work on something other than Windows...
-	/*/ Cache
-	private static HashMap<Byte, FMLProxyPacket> cache;
-	
-	static
-	{
-		cache = new HashMap<Byte, FMLProxyPacket>();
+
+	private void handleRightClickBlockPacket(EntityPlayerMP player, DataInputStream in) throws IOException {
+		BlockPos pos = new BlockPos(in.readInt(), in.readInt(), in.readInt());
+		EnumFacing facing = EnumFacing.values()[in.readByte()];
+		IBlockState state = player.world.getBlockState(pos);
+
+		state.getBlock().onBlockActivated(player.world, pos, state, player, EnumHand.MAIN_HAND, facing, in.readFloat(), in.readFloat(), in.readFloat());
 	}
-	/*/
 	
 	public static FMLProxyPacket buildGUIOpenPacket()
 	{
 		return doBuildGUIOpenPacket();
-		/*
-		FMLProxyPacket packet = cache.get(byteOf(0x00));
-		
-		if (packet == null)
-			cache.put(byteOf(0x00), packet=doBuildGUIOpenPacket());
-		
-		return packet;
-		*/
 	}
 	
 	private static FMLProxyPacket doBuildGUIOpenPacket()
@@ -115,14 +107,6 @@ public class PacketHandler
 	public static FMLProxyPacket buildGUIClosePacket()
 	{
 		return doBuildGUIClosePacket();
-		/*
-		FMLProxyPacket packet = cache.get(byteOf(0x01));
-		
-		if (packet == null)
-			cache.put(byteOf(0x01), packet=doBuildGUIOpenPacket());
-		
-		return packet;
-		*/
 	}
 
 	public static FMLProxyPacket doBuildGUIClosePacket()
@@ -148,6 +132,21 @@ public class PacketHandler
     	
     	return new FMLProxyPacket(buffer, Somnia.MOD_ID);
 	}
+
+	public static FMLProxyPacket buildRightClickBlockPacket(BlockPos pos, EnumFacing side, float x, float y, float z)
+	{
+		PacketBuffer buffer = unpooled();
+
+		buffer.writeByte(0x03);
+		buffer.writeInt(pos.getX());
+		buffer.writeInt(pos.getY());
+		buffer.writeInt(pos.getZ());
+		buffer.writeByte(side.ordinal());
+		buffer.writeFloat(x);
+		buffer.writeFloat(y);
+		buffer.writeFloat(z);
+		return new FMLProxyPacket(buffer, Somnia.MOD_ID);
+	}
 	
 	/*
 	 * Utils
@@ -155,10 +154,5 @@ public class PacketHandler
 	private static PacketBuffer unpooled()
 	{
 		return new PacketBuffer(Unpooled.buffer());
-	}
-	
-	public static Byte byteOf(int i)
-	{
-		return Byte.valueOf((byte)i);
 	}
 }

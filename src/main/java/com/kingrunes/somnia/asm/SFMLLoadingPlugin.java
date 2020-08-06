@@ -6,6 +6,8 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions
 
 import java.util.Map;
 
+@MCVersion("1.12.2")
+@TransformerExclusions("com.kingrunes.somnia.asm")
 public class SFMLLoadingPlugin implements IFMLLoadingPlugin
 {
 	@Override

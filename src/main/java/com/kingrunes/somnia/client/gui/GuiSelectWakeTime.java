@@ -1,13 +1,13 @@
 package com.kingrunes.somnia.client.gui;
 
 import com.kingrunes.somnia.Somnia;
+import com.kingrunes.somnia.common.PacketHandler;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.math.RayTraceResult;
 
 public class GuiSelectWakeTime extends GuiScreen
 {
-	@SuppressWarnings("unchecked")
 	@Override
 	public void initGui()
 	{
@@ -117,6 +117,17 @@ public class GuiSelectWakeTime extends GuiScreen
 				"Mid Morning"
 			)
 		);
+
+		/*buttonList.add(
+			new GuiButton(
+				i++,
+				(width/2)-buttonWidth/2,
+				(height/7)-buttonHeight/2,
+				buttonWidth,
+				buttonHeight,
+				"Reset spawn: "+(resetSpawn ? "Yes" : "No")
+			)
+		);*/
 	}
 
 	@Override
@@ -154,15 +165,14 @@ public class GuiSelectWakeTime extends GuiScreen
 		}
 		
 		Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(mc.world.getTotalWorldTime(), i);
-		
-		mc.displayGuiScreen(null);
-		
 		/*
 		 * Nice little hack to simulate a right click on the bed, don't try this at home kids
 		 */
-		RayTraceResult mop = mc.objectMouseOver;
-		// onPlayerRightClick
-		mc.playerController.processRightClickBlock(mc.player, mc.world, mop.getBlockPos(), mop.sideHit, mop.hitVec, mc.player.swingingHand);
+		RayTraceResult mouseOver = mc.objectMouseOver;
+
+		Somnia.eventChannel.sendToServer(PacketHandler.buildRightClickBlockPacket(mouseOver.getBlockPos(), mouseOver.sideHit, (float) mouseOver.hitVec.x, (float) mouseOver.hitVec.y, (float) mouseOver.hitVec.z));
+
+		mc.displayGuiScreen(null);
 	}
 
 	@Override

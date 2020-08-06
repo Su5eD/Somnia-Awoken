@@ -1,16 +1,23 @@
 package com.kingrunes.somnia;
 
+import com.kingrunes.somnia.client.gui.GuiSelectWakeTime;
 import com.kingrunes.somnia.common.CommonProxy;
 import com.kingrunes.somnia.common.PacketHandler;
-import com.kingrunes.somnia.common.network.SyncPacket;
-import com.kingrunes.somnia.common.network.SyncPacketHandler;
 import com.kingrunes.somnia.common.util.SomniaState;
 import com.kingrunes.somnia.server.ServerTickHandler;
 import com.kingrunes.somnia.server.SomniaCommand;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.Mod;
@@ -22,7 +29,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.network.FMLEventChannel;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
@@ -51,7 +57,6 @@ public class Somnia
 
 	public static Logger logger;
 
-	//public static final SimpleNetworkWrapper networkWrapper = NetworkRegistry.INSTANCE.newSimpleChannel(MOD_ID);
 	public static FMLEventChannel eventChannel;
 	
 	public static long clientAutoWakeTime = -1;
@@ -65,7 +70,7 @@ public class Somnia
 	@EventHandler
     public void preInit(FMLPreInitializationEvent event)
 	{
-		logger = LogManager.getLogger();
+		logger = event.getModLog();
 		logger.info("------ Pre-Init -----");
 		event.getModMetadata().version = VERSION;
         proxy.configure(event.getSuggestedConfigurationFile());
@@ -128,10 +133,10 @@ public class Somnia
 	public static long calculateWakeTime(long totalWorldTime, int i)
 	{
 		long l;
-		long timeInDay = totalWorldTime % 24000l;
+		long timeInDay = totalWorldTime % 24000L;
 		l = totalWorldTime - timeInDay + i;
 		if (timeInDay > i)
-			l += 24000l;
+			l += 24000L;
 		return l;
 	}
 
@@ -143,7 +148,7 @@ public class Somnia
 	@SideOnly(Side.CLIENT)
 	public static void renderWorld(float par1, long par2)
 	{
-		if (Minecraft.getMinecraft().player.isPlayerSleeping() && proxy.disableRendering)
+		if (Minecraft.getMinecraft().player.isPlayerSleeping() && CommonProxy.disableRendering)
 		{
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			return;
@@ -154,7 +159,7 @@ public class Somnia
 	public static boolean doMobSpawning(WorldServer par1WorldServer)
 	{
 		boolean defValue = par1WorldServer.getGameRules().getBoolean("doMobSpawning");
-		if (!proxy.disableCreatureSpawning || !defValue)
+		if (!CommonProxy.disableCreatureSpawning || !defValue)
 			return defValue;
 		
 		for (ServerTickHandler serverTickHandler : instance.tickHandlers)
@@ -168,7 +173,7 @@ public class Somnia
 	
 	public static void chunkLightCheck(Chunk chunk)
 	{
-		if (!proxy.disableMoodSoundAndLightCheck)
+		if (!CommonProxy.disableMoodSoundAndLightCheck)
 			chunk.checkLight();
 		
 		for (ServerTickHandler serverTickHandler : instance.tickHandlers)
@@ -182,5 +187,25 @@ public class Somnia
 		}
 		
 		chunk.checkLight();
+	}
+
+	public static EnumActionResult onItemUseFirst(EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, EnumHand hand) {
+		IBlockState state = world.getBlockState(pos);
+
+		if (state.getBlock() == Blocks.BED)
+		{
+			Minecraft minecraft = Minecraft.getMinecraft();
+			ItemStack currentItem = player.inventory.getCurrentItem();
+			if (currentItem != ItemStack.EMPTY && currentItem.getItem() == Items.CLOCK) {
+				if (world.isRemote) {
+					if (minecraft.currentScreen instanceof GuiSelectWakeTime) return EnumActionResult.FAIL;
+					System.out.println(minecraft.player.getDisplayName());
+					minecraft.addScheduledTask(() -> minecraft.displayGuiScreen(new GuiSelectWakeTime()));
+				}
+				return EnumActionResult.SUCCESS;
+			}
+		}
+
+		return EnumActionResult.PASS;
 	}
 }
