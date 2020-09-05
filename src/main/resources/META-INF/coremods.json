@@ -1,0 +1,5 @@
+{
+  "patchServerWorld": "asm/patchServerWorld.js",
+  "patchServerPlayerEntity": "asm/patchServerPlayerEntity.js",
+  "patchMinecraftServer": "asm/patchMinecraftServer.js"
+}
