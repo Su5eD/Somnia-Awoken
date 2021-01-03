@@ -2,7 +2,7 @@ package mods.su5ed.somnia.network;
 
 import io.netty.buffer.ByteBufInputStream;
 import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.api.capability.CapabilityFatigue;
+import mods.su5ed.somnia.api.capability.FatigueCapability;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -82,7 +82,7 @@ public class PacketHandler
 			Somnia.proxy.handlePropUpdatePacket(in);
 			return;
 		}
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			try {
 				byte target = in.readByte();
 				if (target == 0x01) {

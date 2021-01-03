@@ -134,7 +134,7 @@ public class ServerTickHandler
 
 		MinecraftServer server = worldServer.getServer();
 		if (server == null) return;
-		server.getPlayerList().func_232642_a_(new SUpdateTimePacket(worldServer.getGameTime(), worldServer.getDayTime(), worldServer.getGameRules().getBoolean(GameRules.DO_DAYLIGHT_CYCLE)), worldServer.func_234923_W_());
+		server.getPlayerList().func_232642_a_(new SUpdateTimePacket(worldServer.getGameTime(), worldServer.getDayTime(), worldServer.getGameRules().getBoolean(GameRules.DO_DAYLIGHT_CYCLE)), worldServer.getDimensionKey());
 		
 		if (delta > (SomniaConfig.delta/activeTickHandlers))
 			multiplier -= .1d;

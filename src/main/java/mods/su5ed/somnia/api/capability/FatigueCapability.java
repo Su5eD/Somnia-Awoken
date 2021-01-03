@@ -4,7 +4,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 
-public class CapabilityFatigue
+public class FatigueCapability
 {
     @CapabilityInject(IFatigue.class)
     public static Capability<IFatigue> FATIGUE_CAPABILITY = null;

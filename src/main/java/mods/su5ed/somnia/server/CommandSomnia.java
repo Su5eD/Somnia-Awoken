@@ -6,7 +6,7 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.api.capability.CapabilityFatigue;
+import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.common.util.ListUtils;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketPropUpdate;
@@ -24,7 +24,7 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.UUID;
 
-public class SomniaCommand
+public class CommandSomnia
 {
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(Commands.literal("somnia")
@@ -32,9 +32,9 @@ public class SomniaCommand
 				.then(Commands.literal("fatigue")
                     .then(Commands.literal("set")
 						.then(Commands.argument("amount", DoubleArgumentType.doubleArg())
-							.executes(ctx -> SomniaCommand.setFatigue(ctx, DoubleArgumentType.getDouble(ctx, "amount"), null))
+							.executes(ctx -> CommandSomnia.setFatigue(ctx, DoubleArgumentType.getDouble(ctx, "amount"), null))
 								.then(Commands.argument("target", EntityArgument.players())
-									.executes(ctx -> SomniaCommand.setFatigue(ctx, DoubleArgumentType.getDouble(ctx, "amount"), EntityArgument.getPlayer(ctx, "targets")))))))
+									.executes(ctx -> CommandSomnia.setFatigue(ctx, DoubleArgumentType.getDouble(ctx, "amount"), EntityArgument.getPlayer(ctx, "targets")))))))
 				.then(Commands.literal("override")
 					.then(Commands.literal("add")
 						.then(Commands.argument("target", EntityArgument.players())
@@ -43,13 +43,13 @@ public class SomniaCommand
 						.then(Commands.argument("target", EntityArgument.players())
 							.executes(ctx -> removeOverride(EntityArgument.getPlayer(ctx, "target")))))
 					.then(Commands.literal("list")
-						.executes(SomniaCommand::listOverrides))));
+						.executes(CommandSomnia::listOverrides))));
 
 	}
 
 	private static int setFatigue(CommandContext<CommandSource> ctx, double amount, @Nullable ServerPlayerEntity player) throws CommandSyntaxException {
 		ServerPlayerEntity target = player != null ? player : ctx.getSource().asPlayer();
-		target.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		target.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			props.setFatigue(amount);
 			Pair<PacketBuffer, Integer> packet = new PacketPropUpdate(0x01, 0x00, props.getFatigue()).buildPacket();
 			NetworkHandler.sendToClient(packet.getLeft(), packet.getRight(), target);

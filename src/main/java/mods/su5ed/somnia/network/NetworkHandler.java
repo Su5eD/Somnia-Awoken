@@ -29,6 +29,6 @@ public class NetworkHandler {
 
     public static void sendToDimension(PacketBuffer buffer, int packetID, ServerWorld world) {
         ICustomPacket<IPacket<?>> packet = NetworkDirection.PLAY_TO_CLIENT.buildPacket(Pair.of(buffer, packetID), PacketHandler.CHANNEL_ID);
-        world.getServer().getPlayerList().func_232642_a_(packet.getThis(), world.func_234923_W_());
+        world.getServer().getPlayerList().func_232642_a_(packet.getThis(), world.getDimensionKey());
     }
 }

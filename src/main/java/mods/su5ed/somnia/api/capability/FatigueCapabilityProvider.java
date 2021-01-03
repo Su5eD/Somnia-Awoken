@@ -28,7 +28,7 @@ public class FatigueCapabilityProvider implements ICapabilityProvider, ICapabili
     @Override
     @SuppressWarnings("unchecked")
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        if (cap == CapabilityFatigue.FATIGUE_CAPABILITY) return LazyOptional.of(() -> (T) this.instance);
+        if (cap == FatigueCapability.FATIGUE_CAPABILITY) return LazyOptional.of(() -> (T) this.instance);
         return LazyOptional.empty();
     }
 }

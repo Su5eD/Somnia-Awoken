@@ -2,7 +2,6 @@ package mods.su5ed.somnia.common.util;
 
 import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.server.ServerTickHandler;
-import mods.su5ed.somnia.setup.ServerProxy;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.List;
@@ -20,7 +19,7 @@ public enum SomniaState
 	{
 		long totalWorldTime = handler.worldServer.getGameTime();
 		
-		if (!ServerProxy.validSleepPeriod.isTimeWithin(totalWorldTime % 24000))
+		if (!Somnia.validSleepPeriod.isTimeWithin(totalWorldTime % 24000))
 			return NOT_NOW;
 
 		List<ServerPlayerEntity> players = handler.worldServer.getPlayers();

@@ -11,21 +11,43 @@ function initializeCoreMod() {
                 var ASM = Java.type('net.minecraftforge.coremod.api.ASMAPI');
                 var Opcodes = Java.type('org.objectweb.asm.Opcodes');
                 var InsnList = Java.type('org.objectweb.asm.tree.InsnList');
+                var InsnNode = Java.type('org.objectweb.asm.tree.InsnNode');
                 var VarInsnNode = Java.type('org.objectweb.asm.tree.VarInsnNode');
                 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
                 var FieldInsnNode = Java.type('org.objectweb.asm.tree.FieldInsnNode');
                 var LdcInsnNode = Java.type('org.objectweb.asm.tree.LdcInsnNode');
+                var LabelNode = Java.type('org.objectweb.asm.tree.LabelNode');
+                var JumpInsnNode = Java.type('org.objectweb.asm.tree.JumpInsnNode');
+                var TypeInsnNode = Java.type('org.objectweb.asm.tree.TypeInsnNode');
 
-                print("hi every55 im new!")
+                ASM.log("INFO", "Patching class ServerPlayerEntity")
 
-                for(var i=0; i<3; i++) method.instructions.remove(method.instructions.get(90));
+                for (var i = 0; i < method.instructions.size(); i++) {
+                    var node = method.instructions.get(i);
+                    if (node instanceof MethodInsnNode) {
+                        if (node.opcode === Opcodes.INVOKEINTERFACE && node.owner === "java/util/List" && node.name === "isEmpty") {
+                            ASM.log("INFO", "Overriding monsters check")
+                            var jumpInsnNode = method.instructions.get(i + 1);
+                            var list = new InsnList();
+                            var label = new LabelNode();
+                            list.add(label)
+                            list.add(new FieldInsnNode(Opcodes.GETSTATIC, "mods/su5ed/somnia/common/config/SomniaConfig", "ignoreMonsters", "Z"));
+                            list.add(new JumpInsnNode(Opcodes.IFNE, jumpInsnNode.label));
+                            list.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                            list.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/entity/player/PlayerEntity", "isCreative", "()Z", false));
+                            list.add(new JumpInsnNode(Opcodes.IFNE, jumpInsnNode.label));
+                            method.instructions.insert(jumpInsnNode, list);
+                        }
 
-                var insnList = new InsnList();
-                insnList.add(new FieldInsnNode(Opcodes.GETSTATIC, "mods/su5ed/somnia/setup/ServerProxy", "enterSleepPeriod", "Lmods/su5ed/somnia/common/util/TimePeriod;"));
-                insnList.add(new LdcInsnNode(24000));
-                insnList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "mods/su5ed/somnia/common/util/TimePeriod", "isTimeWithin", "(I)Z", false));
-
-                method.instructions.insert(method.instructions.get(89), insnList);
+                        if (node.opcode === Opcodes.INVOKEVIRTUAL && node.owner === "net/minecraft/world/server/ServerWorld" && node.name === "updateAllPlayersSleepingFlag") {
+                            ASM.log("INFO", "Injecting wake time update");
+                            list = new InsnList();
+                            list.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                            list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/Somnia", "updateWakeTime", "(Lnet/minecraft/entity/player/PlayerEntity;)V", false));
+                            method.instructions.insert(node, list);
+                        }
+                    }
+                }
 
                 return method;
             }
@@ -33,7 +55,7 @@ function initializeCoreMod() {
     }
 }
 
-function printInsnNode(index, printTgt) {
-    print(index + " " + printTgt+"|"+printTgt.opcode
+function printInsnNode(index, printTgt, ASMAPI) {
+    ASMAPI.log("INFO", index + " " + printTgt+"|"+printTgt.opcode
         +"|"+printTgt.desc+"|"+printTgt.owner+"|"+printTgt.name+"|"+printTgt["var"]+"|"+printTgt.line)
 }

@@ -14,7 +14,8 @@ function initializeCoreMod() {
                 var VarInsnNode = Java.type('org.objectweb.asm.tree.VarInsnNode');
                 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
 
-                print("hi every22 im new!")
+                ASM.log("DEBUG", "Patching ServerWorld#func_217441_a")
+
                 for(var h = 0; h < 3; h++) {
                     method.instructions.remove(method.instructions.get(68));
                 }
@@ -31,12 +32,14 @@ function initializeCoreMod() {
                 'methodDesc': '()V'
             },
             'transformer': function(method) {
+                var ASM = Java.type('net.minecraftforge.coremod.api.ASMAPI');
                 var Opcodes = Java.type('org.objectweb.asm.Opcodes');
                 var InsnList = Java.type('org.objectweb.asm.tree.InsnList');
                 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
                 var FieldInsnNode = Java.type('org.objectweb.asm.tree.FieldInsnNode');
 
-                print("hi every33 im new!")
+                ASM.log("DEBUG", "Patching ServerChunkProvider#func_217220_m")
+
                 for(var h = 0; h < 4; h++) {
                     method.instructions.remove(method.instructions.get(33));
                 }

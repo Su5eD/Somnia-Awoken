@@ -1,14 +1,15 @@
 package mods.su5ed.somnia;
 
-import mods.su5ed.somnia.api.capability.CapabilityFatigue;
+import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.common.PlayerSleepTickHandler;
 import mods.su5ed.somnia.common.config.ConfigHolder;
 import mods.su5ed.somnia.common.config.SomniaConfig;
 import mods.su5ed.somnia.common.util.SomniaState;
+import mods.su5ed.somnia.common.util.TimePeriod;
 import mods.su5ed.somnia.network.PacketHandler;
+import mods.su5ed.somnia.server.CommandSomnia;
 import mods.su5ed.somnia.server.ForgeEventHandler;
 import mods.su5ed.somnia.server.ServerTickHandler;
-import mods.su5ed.somnia.server.SomniaCommand;
 import mods.su5ed.somnia.setup.ClientProxy;
 import mods.su5ed.somnia.setup.IProxy;
 import mods.su5ed.somnia.setup.ServerProxy;
@@ -44,16 +45,14 @@ public class Somnia
 
     public static Somnia instance;
     public static IProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
-
     public final List<ServerTickHandler> tickHandlers;
     public List<WeakReference<ServerPlayerEntity>> ignoreList;
     public static ForgeEventHandler forgeEventHandler;
-
     public static final Logger LOGGER = LogManager.getLogger();
-
     public static EventNetworkChannel eventChannel;
-
     public static long clientAutoWakeTime = -1;
+    public static TimePeriod enterSleepPeriod;
+    public static TimePeriod validSleepPeriod;
 
     public Somnia() {
         instance = this;
@@ -76,13 +75,16 @@ public class Somnia
         eventChannel.registerObject(new PacketHandler());
 
         proxy.register();
-        CapabilityFatigue.register();
+        FatigueCapability.register();
+
+        enterSleepPeriod = new TimePeriod(SomniaConfig.enterSleepStart, SomniaConfig.enterSleepEnd);
+        validSleepPeriod = new TimePeriod(SomniaConfig.validSleepStart, SomniaConfig.validSleepEnd);
     }
 
     @SubscribeEvent
     @SuppressWarnings("unused")
     public void onCommandRegister(RegisterCommandsEvent event) {
-        SomniaCommand.register(event.getDispatcher());
+        CommandSomnia.register(event.getDispatcher());
     }
 
     public static String timeStringForWorldTime(long time)
@@ -149,5 +151,18 @@ public class Somnia
         }
 
         throw new IllegalStateException("tickHandlers doesn't contain match for given world server");
+    }
+
+    @SuppressWarnings("unused")
+    public static void updateWakeTime(PlayerEntity player) {
+        if (clientAutoWakeTime != -1) return; //Don't change the wake time if it's already been selected
+        long totalWorldTime = player.world.getGameTime();
+        Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
+    }
+
+    public static boolean checkFatigue(PlayerEntity player) {
+        return player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null)
+            .map(props -> player.isCreative() || props.getFatigue() >= SomniaConfig.minimumFatigueToSleep)
+            .orElse(false);
     }
 }

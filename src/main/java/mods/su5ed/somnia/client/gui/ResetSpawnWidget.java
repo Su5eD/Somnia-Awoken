@@ -1,6 +1,6 @@
 package mods.su5ed.somnia.client.gui;
 
-import mods.su5ed.somnia.api.capability.CapabilityFatigue;
+import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketPropUpdate;
 import net.minecraft.client.Minecraft;
@@ -23,7 +23,7 @@ public class ResetSpawnWidget extends Widget {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+        mc.player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
             props.shouldResetSpawn(this.resetSpawn);
             Pair<PacketBuffer, Integer> packet = new PacketPropUpdate(0x01, 0x01, props.resetSpawn()).buildPacket();
             NetworkHandler.sendToServer(packet.getLeft(), packet.getRight());

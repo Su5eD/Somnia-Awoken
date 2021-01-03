@@ -1,7 +1,7 @@
 package mods.su5ed.somnia.server;
 
 import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.api.capability.CapabilityFatigue;
+import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.api.capability.FatigueCapabilityProvider;
 import mods.su5ed.somnia.client.gui.GuiSelectWakeTime;
 import mods.su5ed.somnia.common.PlayerSleepTickHandler;
@@ -22,15 +22,16 @@ import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
+import net.minecraftforge.event.entity.player.*;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -53,7 +54,7 @@ public class ForgeEventHandler
 		
 		PlayerEntity player = event.player;
 
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			double fatigue = props.getFatigue();
 
 			boolean isSleeping = PlayerSleepTickHandler.serverState.sleepOverride || player.isSleeping();
@@ -112,7 +113,7 @@ public class ForgeEventHandler
 	@SuppressWarnings("unused")
 	public void onWakeUp(PlayerWakeUpEvent event) {
 		PlayerEntity player = event.getPlayer();
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			props.maxFatigueCounter();
 			props.shouldResetSpawn(true);
 		});
@@ -124,13 +125,33 @@ public class ForgeEventHandler
 
 	private final ResourceLocation CHARM_SLEEP =  new ResourceLocation("darkutils", "charm_sleep");
 
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
+	public void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
+		System.out.println(SomniaConfig.enterSleepEnd);
+		if (!Somnia.enterSleepPeriod.isTimeWithin(24000)) event.setResult(Event.Result.DENY);
+		else event.setResult(Event.Result.ALLOW);
+	}
+
+	@SubscribeEvent
+	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
+		PlayerEntity player = event.getPlayer();
+		if (!Somnia.checkFatigue(player)) {
+			player.sendStatusMessage(new TranslationTextComponent("somnia.status.cooldown"), true);
+			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
+		}
+		else if (!SomniaConfig.sleepWithArmor && !player.isCreative() && Somnia.doesPlayHaveAnyArmor(player)) {
+			player.sendStatusMessage(new TranslationTextComponent("somnia.status.armor"), true);
+			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
+		}
+	}
+
 	@SubscribeEvent
 	@SuppressWarnings("unused")
 	public void onPlayerClone(PlayerEvent.Clone event) {
 		if (!event.getEntity().world.isRemote) {
-			event.getOriginal().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+			event.getOriginal().getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 				CompoundNBT old = props.serializeNBT();
-				event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(fatigue -> {
+				event.getPlayer().getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(fatigue -> {
 					fatigue.deserializeNBT(old);
 				});
 			});
@@ -156,7 +177,7 @@ public class ForgeEventHandler
 	}
 
 	private void sync(ServerPlayerEntity player) {
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			Pair<PacketBuffer, Integer> packet = new PacketPropUpdate(0x01, 0x00, props.getFatigue()).buildPacket();
 			NetworkHandler.sendToClient(packet.getLeft(), packet.getRight(), player);
 		});
