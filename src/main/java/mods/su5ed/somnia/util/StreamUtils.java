@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.common.util;
+package mods.su5ed.somnia.util;
 
 import com.google.common.base.Charsets;
 import net.minecraft.network.PacketBuffer;

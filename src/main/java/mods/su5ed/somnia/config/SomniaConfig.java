@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.common.config;
+package mods.su5ed.somnia.config;
 
 public class SomniaConfig {
     //Fatigue
@@ -40,7 +40,6 @@ public class SomniaConfig {
     public static boolean muteSoundWhenSleeping;
     public static boolean sleepWithArmor;
     public static boolean somniaGui;
-    public static boolean vanillaBugFixes;
     public static String wakeTimeSelectItem;
 
     //Performance

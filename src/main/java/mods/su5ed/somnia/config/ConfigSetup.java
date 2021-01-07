@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.common.config;
+package mods.su5ed.somnia.config;
 
 import mods.su5ed.somnia.Somnia;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -14,11 +14,19 @@ public class ConfigSetup {
     public static void onModConfig(ModConfig.ModConfigEvent event) {
         ForgeConfigSpec spec = event.getConfig().getSpec();
         if (spec == ConfigHolder.COMMON_SPEC) updateCommonConfig();
+        else if (spec == ConfigHolder.CLIENT_SPEC) updateClientConfig();
+    }
+
+    private static void updateClientConfig() {
+        SomniaConfig.displayFatigue = ConfigHolder.CLIENT.displayFatigue.get();
+        SomniaConfig.displayETASleep = ConfigHolder.CLIENT.displayETASleep.get();
+
+        SomniaConfig.somniaGui = ConfigHolder.CLIENT.somniaGui.get();
+
+        SomniaConfig.disableRendering = ConfigHolder.CLIENT.disableRendering.get();
     }
 
     private static void updateCommonConfig() {
-        SomniaConfig.displayFatigue = ConfigHolder.COMMON.displayFatigue.get();
-        SomniaConfig.displayETASleep = ConfigHolder.COMMON.displayETASleep.get();
         SomniaConfig.fatigueRate = ConfigHolder.COMMON.fatigueRate.get();
         SomniaConfig.fatigueReplenishRate = ConfigHolder.COMMON.fatigueReplenishRate.get();
         SomniaConfig.fatigueSideEffects = ConfigHolder.COMMON.fatigueSideEffects.get();
@@ -51,13 +59,10 @@ public class ConfigSetup {
         SomniaConfig.ignoreMonsters = ConfigHolder.COMMON.ignoreMonsters.get();
         SomniaConfig.muteSoundWhenSleeping = ConfigHolder.COMMON.muteSoundWhenSleeping.get();
         SomniaConfig.sleepWithArmor = ConfigHolder.COMMON.sleepWithArmor.get();
-        SomniaConfig.somniaGui = ConfigHolder.COMMON.somniaGui.get();
-        SomniaConfig.vanillaBugFixes = ConfigHolder.COMMON.vanillaBugFixes.get();
         SomniaConfig.wakeTimeSelectItem = ConfigHolder.COMMON.wakeTimeSelectItem.get();
     
         SomniaConfig.disableCreatureSpawning = ConfigHolder.COMMON.disableCreatureSpawning.get();
         SomniaConfig.disableMoodSoundAndLightCheck = ConfigHolder.COMMON.disableMoodSoundAndLightCheck.get();
-        SomniaConfig.disableRendering = ConfigHolder.COMMON.disableRendering.get();
     
         SomniaConfig.enterSleepStart = ConfigHolder.COMMON.enterSleepStart.get();
         SomniaConfig.enterSleepEnd = ConfigHolder.COMMON.enterSleepEnd.get();

@@ -5,7 +5,7 @@ import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.api.capability.FatigueCapabilityProvider;
 import mods.su5ed.somnia.client.gui.WakeTimeSelectScreen;
 import mods.su5ed.somnia.common.PlayerSleepTickHandler;
-import mods.su5ed.somnia.common.config.SomniaConfig;
+import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketOpenGUI;
 import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
@@ -25,6 +25,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.*;
@@ -38,14 +39,17 @@ import java.util.Iterator;
 public class ForgeEventHandler
 {
 	@SubscribeEvent
-	public void onEntityCapabilityAttach(AttachCapabilitiesEvent<Entity> event)
-	{
+	public void onEntityCapabilityAttach(AttachCapabilitiesEvent<Entity> event) {
 		event.addCapability(new ResourceLocation(Somnia.MODID, "fatigue"), new FatigueCapabilityProvider());
 	}
 
 	@SubscribeEvent
-	public void onPlayerTick(TickEvent.PlayerTickEvent event)
-	{
+	public void onCommandRegister(RegisterCommandsEvent event) {
+		CommandSomnia.register(event.getDispatcher());
+	}
+
+	@SubscribeEvent
+	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase != TickEvent.Phase.START || event.player.world.isRemote || (event.player.isCreative() && !event.player.isSleeping())) return;
 
 		event.player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
@@ -53,44 +57,35 @@ public class ForgeEventHandler
 
 			boolean isSleeping = PlayerSleepTickHandler.serverState.sleepOverride || event.player.isSleeping();
 
-			if (isSleeping)
-				fatigue -= SomniaConfig.fatigueReplenishRate;
-			else
-				fatigue += SomniaConfig.fatigueRate;
+			if (isSleeping) fatigue -= SomniaConfig.fatigueReplenishRate;
+			else fatigue += SomniaConfig.fatigueRate;
 
-			if (fatigue > 100)
-				fatigue = 100;
-			else if (fatigue < 0)
-				fatigue = 0;
+			if (fatigue > 100) fatigue = 100;
+			else if (fatigue < 0) fatigue = 0;
 
 			props.setFatigue(fatigue);
-			if (props.updateFatigueCounter() >= 100)
-			{
+			if (props.updateFatigueCounter() >= 100) {
 				props.resetFatigueCounter();
 				NetworkHandler.sendToClient(new PacketUpdateFatigue(fatigue), (ServerPlayerEntity) event.player);
 
 				// Side effects
-				if (SomniaConfig.fatigueSideEffects)
-				{
+				if (SomniaConfig.fatigueSideEffects) {
 					int lastSideEffectStage = props.getSideEffectStage();
-					if (fatigue > SomniaConfig.sideEffectStage1 && lastSideEffectStage < SomniaConfig.sideEffectStage1)
-					{
+					if (fatigue > SomniaConfig.sideEffectStage1 && lastSideEffectStage < SomniaConfig.sideEffectStage1) {
 						props.setSideEffectStage(SomniaConfig.sideEffectStage1);
 						event.player.addPotionEffect(new EffectInstance(Effect.get(SomniaConfig.sideEffectStage1Potion), SomniaConfig.sideEffectStage1Duration, SomniaConfig.sideEffectStage1Amplifier));
 					}
-					else if (fatigue > SomniaConfig.sideEffectStage2 && lastSideEffectStage < SomniaConfig.sideEffectStage2)
-					{
+					else if (fatigue > SomniaConfig.sideEffectStage2 && lastSideEffectStage < SomniaConfig.sideEffectStage2) {
 						props.setSideEffectStage(SomniaConfig.sideEffectStage2);
 						event.player.addPotionEffect(new EffectInstance(Effect.get(SomniaConfig.sideEffectStage2Potion), SomniaConfig.sideEffectStage2Duration, SomniaConfig.sideEffectStage2Amplifier));
 					}
-					else if (fatigue > SomniaConfig.sideEffectStage3 && lastSideEffectStage < SomniaConfig.sideEffectStage3)
-					{
+					else if (fatigue > SomniaConfig.sideEffectStage3 && lastSideEffectStage < SomniaConfig.sideEffectStage3) {
 						props.setSideEffectStage(SomniaConfig.sideEffectStage3);
 						event.player.addPotionEffect(new EffectInstance(Effect.get(SomniaConfig.sideEffectStage3Potion), SomniaConfig.sideEffectStage3Duration, SomniaConfig.sideEffectStage3Amplifier));
 					}
-					else if (fatigue > SomniaConfig.sideEffectStage4)
+					else if (fatigue > SomniaConfig.sideEffectStage4) {
 						event.player.addPotionEffect(new EffectInstance(Effect.get(SomniaConfig.sideEffectStage4Potion), 150, SomniaConfig.sideEffectStage4Amplifier));
-					else if (fatigue < SomniaConfig.sideEffectStage1) {
+					} else if (fatigue < SomniaConfig.sideEffectStage1) {
 						props.setSideEffectStage(-1);
 						if (lastSideEffectStage < SomniaConfig.sideEffectStage2) event.player.removePotionEffect(Effect.get(SomniaConfig.sideEffectStage2Potion));
 						else if (lastSideEffectStage < SomniaConfig.sideEffectStage3) event.player.removePotionEffect(Effect.get(SomniaConfig.sideEffectStage3Potion));

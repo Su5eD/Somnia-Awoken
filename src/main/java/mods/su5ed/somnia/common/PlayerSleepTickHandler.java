@@ -1,6 +1,6 @@
 package mods.su5ed.somnia.common;
 
-import mods.su5ed.somnia.common.config.SomniaConfig;
+import mods.su5ed.somnia.config.SomniaConfig;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

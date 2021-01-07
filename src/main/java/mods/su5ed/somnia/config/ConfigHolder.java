@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.common.config;
+package mods.su5ed.somnia.config;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
@@ -6,20 +6,52 @@ import org.apache.commons.lang3.tuple.Pair;
 public class ConfigHolder {
     
     public static final ForgeConfigSpec COMMON_SPEC;
+    public static final ForgeConfigSpec CLIENT_SPEC;
 
     protected static CommonConfig COMMON;
+    protected static ClientConfig CLIENT;
 
     static {
-        {
-            Pair<CommonConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(CommonConfig::new);
-            COMMON = specPair.getLeft();
-            COMMON_SPEC = specPair.getRight();
+        Pair<CommonConfig, ForgeConfigSpec> CommonSpecPair = new ForgeConfigSpec.Builder().configure(CommonConfig::new);
+        COMMON = CommonSpecPair.getLeft();
+        COMMON_SPEC = CommonSpecPair.getRight();
+
+        Pair<ClientConfig, ForgeConfigSpec> clientSpecPair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
+        CLIENT = clientSpecPair.getLeft();
+        CLIENT_SPEC = clientSpecPair.getRight();
+    }
+
+    protected static final class ClientConfig {
+        protected final ForgeConfigSpec.ConfigValue<String> displayFatigue;
+        protected final ForgeConfigSpec.ConfigValue<String> displayETASleep;
+        protected final ForgeConfigSpec.BooleanValue somniaGui;
+        protected final ForgeConfigSpec.BooleanValue disableRendering;
+
+        public ClientConfig(ForgeConfigSpec.Builder builder) {
+            builder.push("fatigue");
+            displayFatigue = builder
+                    .comment("The fatigue counter's position. Accepted values: tc (top center), tl (top left), tr (top right), bc (bottom center), bl (bottom left), br (bottom right)")
+                    .define("displayFatigue", "br");
+            displayETASleep = builder
+                    .comment("The ETA and multiplier display position in Somnia's sleep gui. Accepted values: right, center, left")
+                    .define("displayETASleep", "left");
+            builder.pop();
+
+            builder.push("options");
+            somniaGui = builder
+                    .comment("Provides an enhanced sleeping gui")
+                    .define("somniaGui", true);
+            builder.pop();
+
+            builder.push("performance");
+            disableRendering = builder
+                    .comment("Disable rendering while you're asleep")
+                    .define("disableRendering", false);
+            builder.pop();
         }
     }
 
     protected static final class CommonConfig {
-        public final ForgeConfigSpec.ConfigValue<String> displayFatigue;
-        protected final ForgeConfigSpec.ConfigValue<String> displayETASleep;
         protected final ForgeConfigSpec.ConfigValue<Double> fatigueRate;
         protected final ForgeConfigSpec.ConfigValue<Double> fatigueReplenishRate;
         protected final ForgeConfigSpec.BooleanValue fatigueSideEffects;
@@ -52,13 +84,10 @@ public class ConfigHolder {
         protected final ForgeConfigSpec.BooleanValue ignoreMonsters;
         protected final ForgeConfigSpec.BooleanValue muteSoundWhenSleeping;
         protected final ForgeConfigSpec.BooleanValue sleepWithArmor;
-        protected final ForgeConfigSpec.BooleanValue somniaGui;
-        protected final ForgeConfigSpec.BooleanValue vanillaBugFixes;
         protected final ForgeConfigSpec.ConfigValue<String> wakeTimeSelectItem;
 
         protected final ForgeConfigSpec.BooleanValue disableCreatureSpawning;
         protected final ForgeConfigSpec.BooleanValue disableMoodSoundAndLightCheck;
-        protected final ForgeConfigSpec.BooleanValue disableRendering;
 
         protected final ForgeConfigSpec.ConfigValue<Integer> enterSleepStart;
         protected final ForgeConfigSpec.ConfigValue<Integer> enterSleepEnd;
@@ -68,12 +97,6 @@ public class ConfigHolder {
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
             builder.push("fatigue");
-            displayFatigue = builder
-                    .comment("The fatigue counter's position. Accepted values: tc (top center), tl (top left), tr (top right), bc (bottom center), bl (bottom left), br (bottom right)")
-                    .define("displayFatigue", "br");
-            displayETASleep = builder
-                    .comment("The ETA and multiplier display position in somnia's sleep gui. Accepted values: right, center, left")
-                    .define("displayETASleep", "left");
             fatigueRate = builder
                     .comment("Fatigue is incremented by this number every tick")
                     .define("fatigueRate", 0.00208);
@@ -86,7 +109,6 @@ public class ConfigHolder {
             minimumFatigueToSleep = builder
                     .comment("The required amount of fatigue to sleep")
                     .define("minimumFatigueToSleep", 20);
-
             builder.pop();
 
             builder.comment("Fatigue levels to enter each side effect stage, their potion IDs, amplifiers and duration (ticks)").push("fatigueSideEffects");
@@ -138,7 +160,6 @@ public class ConfigHolder {
             sideEffectStage4Amplifier = builder
                     .comment("Potion effect amplifier of the fourth stage")
                     .define("sideEffectStage4Amplifier", 3);
-
             builder.pop();
 
             builder.push("logic");
@@ -151,7 +172,6 @@ public class ConfigHolder {
             multiplierCap = builder
                     .comment("Maximum tick speed multiplier, activated during sleep")
                     .define("multiplierCap", 100D);
-
             builder.pop();
 
             builder.push("options");
@@ -167,16 +187,9 @@ public class ConfigHolder {
             sleepWithArmor = builder
                     .comment("Allows you to sleep with armor equipped")
                     .define("sleepWithArmor", false);
-            somniaGui = builder
-                    .comment("Provides an enhanced sleeping gui")
-                    .define("somniaGui", true);
-            vanillaBugFixes = builder
-                    .comment("Applies a very small FOV while sleeping, because a vanilla bug makes you face in a wrong direction when your bed doesn't face north")
-                    .define("vanillaBugFixes", true);
             wakeTimeSelectItem = builder
                     .comment("the item used to select wake time")
                     .define("wakeTimeSelectItem","minecraft:clock");
-
             builder.pop();
 
             builder.push("performance");
@@ -186,10 +199,6 @@ public class ConfigHolder {
             disableMoodSoundAndLightCheck = builder
                     .comment("Disabled chunk light checking from being called every tick while you sleep")
                     .define("disableMoodSoundAndLightCheck", false);
-            disableRendering = builder
-                    .comment("Disable rendering while you're asleep")
-                    .define("disableRendering", false);
-
             builder.pop();
 
             builder.push("timings");
@@ -206,7 +215,6 @@ public class ConfigHolder {
             validSleepEnd = builder
                     .comment("Specifies the end of the valid sleep period")
                     .defineInRange("validSleepEnd", 24000, 0, 24000);
-
             builder.pop();
         }
     }

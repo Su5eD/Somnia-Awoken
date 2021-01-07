@@ -2,7 +2,7 @@ package mods.su5ed.somnia.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.common.config.SomniaConfig;
+import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
 import net.minecraft.client.Minecraft;
@@ -14,52 +14,34 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.SoundCategory;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.lwjgl.opengl.GL11.*;
 
-public class ClientTickHandler
-{
+public class ClientTickHandler {
 	private final Minecraft mc = Minecraft.getInstance();
+	private final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
+	private final List<Double> speedValues = new ArrayList<>();
+	public long startTicks = -1L;
+	public double speed = 0;
 
-	public static final String  COLOR = new String(new char[]{ (char)167 }),
-								WHITE = COLOR+"f",
-								RED = COLOR+"c",
-								DARK_RED = COLOR+"4",
-								GOLD = COLOR+"6";
-
-	private static final String FATIGUE_FORMAT = WHITE + "Fatigue: %.2f";
-	public static final String  TRANSLATION_FORMAT = "somnia.status.%s",
-								SPEED_FORMAT = "%sx%s",
-								ETA_FORMAT = WHITE + "(%s:%s)";
-
-	public static final byte[]	BYTES_WHITE = new byte[]{ (byte) 255, (byte) 255, (byte) 255 },
-								BYTES_DARK_RED = new byte[]{ (byte) 171, 0, 0 },
-								BYTES_RED = new byte[]{ (byte) 255, 0, 0 },
-								BYTES_GOLD = new byte[]{ (byte) 240, (byte) 200, 30 };
-	
-	private boolean moddedFOV = false;
-	private double fov = -1;
 	private boolean muted = false;
 	private float defVol;
 
-	private final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
-
-	public long startTicks = -1L;
-	public double speed = 0;
-	private final List<Double> speedValues = new ArrayList<>();
 	public ClientTickHandler() {
+		MinecraftForge.EVENT_BUS.register(this);
+
 		CompoundNBT clockNbt = new CompoundNBT();
 		clockNbt.putBoolean("quark:clock_calculated", true);
 		this.clockItemStack.setTag(clockNbt); //Disables Quark's clock display override
 	}
 	
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onClientTick(TickEvent.ClientTickEvent event) {
 		if (event.phase == TickEvent.Phase.END) tickEnd();
 	}
@@ -75,56 +57,23 @@ public class ClientTickHandler
 		if (mc.player == null) return;
 
 		if (SomniaConfig.disableRendering) {
-			if (mc.player.isSleeping()) mc.skipRenderWorld = true;
-			else mc.skipRenderWorld = false;
-		}
-		
-		/*
-		 * Fixes some rendering issues with high FOVs when the GUIs are open during sleep
-		 */
-		if (mc.player.isSleeping())
-		{
-			if (SomniaConfig.vanillaBugFixes)
-			{
-				if (!moddedFOV)
-				{
-					moddedFOV = true;
-					if (mc.gameSettings.fov >= 0.75352114)
-					{
-						this.fov = mc.gameSettings.fov;
-						mc.gameSettings.fov = 0.7253521f;
-					}
-				}
-			}
-		}
-		else if (moddedFOV)
-		{
-			moddedFOV = false;
-			if (fov > .0f)
-				mc.gameSettings.fov = this.fov;
+			mc.skipRenderWorld = mc.player.isSleeping();
 		}
 		
 		/*
 		 * If the player is sleeping and the player has chosen the 'muteSoundWhenSleeping' option in the config,
 		 * set the master volume to 0
 		 */
-		
-		if (mc.player.isSleeping())
-		{
-			if (SomniaConfig.muteSoundWhenSleeping)
-			{
-				if (!muted)
-				{
+		if (mc.player.isSleeping()) {
+			if (SomniaConfig.muteSoundWhenSleeping) {
+				if (!muted) {
 					muted = true;
 					defVol = mc.gameSettings.getSoundLevel(SoundCategory.MASTER);
 					mc.gameSettings.setSoundLevel(SoundCategory.MASTER, .0f);
 				}
 			}
-		}
-		else
-		{
-			if (muted)
-			{
+		} else {
+			if (muted) {
 				muted = false;
 				mc.gameSettings.setSoundLevel(SoundCategory.MASTER, defVol);
 			}
@@ -134,8 +83,7 @@ public class ClientTickHandler
 		 * Note the isPlayerSleeping() check. Without this, the mod exploits a bug which exists in vanilla Minecraft which
 		 * allows the player to teleport back to there bed from anywhere in the world at any time.
 		 */
-		if (Somnia.clientAutoWakeTime > -1 && mc.player.isSleeping() && mc.world.getGameTime() >= Somnia.clientAutoWakeTime)
-		{
+		if (Somnia.clientAutoWakeTime > -1 && mc.player.isSleeping() && mc.world.getGameTime() >= Somnia.clientAutoWakeTime) {
 			Somnia.clientAutoWakeTime = -1;
 			NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
 		}
@@ -143,8 +91,7 @@ public class ClientTickHandler
 	
 	@SubscribeEvent
 	@SuppressWarnings("unused")
-	public void onRenderTick(TickEvent.RenderTickEvent event)
-	{
+	public void onRenderTick(TickEvent.RenderTickEvent event) {
 		if (mc.currentScreen != null && !(mc.currentScreen instanceof IngameMenuScreen)) {
 			if (mc.player == null || !mc.player.isSleeping()) return;
 		}
@@ -153,7 +100,7 @@ public class ClientTickHandler
 		MatrixStack matrixStack = new MatrixStack();
 		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative()) {
 			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && SomniaClient.playerFatigue > SomniaConfig.minimumFatigueToSleep) return;
-			String str = String.format(FATIGUE_FORMAT, SomniaClient.playerFatigue);
+			String str = String.format(SpeedColor.WHITE.code + "Fatigue: %.2f", SomniaClient.playerFatigue);
 			int x, y, stringWidth = fontRenderer.getStringWidth(str);
 			int scaledWidth = mc.getMainWindow().getScaledWidth();
 			int scaledHeight = mc.getMainWindow().getScaledHeight();
@@ -198,14 +145,9 @@ public class ClientTickHandler
 
 	private void renderSleepGui(MatrixStack matrixStack, Screen screen) {
 		boolean currentlySleeping = speed != 0;
-		if (currentlySleeping)
-		{
-			if (startTicks == -1L)
-				startTicks = this.mc.world.getGameTime();
-		}
-		else
-			startTicks = -1L;
-
+		if (currentlySleeping) {
+			if (startTicks == -1L) startTicks = this.mc.world.getGameTime();
+		} else startTicks = -1L;
 
 		/*
 		 * GL stuff
@@ -220,17 +162,16 @@ public class ClientTickHandler
 		 * ETA
 		 * Clock
 		 */
-		if (startTicks != -1L && Somnia.clientAutoWakeTime != -1)
-		{
+		if (startTicks != -1L && Somnia.clientAutoWakeTime != -1) {
 			// Progress Bar
 			mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
 
-			double 	rel = mc.world.getGameTime()-startTicks,
-					diff = Somnia.clientAutoWakeTime-startTicks,
-					progress = rel / diff;
+			double rel = mc.world.getGameTime()-startTicks,
+   	    	       diff = Somnia.clientAutoWakeTime-startTicks,
+                   progress = rel / diff;
 
-			int 	x = 20,
-					maxWidth = (screen.width-(x*2));
+			int x = 20,
+				maxWidth = (screen.width-(x*2));
 
 			glEnable(GL_BLEND);
 			glColor4f(1.0f, 1.0f, 1.0f, .2f);
@@ -242,7 +183,7 @@ public class ClientTickHandler
 
 			// Multiplier
 			int offsetX = SomniaConfig.displayETASleep.equals("center") ? screen.width/2 - 80 : SomniaConfig.displayETASleep.equals("right") ? maxWidth - 160 : 0;
-			renderScaledString(matrixStack, x + offsetX, 20, 1.5f, SPEED_FORMAT, getColorStringForSpeed(speed), speed);
+			renderScaledString(matrixStack, x + offsetX, 20, 1.5f, "%sx%s", SpeedColor.getColorForSpeed(speed).code, speed);
 
 			// ETA
 			double total = 0.0d;
@@ -255,15 +196,14 @@ public class ClientTickHandler
 			int etaSeconds = etaTotalSeconds % 60,
 					etaMinutes = (etaTotalSeconds-etaSeconds) / 60;
 
-			renderScaledString(matrixStack, x + 50 + 10 + offsetX, 20, 1.5f, ETA_FORMAT, (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
+			renderScaledString(matrixStack, x + 50 + 10 + offsetX, 20, 1.5f, SpeedColor.WHITE.code + "(%s:%s)", (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
 
 			// Clock
 			renderClock(maxWidth - 40, 30, 4.0f);
 		}
 	}
 
-	private void renderProgressBar(MatrixStack matrixStack, int x, int y, int maxWidth, double progress)
-	{
+	private void renderProgressBar(MatrixStack matrixStack, int x, int y, int maxWidth, double progress) {
 		int amount = (int) (progress * maxWidth);
 		while (amount > 0)
 		{
@@ -306,27 +246,29 @@ public class ClientTickHandler
 		glPopMatrix();
 	}
 
-	public static byte[] getColorForSpeed(double speed)
-	{
-		if (speed < 8)
-			return BYTES_WHITE;
-		else if (speed < 20)
-			return BYTES_DARK_RED;
-		else if (speed < 30)
-			return BYTES_RED;
-		else
-			return BYTES_GOLD;
-	}
+	public enum SpeedColor {
+		WHITE("§f", 8),
+		DARK_RED("§4", 20),
+		RED("§c", 30),
+		GOLD("§6", 100);
 
-	public static String getColorStringForSpeed(double speed)
-	{
-		if (speed < 8)
-			return WHITE;
-		else if (speed < 20)
-			return DARK_RED;
-		else if (speed < 30)
-			return RED;
-		else
-			return GOLD;
+		public static final Set<SpeedColor> VALUES = Arrays.stream(values())
+				.sorted(Comparator.comparing(color -> color.range))
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+		public final String code;
+		public final double range;
+
+		SpeedColor(String code, double range) {
+			this.code = code;
+			this.range = range;
+		}
+
+		public static SpeedColor getColorForSpeed(double speed) {
+			for (SpeedColor color : VALUES) {
+				if (speed < color.range) return color;
+			}
+
+			return SpeedColor.WHITE;
+		}
 	}
 }
