@@ -38,14 +38,12 @@ import java.util.Iterator;
 public class ForgeEventHandler
 {
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onEntityCapabilityAttach(AttachCapabilitiesEvent<Entity> event)
 	{
 		event.addCapability(new ResourceLocation(Somnia.MODID, "fatigue"), new FatigueCapabilityProvider());
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onPlayerTick(TickEvent.PlayerTickEvent event)
 	{
 		if (event.phase != TickEvent.Phase.START || event.player.world.isRemote || (event.player.isCreative() && !event.player.isSleeping())) return;
@@ -105,7 +103,6 @@ public class ForgeEventHandler
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onWakeUp(PlayerWakeUpEvent event) {
 		PlayerEntity player = event.getPlayer();
 		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
@@ -138,7 +135,13 @@ public class ForgeEventHandler
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
+	public void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
+		event.getPlayer().getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+			if (!props.resetSpawn()) event.setCanceled(true);
+		});
+	}
+
+	@SubscribeEvent
 	public void onPlayerClone(PlayerEvent.Clone event) {
 		if (!event.getEntity().world.isRemote) {
 			event.getOriginal().getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
@@ -151,19 +154,16 @@ public class ForgeEventHandler
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
 		sync((ServerPlayerEntity) event.getPlayer());
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onPlayerDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
 		sync((ServerPlayerEntity) event.getPlayer());
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
 		sync((ServerPlayerEntity) event.getPlayer());
 	}
@@ -175,7 +175,6 @@ public class ForgeEventHandler
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
 		World world = event.getWorld();
 		BlockPos pos = event.getPos();
@@ -199,7 +198,6 @@ public class ForgeEventHandler
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void worldLoadHook(WorldEvent.Load event) {
 		if (event.getWorld() instanceof ServerWorld) {
 			ServerWorld worldServer = (ServerWorld) event.getWorld();
@@ -209,7 +207,6 @@ public class ForgeEventHandler
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void worldUnloadHook(WorldEvent.Unload event) {
 		if (event.getWorld() instanceof ServerWorld) {
 			ServerWorld worldServer = (ServerWorld) event.getWorld();
@@ -227,7 +224,6 @@ public class ForgeEventHandler
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onPlayerDamage(LivingHurtEvent event) {
 		if (event.getEntityLiving() instanceof ServerPlayerEntity) {
 			if (!(event.getEntityLiving()).isSleeping()) return;

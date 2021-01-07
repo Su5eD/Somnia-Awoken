@@ -134,7 +134,6 @@ public class ClientTickHandler
 		 * Note the isPlayerSleeping() check. Without this, the mod exploits a bug which exists in vanilla Minecraft which
 		 * allows the player to teleport back to there bed from anywhere in the world at any time.
 		 */
-		if (Somnia.clientAutoWakeTime > -1) System.out.println(mc.world.getGameTime() + "  " + Somnia.clientAutoWakeTime + "  " + this.speed);
 		if (Somnia.clientAutoWakeTime > -1 && mc.player.isSleeping() && mc.world.getGameTime() >= Somnia.clientAutoWakeTime)
 		{
 			Somnia.clientAutoWakeTime = -1;
