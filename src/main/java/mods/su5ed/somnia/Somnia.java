@@ -1,23 +1,22 @@
 package mods.su5ed.somnia;
 
 import mods.su5ed.somnia.api.capability.FatigueCapability;
+import mods.su5ed.somnia.client.SomniaClient;
 import mods.su5ed.somnia.common.PlayerSleepTickHandler;
 import mods.su5ed.somnia.common.config.ConfigHolder;
 import mods.su5ed.somnia.common.config.SomniaConfig;
 import mods.su5ed.somnia.common.util.SomniaState;
 import mods.su5ed.somnia.common.util.TimePeriod;
-import mods.su5ed.somnia.network.PacketHandler;
+import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.server.CommandSomnia;
 import mods.su5ed.somnia.server.ForgeEventHandler;
 import mods.su5ed.somnia.server.ServerTickHandler;
-import mods.su5ed.somnia.setup.ClientProxy;
-import mods.su5ed.somnia.setup.IProxy;
-import mods.su5ed.somnia.setup.ServerProxy;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -27,8 +26,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.event.EventNetworkChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,17 +36,13 @@ import java.util.List;
 @Mod("somnia")
 public class Somnia
 {
-    public static final String MOD_ID = "somnia";
-    public static final String NAME = "Somnia";
-    public static final String VERSION = SomniaVersion.getVersionString();
+    public static final String MODID = "somnia";
 
     public static Somnia instance;
-    public static IProxy proxy = DistExecutor.safeRunForDist(() -> ClientProxy::new, () -> ServerProxy::new);
     public final List<ServerTickHandler> tickHandlers;
     public List<WeakReference<ServerPlayerEntity>> ignoreList;
     public static ForgeEventHandler forgeEventHandler;
     public static final Logger LOGGER = LogManager.getLogger();
-    public static EventNetworkChannel eventChannel;
     public static long clientAutoWakeTime = -1;
     public static TimePeriod enterSleepPeriod;
     public static TimePeriod validSleepPeriod;
@@ -71,11 +64,9 @@ public class Somnia
 
     private void setup(final FMLCommonSetupEvent event)
     {
-        eventChannel = NetworkRegistry.newEventChannel(PacketHandler.CHANNEL_ID, () -> "1.0.0", s -> true, s -> true);
-        eventChannel.registerObject(new PacketHandler());
-
-        proxy.register();
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> SomniaClient::register);
         FatigueCapability.register();
+        NetworkHandler.registerMessages();
 
         enterSleepPeriod = new TimePeriod(SomniaConfig.enterSleepStart, SomniaConfig.enterSleepEnd);
         validSleepPeriod = new TimePeriod(SomniaConfig.validSleepStart, SomniaConfig.validSleepEnd);
@@ -117,24 +108,21 @@ public class Somnia
     }
 
     @SuppressWarnings("unused")
-    public static boolean doesPlayHaveAnyArmor(PlayerEntity e)
+    public static boolean doesPlayHaveAnyArmor(PlayerEntity player)
     {
-        ItemStack[] armor = e.inventory.armorInventory.toArray(new ItemStack[0]);
-        for (ItemStack itemStack : armor) {
-            if (itemStack != ItemStack.EMPTY)
-                return true;
+        for (ItemStack stack : player.inventory.armorInventory) {
+            if (!stack.isEmpty()) return true;
         }
         return false;
     }
 
-    public static long calculateWakeTime(long totalWorldTime, int i)
+    public static long calculateWakeTime(long totalWorldTime, int target)
     {
-        long l;
+        long wakeTime;
         long timeInDay = totalWorldTime % 24000L;
-        l = totalWorldTime - timeInDay + i;
-        if (timeInDay > i)
-            l += 24000L;
-        return l;
+        wakeTime = totalWorldTime - timeInDay + target;
+        if (timeInDay > target) wakeTime += 24000L;
+        return wakeTime;
     }
 
     @SuppressWarnings("unused")

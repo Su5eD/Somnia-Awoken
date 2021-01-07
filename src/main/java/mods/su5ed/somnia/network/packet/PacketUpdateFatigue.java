@@ -1,0 +1,30 @@
+package mods.su5ed.somnia.network.packet;
+
+import mods.su5ed.somnia.client.SomniaClient;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.network.NetworkEvent;
+
+import java.util.function.Supplier;
+
+public class PacketUpdateFatigue {
+    private final double fatigue;
+
+    public PacketUpdateFatigue(double fatigue) {
+        this.fatigue = fatigue;
+    }
+
+    public PacketUpdateFatigue(PacketBuffer buffer) {
+        this.fatigue = buffer.readDouble();
+    }
+
+    public void encode(PacketBuffer buffer) {
+        buffer.writeDouble(this.fatigue);
+    }
+
+    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> SomniaClient.playerFatigue = this.fatigue));
+        return true;
+    }
+}

@@ -9,15 +9,13 @@ import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.common.util.ListUtils;
 import mods.su5ed.somnia.network.NetworkHandler;
-import mods.su5ed.somnia.network.packet.PacketPropUpdate;
+import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
@@ -51,8 +49,7 @@ public class CommandSomnia
 		ServerPlayerEntity target = player != null ? player : ctx.getSource().asPlayer();
 		target.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			props.setFatigue(amount);
-			Pair<PacketBuffer, Integer> packet = new PacketPropUpdate(0x01, 0x00, props.getFatigue()).buildPacket();
-			NetworkHandler.sendToClient(packet.getLeft(), packet.getRight(), target);
+			NetworkHandler.sendToClient(new PacketUpdateFatigue(props.getFatigue()), target);
 		});
 		return Command.SINGLE_SUCCESS;
 	}

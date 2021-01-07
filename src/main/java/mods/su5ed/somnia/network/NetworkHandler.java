@@ -1,34 +1,63 @@
 package mods.su5ed.somnia.network;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.network.play.ClientPlayNetHandler;
+import mods.su5ed.somnia.Somnia;
+import mods.su5ed.somnia.network.packet.*;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.IPacket;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.ICustomPacket;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkDirection;
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 public class NetworkHandler {
+    private static int id = 0;
+    private static final String PROTOCOL_VERSION = "1";
+    public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
+            new ResourceLocation(Somnia.MODID, "main"),
+            () -> PROTOCOL_VERSION,
+            PROTOCOL_VERSION::equals,
+            PROTOCOL_VERSION::equals);
 
-    @OnlyIn(Dist.CLIENT)
-    public static void sendToServer(PacketBuffer buffer, int packetID) {
-        ClientPlayNetHandler netHandler = Minecraft.getInstance().getConnection();
-        if (netHandler == null) return;
-        ICustomPacket<IPacket<?>> packet = NetworkDirection.PLAY_TO_SERVER.buildPacket(Pair.of(buffer, packetID), PacketHandler.CHANNEL_ID);
-        netHandler.sendPacket(packet.getThis());
+    public static void registerMessages() {
+        INSTANCE.messageBuilder(PacketOpenGUI.class, id++)
+                .encoder((msg, buf) -> {})
+                .decoder(buf -> new PacketOpenGUI())
+                .consumer(PacketOpenGUI::handle)
+                .add();
+        INSTANCE.messageBuilder(PacketWakeUpPlayer.class, id++)
+                .encoder((msg, buf) -> {})
+                .decoder(buf -> new PacketWakeUpPlayer())
+                .consumer(PacketWakeUpPlayer::handle)
+                .add();
+        INSTANCE.messageBuilder(PacketUpdateSpeed.class, id++)
+                .encoder(PacketUpdateSpeed::encode)
+                .decoder(PacketUpdateSpeed::new)
+                .consumer(PacketUpdateSpeed::handle)
+                .add();
+        INSTANCE.messageBuilder(PacketResetSpawn.class, id++)
+                .encoder(PacketResetSpawn::encode)
+                .decoder(PacketResetSpawn::new)
+                .consumer(PacketResetSpawn::handle)
+                .add();
+        INSTANCE.messageBuilder(PacketUpdateFatigue.class, id++)
+                .encoder(PacketUpdateFatigue::encode)
+                .decoder(PacketUpdateFatigue::new)
+                .consumer(PacketUpdateFatigue::handle)
+                .add();
+        INSTANCE.messageBuilder(PacketActivateBlock.class, id++)
+                .encoder(PacketActivateBlock::encode)
+                .decoder(PacketActivateBlock::new)
+                .consumer(PacketActivateBlock::handle)
+                .add();
     }
 
-    public static void sendToClient(PacketBuffer buffer, int packetID, ServerPlayerEntity player) {
-        ICustomPacket<IPacket<?>> packet = NetworkDirection.PLAY_TO_CLIENT.buildPacket(Pair.of(buffer, packetID), PacketHandler.CHANNEL_ID);
-        player.connection.sendPacket(packet.getThis());
+    public static void sendToClient(Object packet, ServerPlayerEntity player) {
+        INSTANCE.sendTo(packet, player.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
     }
 
-    public static void sendToDimension(PacketBuffer buffer, int packetID, ServerWorld world) {
-        ICustomPacket<IPacket<?>> packet = NetworkDirection.PLAY_TO_CLIENT.buildPacket(Pair.of(buffer, packetID), PacketHandler.CHANNEL_ID);
-        world.getServer().getPlayerList().func_232642_a_(packet.getThis(), world.getDimensionKey());
+    public static void sendToDimension(Object packet, RegistryKey<World> dimension) {
+        INSTANCE.send(PacketDistributor.DIMENSION.with(() -> dimension), packet);
     }
 }

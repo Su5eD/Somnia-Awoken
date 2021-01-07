@@ -1,35 +1,59 @@
 package mods.su5ed.somnia.network.packet;
 
-import mods.su5ed.somnia.network.PacketType;
+import com.google.common.base.MoreObjects;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class PacketActivateBlock extends PacketBase {
+import java.util.function.Supplier;
+
+public class PacketActivateBlock {
     private final BlockPos pos;
     private final Direction side;
-    private final float x;
-    private final float y;
-    private final float z;
+    private final float hitX;
+    private final float hitY;
+    private final float hitZ;
 
-    public PacketActivateBlock(BlockPos pos, Direction side, float x, float y, float z) {
-        super(PacketType.ACTIVATE_BLOCK.ordinal());
+    public PacketActivateBlock(BlockPos pos, Direction side, float hitX, float hitY, float hitZ) {
         this.pos = pos;
         this.side = side;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.hitX = hitX;
+        this.hitY = hitY;
+        this.hitZ = hitZ;
     }
 
-    @Override
-    public void write(PacketBuffer buffer) {
-        buffer.writeByte(this.id);
-        buffer.writeInt(this.pos.getX());
-        buffer.writeInt(this.pos.getY());
-        buffer.writeInt(this.pos.getZ());
-        buffer.writeByte(this.side.ordinal());
-        buffer.writeFloat(this.x);
-        buffer.writeFloat(this.y);
-        buffer.writeFloat(this.z);
+    public PacketActivateBlock(PacketBuffer buffer) {
+        this.pos = buffer.readBlockPos();
+        this.side = Direction.byIndex(buffer.readByte());
+        this.hitX = buffer.readFloat();
+        this.hitY = buffer.readFloat();
+        this.hitZ = buffer.readFloat();
+    }
+
+    public void encode(PacketBuffer buffer) {
+        buffer.writeBlockPos(pos);
+        buffer.writeByte(this.side.getIndex());
+        buffer.writeFloat(this.hitX);
+        buffer.writeFloat(this.hitY);
+        buffer.writeFloat(this.hitZ);
+    }
+
+    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            ServerPlayerEntity player = ctx.get().getSender();
+            if (player != null) {
+                BlockState state = player.world.getBlockState(pos);
+                BlockRayTraceResult rayTraceResult = new BlockRayTraceResult(new Vector3d(this.hitX, this.hitY, this.hitZ), this.side, pos, false);
+
+                state.onBlockActivated(player.world, player, MoreObjects.firstNonNull(player.swingingHand, Hand.MAIN_HAND), rayTraceResult);
+            }
+        });
+        return true;
     }
 }

@@ -3,10 +3,8 @@ package mods.su5ed.somnia.client;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.common.config.SomniaConfig;
-import mods.su5ed.somnia.common.util.StreamUtils;
 import mods.su5ed.somnia.network.NetworkHandler;
-import mods.su5ed.somnia.network.packet.PacketWakePlayer;
-import mods.su5ed.somnia.setup.ClientProxy;
+import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
@@ -15,15 +13,10 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,27 +26,24 @@ public class ClientTickHandler
 {
 	private final Minecraft mc = Minecraft.getInstance();
 
-	public static final String 	COLOR = new String(new char[]{ (char)167 }),
-			BLACK = COLOR+"0",
-			WHITE = COLOR+"f",
-			RED = COLOR+"c",
-			DARK_RED = COLOR+"4",
-			GOLD = COLOR+"6";
+	public static final String  COLOR = new String(new char[]{ (char)167 }),
+								WHITE = COLOR+"f",
+								RED = COLOR+"c",
+								DARK_RED = COLOR+"4",
+								GOLD = COLOR+"6";
 
 	private static final String FATIGUE_FORMAT = WHITE + "Fatigue: %.2f";
-
-	public static final String	TRANSLATION_FORMAT = "somnia.status.%s",
-			SPEED_FORMAT = "%sx%s",
-			ETA_FORMAT = WHITE + "(%s:%s)";
+	public static final String  TRANSLATION_FORMAT = "somnia.status.%s",
+								SPEED_FORMAT = "%sx%s",
+								ETA_FORMAT = WHITE + "(%s:%s)";
 
 	public static final byte[]	BYTES_WHITE = new byte[]{ (byte) 255, (byte) 255, (byte) 255 },
-			BYTES_DARK_RED = new byte[]{ (byte) 171, 0, 0 },
-			BYTES_RED = new byte[]{ (byte) 255, 0, 0 },
-			BYTES_GOLD = new byte[]{ (byte) 240, (byte) 200, 30 };
+								BYTES_DARK_RED = new byte[]{ (byte) 171, 0, 0 },
+								BYTES_RED = new byte[]{ (byte) 255, 0, 0 },
+								BYTES_GOLD = new byte[]{ (byte) 240, (byte) 200, 30 };
 	
 	private boolean moddedFOV = false;
 	private double fov = -1;
-	
 	private boolean muted = false;
 	private float defVol;
 
@@ -62,8 +52,6 @@ public class ClientTickHandler
 	public long startTicks = -1L;
 	public double speed = 0;
 	private final List<Double> speedValues = new ArrayList<>();
-	public String status = "Waiting...";
-
 	public ClientTickHandler() {
 		CompoundNBT clockNbt = new CompoundNBT();
 		clockNbt.putBoolean("quark:clock_calculated", true);
@@ -73,32 +61,18 @@ public class ClientTickHandler
 	@SubscribeEvent
 	@SuppressWarnings("unused")
 	public void onClientTick(TickEvent.ClientTickEvent event) {
-		if (event.phase == TickEvent.Phase.END)
-			tickEnd();
+		if (event.phase == TickEvent.Phase.END) tickEnd();
 	}
 
-	public void readField(DataInputStream in) throws IOException
-	{
-		switch (in.readByte())
-		{
-			case 0x00:
-				speed = in.readDouble();
-				speedValues.add(speed);
-				if (speedValues.size() > 5)
-					speedValues.remove(0);
-				break;
-			case 0x01:
-				String str = StreamUtils.readString(in);
-				status = str.startsWith("f:") ? new TranslationTextComponent(String.format(TRANSLATION_FORMAT, str.substring(2).toLowerCase())).getUnformattedComponentText() : str;
-				break;
-		}
+	public void addSpeedValue(double speed) {
+		this.speed = speed;
+		speedValues.add(speed);
+		if (speedValues.size() > 5) speedValues.remove(0);
 	}
 
-	public void tickEnd()
-	{
+	public void tickEnd() {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.player == null)
-			return;
+		if (mc.player == null) return;
 
 		if (SomniaConfig.disableRendering) {
 			if (mc.player.isSleeping()) mc.skipRenderWorld = true;
@@ -108,7 +82,6 @@ public class ClientTickHandler
 		/*
 		 * Fixes some rendering issues with high FOVs when the GUIs are open during sleep
 		 */
-		
 		if (mc.player.isSleeping())
 		{
 			if (SomniaConfig.vanillaBugFixes)
@@ -161,11 +134,11 @@ public class ClientTickHandler
 		 * Note the isPlayerSleeping() check. Without this, the mod exploits a bug which exists in vanilla Minecraft which
 		 * allows the player to teleport back to there bed from anywhere in the world at any time.
 		 */
+		if (Somnia.clientAutoWakeTime > -1) System.out.println(mc.world.getGameTime() + "  " + Somnia.clientAutoWakeTime + "  " + this.speed);
 		if (Somnia.clientAutoWakeTime > -1 && mc.player.isSleeping() && mc.world.getGameTime() >= Somnia.clientAutoWakeTime)
 		{
 			Somnia.clientAutoWakeTime = -1;
-			Pair<PacketBuffer, Integer> packet = new PacketWakePlayer().buildPacket();
-			NetworkHandler.sendToServer(packet.getLeft(), packet.getRight());
+			NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
 		}
 	}
 	
@@ -180,8 +153,8 @@ public class ClientTickHandler
 		FontRenderer fontRenderer = mc.fontRenderer;
 		MatrixStack matrixStack = new MatrixStack();
 		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative()) {
-			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && ClientProxy.playerFatigue > SomniaConfig.minimumFatigueToSleep) return;
-			String str = String.format(FATIGUE_FORMAT, ClientProxy.playerFatigue);
+			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && SomniaClient.playerFatigue > SomniaConfig.minimumFatigueToSleep) return;
+			String str = String.format(FATIGUE_FORMAT, SomniaClient.playerFatigue);
 			int x, y, stringWidth = fontRenderer.getStringWidth(str);
 			int scaledWidth = mc.getMainWindow().getScaledWidth();
 			int scaledHeight = mc.getMainWindow().getScaledHeight();
@@ -217,7 +190,7 @@ public class ClientTickHandler
 			fontRenderer.drawString(matrixStack, str, x, y, Integer.MIN_VALUE);
 		}
 
-		if (mc.player.isSleeping() && SomniaConfig.somniaGui && ClientProxy.playerFatigue != -1) renderSleepGui(matrixStack, mc.currentScreen);
+		if (mc.player.isSleeping() && SomniaConfig.somniaGui && SomniaClient.playerFatigue != -1) renderSleepGui(matrixStack, mc.currentScreen);
 		else if (startTicks != -1 || speed != 0) {
 			this.startTicks = -1;
 			this.speed = 0;
@@ -225,7 +198,7 @@ public class ClientTickHandler
 	}
 
 	private void renderSleepGui(MatrixStack matrixStack, Screen screen) {
-		boolean currentlySleeping = speed != .0d;
+		boolean currentlySleeping = speed != 0;
 		if (currentlySleeping)
 		{
 			if (startTicks == -1L)
