@@ -8,22 +8,25 @@ function initializeCoreMod() {
                 'methodDesc': '(Ljava/util/function/BooleanSupplier;)V'
             },
             'transformer': function (method) {
-                var ASM = Java.type('net.minecraftforge.coremod.api.ASMAPI');
+                var ASM = Java.type("net.minecraftforge.coremod.api.ASMAPI");
+                var Opcodes = Java.type('org.objectweb.asm.Opcodes');
+                var InsnNode = Java.type("org.objectweb.asm.tree.InsnNode");
 
-                method.instructions.insertBefore(method.instructions.get(252), ASM.buildMethodCall(
-                    "mods/su5ed/somnia/Somnia",
-                    "tick",
-                    "()V",
-                    ASM.MethodType.STATIC
-                ));
+                for (var i = 0; i < method.instructions.size(); i++) {
+                    var instruction = method.instructions.get(i);
+                    if (instruction instanceof InsnNode && instruction.getOpcode() === Opcodes.RETURN) {
+                        method.instructions.insertBefore(instruction, ASM.buildMethodCall(
+                            "mods/su5ed/somnia/util/ASMHooks",
+                            "tick",
+                            "()V",
+                            ASM.MethodType.STATIC
+                        ));
+                        break;
+                    }
+                }
 
                 return method;
             }
         }
     }
-}
-
-function printInsnNode(index, printTgt, ASMAPI) {
-    ASMIAPI.log("DEBUG", index + " " + printTgt+"|"+printTgt.opcode
-        +"|"+printTgt.desc+"|"+printTgt.owner+"|"+printTgt.name+"|"+printTgt["var"]+"|"+printTgt.line)
 }

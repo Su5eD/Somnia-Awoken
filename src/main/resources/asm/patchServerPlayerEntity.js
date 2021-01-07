@@ -11,14 +11,11 @@ function initializeCoreMod() {
                 var ASM = Java.type('net.minecraftforge.coremod.api.ASMAPI');
                 var Opcodes = Java.type('org.objectweb.asm.Opcodes');
                 var InsnList = Java.type('org.objectweb.asm.tree.InsnList');
-                var InsnNode = Java.type('org.objectweb.asm.tree.InsnNode');
                 var VarInsnNode = Java.type('org.objectweb.asm.tree.VarInsnNode');
                 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
                 var FieldInsnNode = Java.type('org.objectweb.asm.tree.FieldInsnNode');
-                var LdcInsnNode = Java.type('org.objectweb.asm.tree.LdcInsnNode');
                 var LabelNode = Java.type('org.objectweb.asm.tree.LabelNode');
                 var JumpInsnNode = Java.type('org.objectweb.asm.tree.JumpInsnNode');
-                var TypeInsnNode = Java.type('org.objectweb.asm.tree.TypeInsnNode');
 
                 ASM.log("INFO", "Patching class ServerPlayerEntity")
 
@@ -43,7 +40,7 @@ function initializeCoreMod() {
                             ASM.log("INFO", "Injecting wake time update");
                             list = new InsnList();
                             list.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                            list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/Somnia", "updateWakeTime", "(Lnet/minecraft/entity/player/PlayerEntity;)V", false));
+                            list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/util/ASMHooks", "updateWakeTime", "(Lnet/minecraft/entity/player/PlayerEntity;)V", false));
                             method.instructions.insert(node, list);
                         }
                     }
@@ -53,9 +50,4 @@ function initializeCoreMod() {
             }
         }
     }
-}
-
-function printInsnNode(index, printTgt, ASMAPI) {
-    ASMAPI.log("INFO", index + " " + printTgt+"|"+printTgt.opcode
-        +"|"+printTgt.desc+"|"+printTgt.owner+"|"+printTgt.name+"|"+printTgt["var"]+"|"+printTgt.line)
 }

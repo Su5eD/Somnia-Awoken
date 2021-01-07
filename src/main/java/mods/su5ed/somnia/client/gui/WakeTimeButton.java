@@ -1,9 +1,10 @@
 package mods.su5ed.somnia.client.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import mods.su5ed.somnia.Somnia;
+import mods.su5ed.somnia.client.SomniaClient;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketActivateBlock;
+import mods.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.math.BlockRayTraceResult;
@@ -20,7 +21,7 @@ public class WakeTimeButton extends Button {
             Minecraft mc = Minecraft.getInstance();
             if (mc.world == null) return;
 
-            Somnia.clientAutoWakeTime = Somnia.calculateWakeTime(mc.world.getGameTime(), (int) wakeTime);
+            SomniaClient.autoWakeTime = SomniaUtil.calculateWakeTime(mc.world.getGameTime(), (int) wakeTime);
             RayTraceResult mouseOver = mc.objectMouseOver;
             if (mouseOver instanceof BlockRayTraceResult) {
                 Vector3d hitVec = mouseOver.getHitVec();
@@ -31,7 +32,7 @@ public class WakeTimeButton extends Button {
             mc.displayGuiScreen(null);
         });
         this.buttonText = buttonText;
-        this.hoverText = Somnia.timeStringForWorldTime(wakeTime);
+        this.hoverText = SomniaUtil.timeStringForWorldTime(wakeTime);
     }
 
     @Override

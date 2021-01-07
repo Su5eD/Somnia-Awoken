@@ -3,6 +3,7 @@ package mods.su5ed.somnia.server;
 import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.api.capability.FatigueCapabilityProvider;
+import mods.su5ed.somnia.client.SomniaClient;
 import mods.su5ed.somnia.client.gui.WakeTimeSelectScreen;
 import mods.su5ed.somnia.common.PlayerSleepTickHandler;
 import mods.su5ed.somnia.config.SomniaConfig;
@@ -10,6 +11,7 @@ import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketOpenGUI;
 import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -106,7 +108,7 @@ public class ForgeEventHandler
 		});
 		
 		if (player.world.isRemote) {
-			Somnia.clientAutoWakeTime = -1;
+			SomniaClient.autoWakeTime = -1;
 		}
 	}
 
@@ -119,11 +121,11 @@ public class ForgeEventHandler
 	@SubscribeEvent
 	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
 		PlayerEntity player = event.getPlayer();
-		if (!Somnia.checkFatigue(player)) {
+		if (!SomniaUtil.checkFatigue(player)) {
 			player.sendStatusMessage(new TranslationTextComponent("somnia.status.cooldown"), true);
 			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
 		}
-		else if (!SomniaConfig.sleepWithArmor && !player.isCreative() && Somnia.doesPlayHaveAnyArmor(player)) {
+		else if (!SomniaConfig.sleepWithArmor && !player.isCreative() && SomniaUtil.doesPlayerWearArmor(player)) {
 			player.sendStatusMessage(new TranslationTextComponent("somnia.status.armor"), true);
 			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
 		}

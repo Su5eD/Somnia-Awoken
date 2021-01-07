@@ -1,0 +1,11 @@
+{
+  "_comment": "Slovak language file for Somnia 1.4 translated by leSamo",
+  "_comment": "If this translation gets outdated, please contact me on Twitter: @leSamoSK",
+
+  "somnia.status.armor": "To brnenie vyzerá nepohodlne",
+  "somnia.status.cooldown": "Ešte nie si ospalý",
+  "somnia.status.expired": "Nemôžeš spať donekonečna",
+  "somnia.status.not_now": "Niečo ťa nenechá spať",
+  "somnia.status.waiting": "Čakám na server",
+  "somnia.status.waiting_players": "Čakám na ostatných hráčov"
+}

@@ -1,7 +1,6 @@
 package mods.su5ed.somnia.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
@@ -55,10 +54,6 @@ public class ClientTickHandler {
 	public void tickEnd() {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;
-
-		if (SomniaConfig.disableRendering) {
-			mc.skipRenderWorld = mc.player.isSleeping();
-		}
 		
 		/*
 		 * If the player is sleeping and the player has chosen the 'muteSoundWhenSleeping' option in the config,
@@ -83,8 +78,8 @@ public class ClientTickHandler {
 		 * Note the isPlayerSleeping() check. Without this, the mod exploits a bug which exists in vanilla Minecraft which
 		 * allows the player to teleport back to there bed from anywhere in the world at any time.
 		 */
-		if (Somnia.clientAutoWakeTime > -1 && mc.player.isSleeping() && mc.world.getGameTime() >= Somnia.clientAutoWakeTime) {
-			Somnia.clientAutoWakeTime = -1;
+		if (SomniaClient.autoWakeTime > -1 && mc.player.isSleeping() && mc.world.getGameTime() >= SomniaClient.autoWakeTime) {
+			SomniaClient.autoWakeTime = -1;
 			NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
 		}
 	}
@@ -162,12 +157,12 @@ public class ClientTickHandler {
 		 * ETA
 		 * Clock
 		 */
-		if (startTicks != -1L && Somnia.clientAutoWakeTime != -1) {
+		if (startTicks != -1L && SomniaClient.autoWakeTime != -1) {
 			// Progress Bar
 			mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
 
 			double rel = mc.world.getGameTime()-startTicks,
-   	    	       diff = Somnia.clientAutoWakeTime-startTicks,
+   	    	       diff = SomniaClient.autoWakeTime -startTicks,
                    progress = rel / diff;
 
 			int x = 20,
@@ -247,14 +242,15 @@ public class ClientTickHandler {
 	}
 
 	public enum SpeedColor {
-		WHITE("§f", 8),
-		DARK_RED("§4", 20),
-		RED("§c", 30),
-		GOLD("§6", 100);
+		WHITE(SpeedColor.COLOR+"f", 8),
+		DARK_RED(SpeedColor.COLOR+"4", 20),
+		RED(SpeedColor.COLOR+"c", 30),
+		GOLD(SpeedColor.COLOR+"6", 100);
 
 		public static final Set<SpeedColor> VALUES = Arrays.stream(values())
 				.sorted(Comparator.comparing(color -> color.range))
 				.collect(Collectors.toCollection(LinkedHashSet::new));
+		public static final char COLOR = (char) 167;
 		public final String code;
 		public final double range;
 
