@@ -93,7 +93,7 @@ public class ClientTickHandler {
 		
 		FontRenderer fontRenderer = mc.fontRenderer;
 		MatrixStack matrixStack = new MatrixStack();
-		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative()) {
+		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative() && !mc.player.isSpectator()) {
 			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && SomniaClient.playerFatigue > SomniaConfig.minimumFatigueToSleep) return;
 			String str = String.format(SpeedColor.WHITE.code + "Fatigue: %.2f", SomniaClient.playerFatigue);
 			int x, y, stringWidth = fontRenderer.getStringWidth(str);
@@ -184,9 +184,8 @@ public class ClientTickHandler {
 
 			// ETA
 			double total = 0.0d;
-			Double[] values = speedValues.toArray(new Double[0]); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
-			for (double value : values)
-				total += value;
+			Double[] values = speedValues.stream().filter(Objects::nonNull).toArray(Double[]::new); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
+			for (double value : values) total += value;
 			double avg = total / values.length;
 			int etaTotalSeconds = (int)((diff-rel) / (avg*20)); // remaining ticks / (average multiplier * standard tick rate)
 

@@ -51,7 +51,7 @@ public class ForgeEventHandler
 
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase != TickEvent.Phase.START || event.player.world.isRemote || (event.player.isCreative() && !event.player.isSleeping())) return;
+		if (event.phase != TickEvent.Phase.START || event.player.world.isRemote || (event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping())) return;
 
 		event.player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			double fatigue = props.getFatigue();
