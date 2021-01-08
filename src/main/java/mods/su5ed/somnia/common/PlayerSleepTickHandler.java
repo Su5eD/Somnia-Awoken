@@ -1,30 +1,24 @@
 package mods.su5ed.somnia.common;
 
+import mods.su5ed.somnia.api.capability.FatigueCapability;
+import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.config.SomniaConfig;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
 
 public class PlayerSleepTickHandler {
-	/*
-	 * A sided state for caching player data 
-	 */
-	public static class State {
-		public boolean sleepOverride = false;
-	}
-
-	public static State clientState = new State(),
-						serverState = new State();
 	
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		State state = event.side == LogicalSide.CLIENT ? clientState : serverState;
-		if (event.phase == TickEvent.Phase.START) tickStart(state, event.player);
-		else tickEnd(state, event.player);
+		event.player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+			if (event.phase == TickEvent.Phase.START) tickStart(props, event.player);
+			else tickEnd(props, event.player);
+		});
+
 	}
 
-	public void tickStart(State state, PlayerEntity player) {
+	public void tickStart(IFatigue props, PlayerEntity player) {
 		if (player.isSleeping()) {
 			//BlockPos pos = player.getBedLocation(player.dimension);
 
@@ -38,7 +32,7 @@ public class PlayerSleepTickHandler {
 				return;
 			}*/
 
-			state.sleepOverride = true;
+			props.setSleepOverride(true);
 			//player.stopSleepInBed(true, true);
 			
 			if (SomniaConfig.fading) {
@@ -49,10 +43,10 @@ public class PlayerSleepTickHandler {
 		}
 	}
 
-	public void tickEnd(State state, PlayerEntity player) {
-		if (state.sleepOverride) {
+	public void tickEnd(IFatigue props, PlayerEntity player) {
+		if (props.sleepOverride()) {
 			player.startSleeping(player.getBedPosition().orElse(player.getPosition()));
-			state.sleepOverride = false;
+			props.setSleepOverride(false);
 		}
 	}
 }

@@ -7,7 +7,7 @@ public class Fatigue implements IFatigue {
 
     private double fatigue;
     private int fatigueUpdateCounter = 0, sideEffectStage = -1;
-    private boolean resetSpawn = true;
+    private boolean resetSpawn = true, sleepOverride = false;
 
     @Override
     public double getFatigue()
@@ -60,6 +60,15 @@ public class Fatigue implements IFatigue {
         return this.resetSpawn;
     }
 
+    @Override
+    public boolean sleepOverride() {
+        return this.sleepOverride;
+    }
+
+    @Override
+    public void setSleepOverride(boolean override) {
+        this.sleepOverride = override;
+    }
 
     @Override
     public CompoundNBT serializeNBT()

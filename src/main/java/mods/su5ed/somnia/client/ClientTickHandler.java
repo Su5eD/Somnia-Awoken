@@ -139,6 +139,8 @@ public class ClientTickHandler {
 	}
 
 	private void renderSleepGui(MatrixStack matrixStack, Screen screen) {
+		if (screen == null) return;
+
 		boolean currentlySleeping = speed != 0;
 		if (currentlySleeping) {
 			if (startTicks == -1L) startTicks = this.mc.world.getGameTime();

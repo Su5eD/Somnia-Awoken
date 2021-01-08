@@ -5,7 +5,6 @@ import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.api.capability.FatigueCapabilityProvider;
 import mods.su5ed.somnia.client.SomniaClient;
 import mods.su5ed.somnia.client.gui.WakeTimeSelectScreen;
-import mods.su5ed.somnia.common.PlayerSleepTickHandler;
 import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketOpenGUI;
@@ -57,7 +56,7 @@ public class ForgeEventHandler
 		event.player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			double fatigue = props.getFatigue();
 
-			boolean isSleeping = PlayerSleepTickHandler.serverState.sleepOverride || event.player.isSleeping();
+			boolean isSleeping = props.sleepOverride() || event.player.isSleeping();
 
 			if (isSleeping) fatigue -= SomniaConfig.fatigueReplenishRate;
 			else fatigue += SomniaConfig.fatigueRate;
