@@ -80,6 +80,7 @@ public class ClientTickHandler {
 		 */
 		if (SomniaClient.autoWakeTime > -1 && mc.player.isSleeping() && mc.world.getGameTime() >= SomniaClient.autoWakeTime) {
 			SomniaClient.autoWakeTime = -1;
+			mc.player.wakeUp();
 			NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
 		}
 	}

@@ -5,23 +5,24 @@ import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.server.ServerTickHandler;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.List;
+import java.util.Optional;
 
-public enum SomniaState
-{
+public enum SomniaState {
 	IDLE,
 	ACTIVE,
 	WAITING_PLAYERS,
 	EXPIRED,
 	NOT_NOW,
 	COOLDOWN;
-	
+
 	public static SomniaState getState(ServerTickHandler handler) {
 		long totalWorldTime = handler.worldServer.getGameTime();
-		
+
 		if (!Somnia.validSleepPeriod.isTimeWithin(totalWorldTime % 24000)) return NOT_NOW;
+
+		if (handler.worldServer.getPlayers().isEmpty()) return IDLE;
 
 		List<ServerPlayerEntity> players = handler.worldServer.getPlayers();
 
@@ -33,8 +34,8 @@ public enum SomniaState
 			anySleeping |= sleeping;
 			allSleeping &= sleeping;
 
-			LazyOptional<IFatigue> props = player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null);
-			if (props.isPresent() && props.resolve().get().shouldSleepNormally()) normalSleep++;
+			Optional<IFatigue> props = player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).resolve();
+			if (props.isPresent() && props.get().shouldSleepNormally()) normalSleep++;
 			else somniaSleep++;
 		}
 
