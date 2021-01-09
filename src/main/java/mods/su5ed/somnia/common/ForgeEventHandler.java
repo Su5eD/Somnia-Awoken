@@ -1,8 +1,9 @@
-package mods.su5ed.somnia.server;
+package mods.su5ed.somnia.common;
 
 import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.api.capability.FatigueCapabilityProvider;
+import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.client.SomniaClient;
 import mods.su5ed.somnia.client.gui.WakeTimeSelectScreen;
 import mods.su5ed.somnia.config.SomniaConfig;
@@ -10,6 +11,8 @@ import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketOpenGUI;
 import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.server.CommandSomnia;
+import mods.su5ed.somnia.server.ServerTickHandler;
 import mods.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -36,6 +39,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 public class ForgeEventHandler
 {
@@ -102,17 +106,27 @@ public class ForgeEventHandler
 	public void onWakeUp(PlayerWakeUpEvent event) {
 		PlayerEntity player = event.getPlayer();
 		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+			if (props.shouldSleepNormally() && player.sleepTimer == 100) {
+				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
+			}
 			props.maxFatigueCounter();
 			props.shouldResetSpawn(true);
+			props.setSleepNormally(false);
 		});
 		
-		if (player.world.isRemote) {
-			SomniaClient.autoWakeTime = -1;
-		}
+		if (player.world.isRemote) SomniaClient.autoWakeTime = -1;
+
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
+		PlayerEntity player = event.getPlayer();
+		Optional<IFatigue> props = player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).resolve();
+		if (props.isPresent()) {
+			if (props.get().shouldSleepNormally()) {
+				return;
+			}
+		}
 		if (!Somnia.enterSleepPeriod.isTimeWithin(24000)) event.setResult(Event.Result.DENY);
 		else event.setResult(Event.Result.ALLOW);
 	}
@@ -128,6 +142,10 @@ public class ForgeEventHandler
 			player.sendStatusMessage(new TranslationTextComponent("somnia.status.armor"), true);
 			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
 		}
+
+		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+			props.setSleepNormally(player.isSneaking());
+		});
 	}
 
 	@SubscribeEvent

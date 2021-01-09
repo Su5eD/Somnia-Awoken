@@ -27,6 +27,11 @@ public class PlayerSleepTickHandler {
 				player.sleepTimer = 98;
 			}*/ //TODO: DarkUtils compat
 
+			if (props.shouldSleepNormally()) {
+				props.setSleepOverride(false);
+				return;
+			}
+
 			/*if (!CompatModule.isBed(player, pos)) {
 				state.sleepOverride = false;
 				return;

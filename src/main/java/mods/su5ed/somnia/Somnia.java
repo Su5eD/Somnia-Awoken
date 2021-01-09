@@ -1,11 +1,11 @@
 package mods.su5ed.somnia;
 
 import mods.su5ed.somnia.api.capability.FatigueCapability;
+import mods.su5ed.somnia.common.ForgeEventHandler;
 import mods.su5ed.somnia.common.PlayerSleepTickHandler;
 import mods.su5ed.somnia.config.ConfigHolder;
 import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.network.NetworkHandler;
-import mods.su5ed.somnia.server.ForgeEventHandler;
 import mods.su5ed.somnia.server.ServerTickHandler;
 import mods.su5ed.somnia.util.TimePeriod;
 import net.minecraft.entity.player.ServerPlayerEntity;

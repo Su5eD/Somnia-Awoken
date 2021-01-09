@@ -42,4 +42,10 @@ public class SomniaUtil {
 
         return lsHours + ":" + lsMinutes;
     }
+
+    public static double calculateFatigueToReplenish(PlayerEntity player) {
+        long worldTime = player.world.getGameTime();
+        long wakeTime = SomniaUtil.calculateWakeTime(worldTime, 0);
+        return SomniaConfig.fatigueReplenishRate * (wakeTime - worldTime);
+    }
 }
