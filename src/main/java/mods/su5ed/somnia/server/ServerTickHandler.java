@@ -93,9 +93,9 @@ public class ServerTickHandler {
 		 * We can't run 0.5 of a tick,
 		 * so we floor the multiplier and store the difference as overflow to be ran on the next tick
 		 */
-		double target = multiplier; // + overflow;
+		double target = multiplier + overflow;
 		int flooredTarget = (int) Math.floor(target);
-		//overflow = target - flooredTarget;
+		overflow = target - flooredTarget;
 		
 		long delta = System.currentTimeMillis();
 		for (int i=0; i<flooredTarget; i++) doMultipliedServerTicking();

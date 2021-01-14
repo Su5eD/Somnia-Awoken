@@ -54,17 +54,13 @@ public class ClientTickHandler {
 	public void tickEnd() {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.player == null) return;
-		
-		/*
-		 * If the player is sleeping and the player has chosen the 'muteSoundWhenSleeping' option in the config,
-		 * set the master volume to 0
-		 */
+
 		if (mc.player.isSleeping()) {
 			if (SomniaConfig.muteSoundWhenSleeping) {
 				if (!muted) {
 					muted = true;
 					defVol = mc.gameSettings.getSoundLevel(SoundCategory.MASTER);
-					mc.gameSettings.setSoundLevel(SoundCategory.MASTER, .0f);
+					mc.gameSettings.setSoundLevel(SoundCategory.MASTER, 0);
 				}
 			}
 		} else {
@@ -73,12 +69,8 @@ public class ClientTickHandler {
 				mc.gameSettings.setSoundLevel(SoundCategory.MASTER, defVol);
 			}
 		}
-		
-		/*
-		 * Note the isPlayerSleeping() check. Without this, the mod exploits a bug which exists in vanilla Minecraft which
-		 * allows the player to teleport back to there bed from anywhere in the world at any time.
-		 */
-		if (SomniaClient.autoWakeTime > -1 && mc.player.isSleeping() && mc.world.getGameTime() >= SomniaClient.autoWakeTime) {
+
+		if (SomniaClient.autoWakeTime > -1 && mc.world.getGameTime() >= SomniaClient.autoWakeTime) {
 			SomniaClient.autoWakeTime = -1;
 			mc.player.wakeUp();
 			NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
@@ -86,7 +78,6 @@ public class ClientTickHandler {
 	}
 	
 	@SubscribeEvent
-	@SuppressWarnings("unused")
 	public void onRenderTick(TickEvent.RenderTickEvent event) {
 		if (mc.currentScreen != null && !(mc.currentScreen instanceof IngameMenuScreen)) {
 			if (mc.player == null || !mc.player.isSleeping()) return;
@@ -147,19 +138,10 @@ public class ClientTickHandler {
 			if (startTicks == -1L) startTicks = this.mc.world.getGameTime();
 		} else startTicks = -1L;
 
-		/*
-		 * GL stuff
-		 */
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_FOG);
 
-		/*
-		 * Progress bar
-		 * Multiplier
-		 * ETA
-		 * Clock
-		 */
 		if (startTicks != -1L && SomniaClient.autoWakeTime != -1) {
 			// Progress Bar
 			mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
@@ -181,7 +163,7 @@ public class ClientTickHandler {
 
 			// Multiplier
 			int offsetX = SomniaConfig.displayETASleep.equals("center") ? screen.width/2 - 80 : SomniaConfig.displayETASleep.equals("right") ? maxWidth - 160 : 0;
-			renderScaledString(matrixStack, x + offsetX, 20, 1.5f, "%sx%s", SpeedColor.getColorForSpeed(speed).code, speed);
+			renderScaledString(matrixStack, x + offsetX, 20, 1.5f, String.format("%sx%s", SpeedColor.getColorForSpeed(speed).code, speed));
 
 			// ETA
 			double total = 0.0d;
@@ -190,20 +172,21 @@ public class ClientTickHandler {
 			double avg = total / values.length;
 			int etaTotalSeconds = (int)((diff-rel) / (avg*20)); // remaining ticks / (average multiplier * standard tick rate)
 
-			int etaSeconds = etaTotalSeconds % 60,
-					etaMinutes = (etaTotalSeconds-etaSeconds) / 60;
-
-			renderScaledString(matrixStack, x + 50 + 10 + offsetX, 20, 1.5f, SpeedColor.WHITE.code + "(%s:%s)", (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
+			renderScaledString(matrixStack, x + 50 + 10 + offsetX, 20, 1.5f, getETAString(etaTotalSeconds));
 
 			// Clock
 			renderClock(maxWidth - 40, 30, 4.0f);
 		}
 	}
 
+	private String getETAString(int totalSeconds) {
+		int etaSeconds = totalSeconds % 60, etaMinutes = (totalSeconds - etaSeconds) / 60;
+		return String.format(SpeedColor.WHITE.code + "(%s:%s)", (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
+	}
+
 	private void renderProgressBar(MatrixStack matrixStack, int x, int y, int maxWidth, double progress) {
 		int amount = (int) (progress * maxWidth);
-		while (amount > 0)
-		{
+		while (amount > 0) {
 			if (mc.currentScreen != null) this.mc.currentScreen.blit(matrixStack, x, y, 0, 69, (Math.min(amount, 180)), 5);
 
 			amount -= 180;
@@ -211,35 +194,20 @@ public class ClientTickHandler {
 		}
 	}
 
-	private void renderScaledString(MatrixStack matrixStack, int x, int y, float scale, String format, Object... args)
-	{
+	private void renderScaledString(MatrixStack matrixStack, int x, int y, float scale, String str) {
 		if (mc.currentScreen == null) return;
-		String str = String.format(format, args);
 		glPushMatrix();
-		{
-			glTranslatef(x, 20, 0.0f);
-			glScalef(scale, scale, 1.0f);
-			AbstractGui.drawString
-					(
-							matrixStack,
-							this.mc.fontRenderer,
-							str,
-							0,
-							0,
-							Integer.MIN_VALUE
-					);
-		}
+		glTranslatef(x, 20, 0.0f);
+		glScalef(scale, scale, 1.0f);
+		mc.fontRenderer.drawStringWithShadow(matrixStack, str, 0, 0, Integer.MIN_VALUE);
 		glPopMatrix();
 	}
 
-	private void renderClock(int x, int y, float scale)
-	{
+	private void renderClock(int x, int y, float scale) {
 		glPushMatrix();
-		{
-			glTranslatef(x, y, 0.0f);
-			glScalef(scale, scale, 1.0f);
-			mc.getItemRenderer().renderItemAndEffectIntoGUI(mc.player, clockItemStack, 0, 0);
-		}
+		glTranslatef(x, y, 0.0f);
+		glScalef(scale, scale, 1.0f);
+		mc.getItemRenderer().renderItemAndEffectIntoGUI(mc.player, clockItemStack, 0, 0);
 		glPopMatrix();
 	}
 
