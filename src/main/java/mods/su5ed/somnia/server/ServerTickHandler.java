@@ -68,8 +68,10 @@ public class ServerTickHandler {
 				NetworkHandler.sendToDimension(new PacketUpdateSpeed(this.currentState == ACTIVE ? (double)tps/20D : 0), worldServer.getDimensionKey());
 			}
 		}
-		
+
+		System.out.println("Before: "+worldServer.getGameTime());
 		if (currentState == ACTIVE) doMultipliedTicking();
+		System.out.println("After: "+worldServer.getGameTime());
 	}
 	
 	private void closeGuiWithMessage(@Nullable String key) {

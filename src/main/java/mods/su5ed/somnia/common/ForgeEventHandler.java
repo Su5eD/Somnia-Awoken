@@ -5,7 +5,6 @@ import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.api.capability.FatigueCapabilityProvider;
 import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.client.SomniaClient;
-import mods.su5ed.somnia.client.gui.WakeTimeSelectScreen;
 import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketOpenGUI;
@@ -14,7 +13,7 @@ import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
 import mods.su5ed.somnia.server.CommandSomnia;
 import mods.su5ed.somnia.server.ServerTickHandler;
 import mods.su5ed.somnia.util.SomniaUtil;
-import net.minecraft.client.Minecraft;
+import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -23,6 +22,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -191,24 +191,21 @@ public class ForgeEventHandler
 	@SubscribeEvent
 	public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
 		World world = event.getWorld();
-		BlockPos pos = event.getPos();
-		PlayerEntity player = event.getPlayer();
+		if (!world.isRemote) {
+			BlockPos pos = event.getPos();
+			Direction direction = world.getBlockState(pos).get(HorizontalBlock.HORIZONTAL_FACING);
+			PlayerEntity player = event.getPlayer();
 
-		if (!world.isRemote && ((ServerPlayerEntity) player).func_241147_a_(pos, null)) return; //pos can be null
+			if (!((ServerPlayerEntity) player).func_241147_a_(pos, direction)) return;
 
-		ItemStack stack = player.inventory.getCurrentItem();
-		if (!stack.isEmpty() && stack.getItem().getRegistryName().toString().equals(SomniaConfig.wakeTimeSelectItem)) {
-			if (world.isRemote) {
-				Minecraft minecraft = Minecraft.getInstance();
-				if (minecraft.currentScreen instanceof WakeTimeSelectScreen) return;
-			}
-			else {
+			ItemStack stack = player.inventory.getCurrentItem();
+			if (!stack.isEmpty() && stack.getItem().getRegistryName().toString().equals(SomniaConfig.wakeTimeSelectItem)) {
 				NetworkHandler.sendToClient(new PacketOpenGUI(), (ServerPlayerEntity) player);
+				event.setCancellationResult(ActionResultType.SUCCESS);
+				event.setCanceled(true);
 			}
-
-			event.setCancellationResult(ActionResultType.SUCCESS);
-			event.setCanceled(true);
 		}
+
 	}
 
 	@SubscribeEvent

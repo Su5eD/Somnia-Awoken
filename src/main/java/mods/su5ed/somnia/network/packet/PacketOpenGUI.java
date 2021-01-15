@@ -10,7 +10,10 @@ import java.util.function.Supplier;
 
 public class PacketOpenGUI {
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> Minecraft.getInstance().displayGuiScreen(new WakeTimeSelectScreen())));
+        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (!(mc.currentScreen instanceof WakeTimeSelectScreen)) mc.displayGuiScreen(new WakeTimeSelectScreen());
+        }));
         return true;
     }
 }
