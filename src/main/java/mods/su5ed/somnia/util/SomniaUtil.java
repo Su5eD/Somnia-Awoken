@@ -48,4 +48,12 @@ public class SomniaUtil {
         long wakeTime = SomniaUtil.calculateWakeTime(worldTime, 0);
         return SomniaConfig.fatigueReplenishRate * (wakeTime - worldTime);
     }
+
+    public static boolean isEnterSleepTime() {
+        return 24000 >= SomniaConfig.enterSleepStart && 24000 <= SomniaConfig.enterSleepEnd;
+    }
+
+    public static boolean isValidSleepTime(int dayTime) {
+        return dayTime >= SomniaConfig.validSleepStart && dayTime <= SomniaConfig.validSleepEnd;
+    }
 }

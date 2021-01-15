@@ -127,7 +127,7 @@ public class ForgeEventHandler
 				return;
 			}
 		}
-		if (!Somnia.enterSleepPeriod.isTimeWithin(24000)) event.setResult(Event.Result.DENY);
+		if (!SomniaUtil.isEnterSleepTime()) event.setResult(Event.Result.DENY);
 		else event.setResult(Event.Result.ALLOW);
 	}
 

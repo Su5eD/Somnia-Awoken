@@ -170,7 +170,7 @@ public class ClientTickHandler {
 			Double[] values = speedValues.stream().filter(Objects::nonNull).toArray(Double[]::new); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
 			for (double value : values) total += value;
 			double avg = total / values.length;
-			int etaTotalSeconds = (int)((diff-rel) / (avg*20)); // remaining ticks / (average multiplier * standard tick rate)
+			int etaTotalSeconds = (int)((diff-rel) / (avg*20));
 
 			renderScaledString(matrixStack, x + 50 + 10 + offsetX, 20, 1.5f, getETAString(etaTotalSeconds));
 

@@ -9,7 +9,6 @@ import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.api.capability.FatigueCapability;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
-import mods.su5ed.somnia.util.ListUtils;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
@@ -17,22 +16,20 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
-import javax.annotation.Nullable;
-import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-public class CommandSomnia
-{
+public class CommandSomnia {
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(Commands.literal("somnia")
 				.requires(src -> src.hasPermissionLevel(3))
 				.then(Commands.literal("fatigue")
                     .then(Commands.literal("set")
 						.then(Commands.argument("amount", DoubleArgumentType.doubleArg())
-							.executes(ctx -> CommandSomnia.setFatigue(ctx, DoubleArgumentType.getDouble(ctx, "amount"), null))
+							.executes(ctx -> CommandSomnia.setFatigue(DoubleArgumentType.getDouble(ctx, "amount"), ctx.getSource().asPlayer()))
 								.then(Commands.argument("target", EntityArgument.players())
-									.executes(ctx -> CommandSomnia.setFatigue(ctx, DoubleArgumentType.getDouble(ctx, "amount"), EntityArgument.getPlayer(ctx, "targets")))))))
+									.executes(ctx -> CommandSomnia.setFatigue(DoubleArgumentType.getDouble(ctx, "amount"), EntityArgument.getPlayer(ctx, "targets")))))))
 				.then(Commands.literal("override")
 					.then(Commands.literal("add")
 						.then(Commands.argument("target", EntityArgument.players())
@@ -45,35 +42,35 @@ public class CommandSomnia
 
 	}
 
-	private static int setFatigue(CommandContext<CommandSource> ctx, double amount, @Nullable ServerPlayerEntity player) throws CommandSyntaxException {
-		ServerPlayerEntity target = player != null ? player : ctx.getSource().asPlayer();
-		target.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+	private static int setFatigue(double amount, ServerPlayerEntity player) {
+		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			props.setFatigue(amount);
-			NetworkHandler.sendToClient(new PacketUpdateFatigue(props.getFatigue()), target);
+			NetworkHandler.sendToClient(new PacketUpdateFatigue(props.getFatigue()), player);
 		});
 		return Command.SINGLE_SUCCESS;
 	}
 
-	private static int addOverride(ServerPlayerEntity target) {
-		if (ListUtils.containsRef(target, Somnia.instance.ignoreList))
-			target.sendMessage(new StringTextComponent("Override already exists"), UUID.randomUUID());
-		else Somnia.instance.ignoreList.add(new WeakReference<>(target));
+	private static int addOverride(ServerPlayerEntity player) {
+		if (!Somnia.instance.ignoreList.add(player.getUniqueID())) player.sendStatusMessage(new StringTextComponent("Override already exists"), true);
 
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int removeOverride(ServerPlayerEntity target) {
-		Somnia.instance.ignoreList.remove(ListUtils.getWeakRef(target, Somnia.instance.ignoreList));
+		Somnia.instance.ignoreList.remove(target.getUniqueID());
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int listOverrides(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity sender = ctx.getSource().asPlayer();
-		List<ServerPlayerEntity> players = ListUtils.extractRefs(Somnia.instance.ignoreList);
-		String[] aString = ListUtils.playersToStringArray(players);
+		List<String> overrides = Somnia.instance.ignoreList.stream()
+				.map(sender.world::getPlayerByUuid)
+				.filter(Objects::nonNull)
+				.map(player -> player.getName().toString())
+				.collect(Collectors.toList());
 
-		ITextComponent chatComponent = new StringTextComponent(aString.length > 0 ? String.join(", ", aString) : "Nothing to see here...");
-		sender.sendMessage(chatComponent, UUID.randomUUID());
+		ITextComponent chatComponent = new StringTextComponent(!overrides.isEmpty() ? String.join(", ", overrides) : "Nothing to see here...");
+		sender.sendStatusMessage(chatComponent, false);
 		return Command.SINGLE_SUCCESS;
 	}
 }
