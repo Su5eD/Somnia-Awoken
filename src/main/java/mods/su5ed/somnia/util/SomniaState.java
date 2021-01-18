@@ -1,7 +1,7 @@
 package mods.su5ed.somnia.util;
 
 import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.api.capability.FatigueCapability;
+import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.server.ServerTickHandler;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -13,7 +13,6 @@ public enum SomniaState {
 	IDLE,
 	ACTIVE,
 	WAITING_PLAYERS,
-	EXPIRED,
 	NOT_NOW,
 	COOLDOWN;
 
@@ -29,7 +28,7 @@ public enum SomniaState {
 				anySleeping |= sleeping;
 				allSleeping &= sleeping;
 
-				Optional<IFatigue> props = player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).resolve();
+				Optional<IFatigue> props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).resolve();
 				if (props.isPresent() && props.get().shouldSleepNormally()) normalSleep++;
 				else somniaSleep++;
 			}

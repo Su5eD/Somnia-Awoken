@@ -1,6 +1,8 @@
 package mods.su5ed.somnia.client;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import mods.su5ed.somnia.api.capability.CapabilityFatigue;
+import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
@@ -18,6 +20,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -26,7 +29,7 @@ public class ClientTickHandler {
 	private final Minecraft mc = Minecraft.getInstance();
 	private final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
 	private final List<Double> speedValues = new ArrayList<>();
-	public long startTicks = -1L;
+	public long startTicks = -1;
 	public double speed = 0;
 
 	private boolean muted = false;
@@ -82,51 +85,52 @@ public class ClientTickHandler {
 		if (mc.currentScreen != null && !(mc.currentScreen instanceof IngameMenuScreen)) {
 			if (mc.player == null || !mc.player.isSleeping()) return;
 		}
-		
+
+		double fatigue = mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
+				.resolve()
+				.map(IFatigue::getFatigue)
+				.orElse(0D);
 		FontRenderer fontRenderer = mc.fontRenderer;
 		MatrixStack matrixStack = new MatrixStack();
 		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative() && !mc.player.isSpectator()) {
-			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && SomniaClient.playerFatigue > SomniaConfig.minimumFatigueToSleep) return;
-			String str = String.format(SpeedColor.WHITE.code + "Fatigue: %.2f", SomniaClient.playerFatigue);
-			int x, y, stringWidth = fontRenderer.getStringWidth(str);
+			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && fatigue > SomniaConfig.minimumFatigueToSleep) return;
+			String str = String.format(SpeedColor.WHITE.code + "Fatigue: %.2f", fatigue);
+			int stringWidth = fontRenderer.getStringWidth(str);
 			int scaledWidth = mc.getMainWindow().getScaledWidth();
 			int scaledHeight = mc.getMainWindow().getScaledHeight();
-			String param = mc.player.isSleeping() ? "br" : SomniaConfig.displayFatigue.toLowerCase();
-			switch (param) {
-				case "tc":
-					x = (scaledWidth / 2 ) - (stringWidth / 2);
-					y = fontRenderer.FONT_HEIGHT;
-					break;
-				case "tl":
-					x = 10;
-					y = fontRenderer.FONT_HEIGHT;
-					break;
-				case "tr":
-					x = scaledWidth - stringWidth - 10;
-					y = fontRenderer.FONT_HEIGHT;
-					break;
-				case "bc":
-					x = (scaledWidth / 2 ) - (stringWidth / 2);
-					y = scaledHeight - fontRenderer.FONT_HEIGHT - 45;
-					break;
-				case "bl":
-					x = 10;
-					y = scaledHeight - fontRenderer.FONT_HEIGHT - 10;
-					break;
-				case "br":
-					x = scaledWidth - stringWidth - 10;
-					y = scaledHeight - fontRenderer.FONT_HEIGHT - 10;
-					break;
-				default:
-					return;
-			}
-			fontRenderer.drawString(matrixStack, str, x, y, Integer.MIN_VALUE);
+			FatigueDisplayPosition pos = mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : FatigueDisplayPosition.valueOf(SomniaConfig.displayFatigue);
+			fontRenderer.drawString(matrixStack, str, pos.getX(scaledWidth, stringWidth), pos.getY(scaledHeight, fontRenderer.FONT_HEIGHT), Integer.MIN_VALUE);
 		}
 
-		if (mc.player.isSleeping() && SomniaConfig.somniaGui && SomniaClient.playerFatigue != -1) renderSleepGui(matrixStack, mc.currentScreen);
+		if (mc.player.isSleeping() && SomniaConfig.somniaGui && fatigue != -1) renderSleepGui(matrixStack, mc.currentScreen);
 		else if (startTicks != -1 || speed != 0) {
 			this.startTicks = -1;
 			this.speed = 0;
+		}
+	}
+
+	@SuppressWarnings("unused")
+	public enum FatigueDisplayPosition {
+		TOP_CENTER((scaledWidth, stringWidth) -> scaledWidth / 2 - stringWidth / 2, (scaledHeight, fontHeight) -> fontHeight),
+		TOP_LEFT((scaledWidth, stringWidth) -> 10, (scaledHeight, fontHeight) -> fontHeight),
+		TOP_RIGHT((scaledWidth, stringWidth) -> scaledWidth - stringWidth - 10, (scaledHeight, fontHeight) -> fontHeight),
+		BOTTOM_CENTER((scaledWidth, stringWidth) -> scaledWidth / 2 - stringWidth / 2, (scaledHeight, fontHeight) -> scaledHeight - fontHeight - 45),
+		BOTTOM_LEFT((scaledWidth, stringWidth) -> 10, (scaledHeight, fontHeight) -> scaledHeight - fontHeight - 10),
+		BOTTOM_RIGHT((scaledWidth, stringWidth) -> scaledWidth - stringWidth - 10, (scaledHeight, fontHeight) -> scaledHeight - fontHeight - 10);
+		private final BiFunction<Integer, Integer, Integer> x;
+		private final BiFunction<Integer, Integer, Integer> y;
+
+		FatigueDisplayPosition(BiFunction<Integer, Integer, Integer> x, BiFunction<Integer, Integer, Integer> y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		public int getX(int scaledWidth, int stringWidth) {
+			return this.x.apply(scaledWidth, stringWidth);
+		}
+
+		public int getY(int scaledHeight, int fontHeight) {
+			return this.y.apply(scaledHeight, fontHeight);
 		}
 	}
 
@@ -154,28 +158,29 @@ public class ClientTickHandler {
 				maxWidth = (screen.width-(x*2));
 
 			glEnable(GL_BLEND);
-			glColor4f(1.0f, 1.0f, 1.0f, .2f);
-			renderProgressBar(matrixStack, x, 10, maxWidth, 1.0d);
+			glColor4f(1, 1, 1, 0.2F);
+			renderProgressBar(matrixStack, x, 10, maxWidth, 1);
 
 			glDisable(GL_BLEND);
-			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			glColor4f(1, 1, 1, 1);
 			renderProgressBar(matrixStack, x, 10, maxWidth, progress);
 
 			// Multiplier
 			int offsetX = SomniaConfig.displayETASleep.equals("center") ? screen.width/2 - 80 : SomniaConfig.displayETASleep.equals("right") ? maxWidth - 160 : 0;
-			renderScaledString(matrixStack, x + offsetX, 20, 1.5f, String.format("%sx%s", SpeedColor.getColorForSpeed(speed).code, speed));
+			renderScaledString(matrixStack, x + offsetX, String.format("%sx%s", SpeedColor.getColorForSpeed(speed).code, speed));
 
 			// ETA
-			double total = 0.0d;
-			Double[] values = speedValues.stream().filter(Objects::nonNull).toArray(Double[]::new); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
+			double total = 0;
+			Double[] values = speedValues.stream()
+					.filter(Objects::nonNull)
+					.toArray(Double[]::new); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
 			for (double value : values) total += value;
 			double avg = total / values.length;
 			int etaTotalSeconds = (int)((diff-rel) / (avg*20));
 
-			renderScaledString(matrixStack, x + 50 + 10 + offsetX, 20, 1.5f, getETAString(etaTotalSeconds));
+			renderScaledString(matrixStack, x + 50 + 10 + offsetX, getETAString(etaTotalSeconds));
 
-			// Clock
-			renderClock(maxWidth - 40, 30, 4.0f);
+			renderClock(maxWidth - 40, 30);
 		}
 	}
 
@@ -194,19 +199,19 @@ public class ClientTickHandler {
 		}
 	}
 
-	private void renderScaledString(MatrixStack matrixStack, int x, int y, float scale, String str) {
+	private void renderScaledString(MatrixStack matrixStack, int x, String str) {
 		if (mc.currentScreen == null) return;
 		glPushMatrix();
-		glTranslatef(x, 20, 0.0f);
-		glScalef(scale, scale, 1.0f);
+		glTranslatef(x, 20, 0);
+		glScalef(1.5F, 1.5F, 1);
 		mc.fontRenderer.drawStringWithShadow(matrixStack, str, 0, 0, Integer.MIN_VALUE);
 		glPopMatrix();
 	}
 
-	private void renderClock(int x, int y, float scale) {
+	private void renderClock(int x, int y) {
 		glPushMatrix();
-		glTranslatef(x, y, 0.0f);
-		glScalef(scale, scale, 1.0f);
+		glTranslatef(x, y, 0);
+		glScalef(4, 4, 1);
 		mc.getItemRenderer().renderItemAndEffectIntoGUI(mc.player, clockItemStack, 0, 0);
 		glPopMatrix();
 	}

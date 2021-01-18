@@ -1,6 +1,6 @@
 package mods.su5ed.somnia.network.packet;
 
-import mods.su5ed.somnia.api.capability.FatigueCapability;
+import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -26,7 +26,7 @@ public class PacketResetSpawn {
         ctx.get().enqueueWork(() -> {
             ServerPlayerEntity player = ctx.get().getSender();
             if (player != null) {
-                player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> props.shouldResetSpawn(this.resetSpawn));
+                player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> props.shouldResetSpawn(this.resetSpawn));
             }
         });
         return true;

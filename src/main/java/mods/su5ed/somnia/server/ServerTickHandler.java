@@ -58,20 +58,18 @@ public class ServerTickHandler {
 				else if (prevState == ACTIVE) { // acceleration stopped
 					activeTickHandlers--;
 					
-					if (currentState == SomniaState.EXPIRED || currentState == SomniaState.NOT_NOW) {
+					if (currentState == SomniaState.NOT_NOW) {
 						closeGuiWithMessage(currentState.toString());
 					}
 				}
 			}
 			
-			if (currentState == ACTIVE || currentState == SomniaState.WAITING_PLAYERS || currentState == SomniaState.COOLDOWN) {
+			if (currentState == ACTIVE || currentState == SomniaState.WAITING_PLAYERS) {
 				NetworkHandler.sendToDimension(new PacketUpdateSpeed(this.currentState == ACTIVE ? (double)tps/20D : 0), worldServer.getDimensionKey());
 			}
 		}
 
-		System.out.println("Before: "+worldServer.getGameTime());
 		if (currentState == ACTIVE) doMultipliedTicking();
-		System.out.println("After: "+worldServer.getGameTime());
 	}
 	
 	private void closeGuiWithMessage(@Nullable String key) {
@@ -91,10 +89,6 @@ public class ServerTickHandler {
 	
 	private double overflow = 0;
 	private void doMultipliedTicking() {
-		/*
-		 * We can't run 0.5 of a tick,
-		 * so we floor the multiplier and store the difference as overflow to be ran on the next tick
-		 */
 		double target = multiplier + overflow;
 		int flooredTarget = (int) Math.floor(target);
 		overflow = target - flooredTarget;
@@ -124,10 +118,7 @@ public class ServerTickHandler {
 		BasicEventHooks.onPreWorldTick(worldServer);
 		worldServer.tick(worldServer.getServer()::isAheadOfTime);
 		BasicEventHooks.onPostWorldTick(worldServer);
-		
-		/*
-		 * Work around for making sure fatigue is updated with every tick (including Somnia ticks)
-		 */
+
 		for (PlayerEntity player : worldServer.getPlayers()) {
 			Somnia.forgeEventHandler.onPlayerTick(new TickEvent.PlayerTickEvent(TickEvent.Phase.START, player));
 		}

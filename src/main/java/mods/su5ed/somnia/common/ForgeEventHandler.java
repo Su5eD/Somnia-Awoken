@@ -1,8 +1,8 @@
 package mods.su5ed.somnia.common;
 
 import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.api.capability.FatigueCapability;
-import mods.su5ed.somnia.api.capability.FatigueCapabilityProvider;
+import mods.su5ed.somnia.api.capability.CapabilityFatigue;
+import mods.su5ed.somnia.api.capability.CapabilityFatigueProvider;
 import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.client.SomniaClient;
 import mods.su5ed.somnia.config.SomniaConfig;
@@ -13,6 +13,7 @@ import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
 import mods.su5ed.somnia.server.CommandSomnia;
 import mods.su5ed.somnia.server.ServerTickHandler;
 import mods.su5ed.somnia.util.SomniaUtil;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -41,11 +42,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import java.util.Iterator;
 import java.util.Optional;
 
-public class ForgeEventHandler
-{
+public class ForgeEventHandler {
 	@SubscribeEvent
 	public void onEntityCapabilityAttach(AttachCapabilitiesEvent<Entity> event) {
-		event.addCapability(new ResourceLocation(Somnia.MODID, "fatigue"), new FatigueCapabilityProvider());
+		event.addCapability(new ResourceLocation(Somnia.MODID, "fatigue"), new CapabilityFatigueProvider());
 	}
 
 	@SubscribeEvent
@@ -57,7 +57,7 @@ public class ForgeEventHandler
 	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase != TickEvent.Phase.START || event.player.world.isRemote || (event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping())) return;
 
-		event.player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			double fatigue = props.getFatigue();
 
 			boolean isSleeping = props.sleepOverride() || event.player.isSleeping();
@@ -73,39 +73,54 @@ public class ForgeEventHandler
 				props.resetFatigueCounter();
 				NetworkHandler.sendToClient(new PacketUpdateFatigue(fatigue), (ServerPlayerEntity) event.player);
 
-				// Side effects
 				if (SomniaConfig.fatigueSideEffects) {
 					int lastSideEffectStage = props.getSideEffectStage();
-					if (fatigue > SomniaConfig.sideEffectStage1 && lastSideEffectStage < SomniaConfig.sideEffectStage1) {
-						props.setSideEffectStage(SomniaConfig.sideEffectStage1);
-						event.player.addPotionEffect(new EffectInstance(Effect.get(SomniaConfig.sideEffectStage1Potion), SomniaConfig.sideEffectStage1Duration, SomniaConfig.sideEffectStage1Amplifier));
-					}
-					else if (fatigue > SomniaConfig.sideEffectStage2 && lastSideEffectStage < SomniaConfig.sideEffectStage2) {
-						props.setSideEffectStage(SomniaConfig.sideEffectStage2);
-						event.player.addPotionEffect(new EffectInstance(Effect.get(SomniaConfig.sideEffectStage2Potion), SomniaConfig.sideEffectStage2Duration, SomniaConfig.sideEffectStage2Amplifier));
-					}
-					else if (fatigue > SomniaConfig.sideEffectStage3 && lastSideEffectStage < SomniaConfig.sideEffectStage3) {
-						props.setSideEffectStage(SomniaConfig.sideEffectStage3);
-						event.player.addPotionEffect(new EffectInstance(Effect.get(SomniaConfig.sideEffectStage3Potion), SomniaConfig.sideEffectStage3Duration, SomniaConfig.sideEffectStage3Amplifier));
-					}
-					else if (fatigue > SomniaConfig.sideEffectStage4) {
-						event.player.addPotionEffect(new EffectInstance(Effect.get(SomniaConfig.sideEffectStage4Potion), 150, SomniaConfig.sideEffectStage4Amplifier));
-					} else if (fatigue < SomniaConfig.sideEffectStage1) {
-						props.setSideEffectStage(-1);
-						if (lastSideEffectStage < SomniaConfig.sideEffectStage2) event.player.removePotionEffect(Effect.get(SomniaConfig.sideEffectStage2Potion));
-						else if (lastSideEffectStage < SomniaConfig.sideEffectStage3) event.player.removePotionEffect(Effect.get(SomniaConfig.sideEffectStage3Potion));
-						else if (lastSideEffectStage < SomniaConfig.sideEffectStage4) event.player.removePotionEffect(Effect.get(SomniaConfig.sideEffectStage4Potion));
+					int currentStage = getSideEffectStage(fatigue, lastSideEffectStage);
+					props.setSideEffectStage(currentStage);
+					if (currentStage > -1) event.player.addPotionEffect(new EffectInstance(getEffectForStage(currentStage)));
+					else {
+						if (lastSideEffectStage < SomniaConfig.sideEffectStage2) event.player.removePotionEffect(getEffectForStage(SomniaConfig.sideEffectStage2Potion));
+						else if (lastSideEffectStage < SomniaConfig.sideEffectStage3) event.player.removePotionEffect(getEffectForStage(SomniaConfig.sideEffectStage3Potion));
+						else if (lastSideEffectStage < SomniaConfig.sideEffectStage4) event.player.removePotionEffect(getEffectForStage(SomniaConfig.sideEffectStage4Potion));
 					}
 				}
 			}
 		});
+	}
 
+	public Effect getEffectForStage(int stage) {
+		int potionID = 0;
+		switch (stage) {
+			case 1:
+				potionID = SomniaConfig.sideEffectStage1Potion;
+				break;
+			case 2:
+				potionID = SomniaConfig.sideEffectStage2Potion;
+				break;
+			case 3:
+				potionID = SomniaConfig.sideEffectStage3Potion;
+				break;
+			case 4:
+				potionID = SomniaConfig.sideEffectStage4Potion;
+		}
+		Effect effect = Effect.get(potionID);
+		if (effect == null) throw new IllegalArgumentException("Invalid potion ID provided for side effect stage "+stage);
+		return effect;
+	}
+
+	public int getSideEffectStage(double fatigue, int lastSideEffectStage) {
+		if (lastSideEffectStage < SomniaConfig.sideEffectStage1 && SomniaConfig.sideEffectStage1 < fatigue) return SomniaConfig.sideEffectStage1;
+		else if (lastSideEffectStage < SomniaConfig.sideEffectStage2 && SomniaConfig.sideEffectStage2 < fatigue) return SomniaConfig.sideEffectStage2;
+		else if (lastSideEffectStage < SomniaConfig.sideEffectStage3 && SomniaConfig.sideEffectStage3 < fatigue) return SomniaConfig.sideEffectStage3;
+		else if (lastSideEffectStage > SomniaConfig.sideEffectStage4) return SomniaConfig.sideEffectStage4;
+
+		return -1;
 	}
 
 	@SubscribeEvent
 	public void onWakeUp(PlayerWakeUpEvent event) {
 		PlayerEntity player = event.getPlayer();
-		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			if (props.shouldSleepNormally() && player.sleepTimer == 100) {
 				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
 			}
@@ -121,7 +136,7 @@ public class ForgeEventHandler
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
 		PlayerEntity player = event.getPlayer();
-		Optional<IFatigue> props = player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).resolve();
+		Optional<IFatigue> props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).resolve();
 		if (props.isPresent()) {
 			if (props.get().shouldSleepNormally()) {
 				return;
@@ -143,14 +158,14 @@ public class ForgeEventHandler
 			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
 		}
 
-		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			props.setSleepNormally(player.isSneaking());
 		});
 	}
 
 	@SubscribeEvent
 	public void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
-		event.getPlayer().getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			if (!props.resetSpawn()) event.setCanceled(true);
 		});
 	}
@@ -158,9 +173,9 @@ public class ForgeEventHandler
 	@SubscribeEvent
 	public void onPlayerClone(PlayerEvent.Clone event) {
 		if (!event.getEntity().world.isRemote) {
-			event.getOriginal().getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+			event.getOriginal().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 				CompoundNBT old = props.serializeNBT();
-				event.getPlayer().getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(fatigue -> {
+				event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(fatigue -> {
 					fatigue.deserializeNBT(old);
 				});
 			});
@@ -183,7 +198,7 @@ public class ForgeEventHandler
 	}
 
 	private void sync(ServerPlayerEntity player) {
-		player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			NetworkHandler.sendToClient(new PacketUpdateFatigue(props.getFatigue()), player);
 		});
 	}
@@ -193,7 +208,9 @@ public class ForgeEventHandler
 		World world = event.getWorld();
 		if (!world.isRemote) {
 			BlockPos pos = event.getPos();
-			Direction direction = world.getBlockState(pos).get(HorizontalBlock.HORIZONTAL_FACING);
+			BlockState state = world.getBlockState(pos);
+			if (!state.hasProperty(HorizontalBlock.HORIZONTAL_FACING)) return;
+			Direction direction = state.get(HorizontalBlock.HORIZONTAL_FACING);
 			PlayerEntity player = event.getPlayer();
 
 			if (!((ServerPlayerEntity) player).func_241147_a_(pos, direction)) return;

@@ -1,6 +1,6 @@
 package mods.su5ed.somnia;
 
-import mods.su5ed.somnia.api.capability.FatigueCapability;
+import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.common.ForgeEventHandler;
 import mods.su5ed.somnia.common.PlayerSleepTickHandler;
 import mods.su5ed.somnia.config.ConfigHolder;
@@ -41,7 +41,7 @@ public class Somnia {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        FatigueCapability.register();
+        CapabilityFatigue.register();
         NetworkHandler.registerMessages();
     }
 }

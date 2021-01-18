@@ -30,8 +30,8 @@ public class ConfigHolder {
         public ClientConfig(ForgeConfigSpec.Builder builder) {
             builder.push("fatigue");
             displayFatigue = builder
-                    .comment("The fatigue counter's position. Accepted values: tc (top center), tl (top left), tr (top right), bc (bottom center), bl (bottom left), br (bottom right)")
-                    .define("displayFatigue", "br");
+                    .comment("The fatigue counter's position. Accepted values: TOM_CENTER, TOP_LEFT, TOP_RIGHT, BOTTOM_CENTER, BOTTOM_LEFT, BOTTOM_RIGHT")
+                    .define("displayFatigue", "BOTTOM_RIGHT");
             displayETASleep = builder
                     .comment("The ETA and multiplier display position in Somnia's sleep gui. Accepted values: right, center, left")
                     .define("displayETASleep", "left");

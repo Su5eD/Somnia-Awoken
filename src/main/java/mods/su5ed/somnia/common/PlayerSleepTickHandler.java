@@ -1,6 +1,6 @@
 package mods.su5ed.somnia.common;
 
-import mods.su5ed.somnia.api.capability.FatigueCapability;
+import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.config.SomniaConfig;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,7 +11,7 @@ public class PlayerSleepTickHandler {
 	
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		event.player.getCapability(FatigueCapability.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			if (event.phase == TickEvent.Phase.START) tickStart(props, event.player);
 			else tickEnd(props, event.player);
 		});

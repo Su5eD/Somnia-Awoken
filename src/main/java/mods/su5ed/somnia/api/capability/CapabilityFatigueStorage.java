@@ -7,7 +7,7 @@ import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
 
-public class FatigueCapabilityStorage implements Capability.IStorage<IFatigue> {
+public class CapabilityFatigueStorage implements Capability.IStorage<IFatigue> {
 
     @Nullable
     @Override
