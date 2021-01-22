@@ -1,7 +1,7 @@
 package mods.su5ed.somnia.client.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import mods.su5ed.somnia.util.SomniaUtil;
+import mods.su5ed.somnia.common.util.SomniaUtil;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.text.StringTextComponent;
 

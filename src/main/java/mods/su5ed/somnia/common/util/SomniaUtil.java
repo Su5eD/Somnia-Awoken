@@ -1,7 +1,7 @@
-package mods.su5ed.somnia.util;
+package mods.su5ed.somnia.common.util;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
-import mods.su5ed.somnia.config.SomniaConfig;
+import mods.su5ed.somnia.common.config.SomniaConfig;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 
@@ -15,9 +15,9 @@ public class SomniaUtil {
 
     public static long calculateWakeTime(long totalWorldTime, int target) {
         long wakeTime;
-        long timeInDay = totalWorldTime % 24000L;
+        long timeInDay = totalWorldTime % 24000;
         wakeTime = totalWorldTime - timeInDay + target;
-        if (timeInDay > target) wakeTime += 24000L;
+        if (timeInDay > target) wakeTime += 24000;
         return wakeTime;
     }
 

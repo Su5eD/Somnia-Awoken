@@ -1,9 +1,9 @@
-package mods.su5ed.somnia.util;
+package mods.su5ed.somnia.common.util;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.client.SomniaClient;
-import mods.su5ed.somnia.config.SomniaConfig;
+import mods.su5ed.somnia.common.config.SomniaConfig;
 import mods.su5ed.somnia.server.ServerTickHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
@@ -33,7 +33,7 @@ public class ASMHooks {
     }
 
     public static void updateWakeTime(PlayerEntity player) {
-        if (SomniaClient.autoWakeTime != -1) return; //Don't change the wake time if it's already been selected
+        if (SomniaClient.autoWakeTime > -1) return; //Don't change the wake time if it's already been selected
         long totalWorldTime = player.world.getGameTime();
         SomniaClient.autoWakeTime = SomniaUtil.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
     }

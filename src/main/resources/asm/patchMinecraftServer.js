@@ -16,7 +16,7 @@ function initializeCoreMod() {
                     var instruction = method.instructions.get(i);
                     if (instruction instanceof InsnNode && instruction.getOpcode() === Opcodes.RETURN) {
                         method.instructions.insertBefore(instruction, ASM.buildMethodCall(
-                            "mods/su5ed/somnia/util/ASMHooks",
+                            "mods/su5ed/somnia/common/util/ASMHooks",
                             "tick",
                             "()V",
                             ASM.MethodType.STATIC

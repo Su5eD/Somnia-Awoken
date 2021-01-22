@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.util;
+package mods.su5ed.somnia.common.util;
 
 import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;

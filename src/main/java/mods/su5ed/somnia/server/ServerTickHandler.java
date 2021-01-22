@@ -1,15 +1,13 @@
 package mods.su5ed.somnia.server;
 
 import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.config.SomniaConfig;
-import mods.su5ed.somnia.network.NetworkHandler;
-import mods.su5ed.somnia.network.packet.PacketUpdateSpeed;
-import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
-import mods.su5ed.somnia.util.SomniaState;
+import mods.su5ed.somnia.common.config.SomniaConfig;
+import mods.su5ed.somnia.common.network.NetworkHandler;
+import mods.su5ed.somnia.common.network.packet.PacketUpdateSpeed;
+import mods.su5ed.somnia.common.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.common.util.SomniaState;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.play.server.SUpdateTimePacket;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.server.ServerWorld;
@@ -19,7 +17,7 @@ import net.minecraftforge.fml.hooks.BasicEventHooks;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-import static mods.su5ed.somnia.util.SomniaState.ACTIVE;
+import static mods.su5ed.somnia.common.util.SomniaState.ACTIVE;
 
 public class ServerTickHandler {
 	public static final String TRANSLATION_FORMAT = "somnia.status.%s";
@@ -69,7 +67,12 @@ public class ServerTickHandler {
 			}
 		}
 
-		if (currentState == ACTIVE) doMultipliedTicking();
+		if (currentState == ACTIVE) {
+			long time = worldServer.getGameTime();
+			doMultipliedTicking();
+			System.out.println("Time diff: " + (worldServer.getGameTime() - time));
+			System.out.println("Multiplier: " + (multiplier + overflow));
+		}
 	}
 	
 	private void closeGuiWithMessage(@Nullable String key) {
@@ -81,25 +84,18 @@ public class ServerTickHandler {
 					if (key != null) player.sendMessage(new TranslationTextComponent(String.format(TRANSLATION_FORMAT, key)), UUID.randomUUID());
 				});
 	}
-
-	private void incrementCounters() {
-		liTps++;
-		currentSleepPeriod++;
-	}
 	
 	private double overflow = 0;
+
 	private void doMultipliedTicking() {
 		double target = multiplier + overflow;
-		int flooredTarget = (int) Math.floor(target);
+		double flooredTarget = Math.floor(target);
 		overflow = target - flooredTarget;
 		
 		long delta = System.currentTimeMillis();
-		for (int i=0; i<flooredTarget; i++) doMultipliedServerTicking();
+		for (int i = 0; i < flooredTarget; i++) doMultipliedServerTicking();
 		delta = System.currentTimeMillis() - delta;
 
-		MinecraftServer server = worldServer.getServer();
-		server.getPlayerList().func_232642_a_(new SUpdateTimePacket(worldServer.getGameTime(), worldServer.getDayTime(), worldServer.getGameRules().getBoolean(GameRules.DO_DAYLIGHT_CYCLE)), worldServer.getDimensionKey());
-		
 		if (delta > SomniaConfig.delta / activeTickHandlers) multiplier -= 0.1;
 		else multiplier += 0.1;
 		
@@ -119,10 +115,13 @@ public class ServerTickHandler {
 		worldServer.tick(worldServer.getServer()::isAheadOfTime);
 		BasicEventHooks.onPostWorldTick(worldServer);
 
-		for (PlayerEntity player : worldServer.getPlayers()) {
-			Somnia.forgeEventHandler.onPlayerTick(new TickEvent.PlayerTickEvent(TickEvent.Phase.START, player));
-		}
-		
-		incrementCounters();
+		worldServer.getPlayers().stream()
+			.map(player -> new TickEvent.PlayerTickEvent(TickEvent.Phase.START, player))
+			.forEach(Somnia.forgeEventHandler::onPlayerTick);
+
+		worldServer.getServer().getPlayerList().func_232642_a_(new SUpdateTimePacket(worldServer.getGameTime(), worldServer.getDayTime(), worldServer.getGameRules().getBoolean(GameRules.DO_DAYLIGHT_CYCLE)), worldServer.getDimensionKey());
+
+		liTps++;
+		currentSleepPeriod++;
 	}
 }

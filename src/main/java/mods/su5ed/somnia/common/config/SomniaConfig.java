@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.config;
+package mods.su5ed.somnia.common.config;
 
 public class SomniaConfig {
     //Fatigue

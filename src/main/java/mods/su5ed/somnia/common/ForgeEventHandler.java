@@ -5,14 +5,14 @@ import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.CapabilityFatigueProvider;
 import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.client.SomniaClient;
-import mods.su5ed.somnia.config.SomniaConfig;
-import mods.su5ed.somnia.network.NetworkHandler;
-import mods.su5ed.somnia.network.packet.PacketOpenGUI;
-import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
-import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.common.config.SomniaConfig;
+import mods.su5ed.somnia.common.network.NetworkHandler;
+import mods.su5ed.somnia.common.network.packet.PacketOpenGUI;
+import mods.su5ed.somnia.common.network.packet.PacketUpdateFatigue;
+import mods.su5ed.somnia.common.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.common.util.SomniaUtil;
 import mods.su5ed.somnia.server.CommandSomnia;
 import mods.su5ed.somnia.server.ServerTickHandler;
-import mods.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.Entity;
@@ -128,9 +128,11 @@ public class ForgeEventHandler {
 			props.shouldResetSpawn(true);
 			props.setSleepNormally(false);
 		});
-		
-		if (player.world.isRemote) SomniaClient.autoWakeTime = -1;
 
+		if (player.world.isRemote) {
+			System.out.println("Wake time: "+SomniaClient.autoWakeTime);
+			SomniaClient.autoWakeTime = -1;
+		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)

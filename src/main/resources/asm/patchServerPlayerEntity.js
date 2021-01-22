@@ -40,7 +40,7 @@ function initializeCoreMod() {
                             ASM.log("INFO", "Injecting wake time update");
                             list = new InsnList();
                             list.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                            list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/util/ASMHooks", "updateWakeTime", "(Lnet/minecraft/entity/player/PlayerEntity;)V", false));
+                            list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/common/util/ASMHooks", "updateWakeTime", "(Lnet/minecraft/entity/player/PlayerEntity;)V", false));
                             method.instructions.insert(node, list);
                         }
                     }

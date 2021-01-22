@@ -2,9 +2,9 @@ package mods.su5ed.somnia.client.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import mods.su5ed.somnia.client.SomniaClient;
-import mods.su5ed.somnia.network.NetworkHandler;
-import mods.su5ed.somnia.network.packet.PacketActivateBlock;
-import mods.su5ed.somnia.util.SomniaUtil;
+import mods.su5ed.somnia.common.network.NetworkHandler;
+import mods.su5ed.somnia.common.network.packet.PacketActivateBlock;
+import mods.su5ed.somnia.common.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.math.BlockRayTraceResult;

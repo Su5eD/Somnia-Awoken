@@ -3,9 +3,9 @@ package mods.su5ed.somnia.client;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
-import mods.su5ed.somnia.config.SomniaConfig;
-import mods.su5ed.somnia.network.NetworkHandler;
-import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.common.config.SomniaConfig;
+import mods.su5ed.somnia.common.network.NetworkHandler;
+import mods.su5ed.somnia.common.network.packet.PacketWakeUpPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
@@ -29,11 +29,11 @@ public class ClientTickHandler {
 	private final Minecraft mc = Minecraft.getInstance();
 	private final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
 	private final List<Double> speedValues = new ArrayList<>();
-	public long startTicks = -1;
-	public double speed = 0;
+	public long sleepStart = -1;
+	public double speed;
 
-	private boolean muted = false;
-	private float defVol;
+	private boolean muted;
+	private float volume;
 
 	public ClientTickHandler() {
 		MinecraftForge.EVENT_BUS.register(this);
@@ -45,39 +45,33 @@ public class ClientTickHandler {
 	
 	@SubscribeEvent
 	public void onClientTick(TickEvent.ClientTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) tickEnd();
+		if (event.phase == TickEvent.Phase.END) {
+			Minecraft mc = Minecraft.getInstance();
+			if (mc.player == null) return;
+
+			if (mc.player.isSleeping() && SomniaConfig.muteSoundWhenSleeping && !muted) {
+				muted = true;
+				volume = mc.gameSettings.getSoundLevel(SoundCategory.MASTER);
+				mc.gameSettings.setSoundLevel(SoundCategory.MASTER, 0);
+			} else if (muted) {
+				muted = false;
+				mc.gameSettings.setSoundLevel(SoundCategory.MASTER, volume);
+			}
+
+			if (SomniaClient.autoWakeTime > -1) System.out.println("Remaining sleep time: "+(mc.world.getGameTime() - SomniaClient.autoWakeTime));
+			if (SomniaClient.autoWakeTime > -1 && mc.world.getGameTime() >= SomniaClient.autoWakeTime) {
+				System.out.println("Wake time: "+SomniaClient.autoWakeTime);
+				SomniaClient.autoWakeTime = -1;
+				mc.player.wakeUp();
+				NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
+			}
+		}
 	}
 
 	public void addSpeedValue(double speed) {
 		this.speed = speed;
 		speedValues.add(speed);
 		if (speedValues.size() > 5) speedValues.remove(0);
-	}
-
-	public void tickEnd() {
-		Minecraft mc = Minecraft.getInstance();
-		if (mc.player == null) return;
-
-		if (mc.player.isSleeping()) {
-			if (SomniaConfig.muteSoundWhenSleeping) {
-				if (!muted) {
-					muted = true;
-					defVol = mc.gameSettings.getSoundLevel(SoundCategory.MASTER);
-					mc.gameSettings.setSoundLevel(SoundCategory.MASTER, 0);
-				}
-			}
-		} else {
-			if (muted) {
-				muted = false;
-				mc.gameSettings.setSoundLevel(SoundCategory.MASTER, defVol);
-			}
-		}
-
-		if (SomniaClient.autoWakeTime > -1 && mc.world.getGameTime() >= SomniaClient.autoWakeTime) {
-			SomniaClient.autoWakeTime = -1;
-			mc.player.wakeUp();
-			NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
-		}
 	}
 	
 	@SubscribeEvent
@@ -103,97 +97,66 @@ public class ClientTickHandler {
 		}
 
 		if (mc.player.isSleeping() && SomniaConfig.somniaGui && fatigue != -1) renderSleepGui(matrixStack, mc.currentScreen);
-		else if (startTicks != -1 || speed != 0) {
-			this.startTicks = -1;
+		else if (sleepStart != -1 || speed != 0) {
+			this.sleepStart = -1;
 			this.speed = 0;
-		}
-	}
-
-	@SuppressWarnings("unused")
-	public enum FatigueDisplayPosition {
-		TOP_CENTER((scaledWidth, stringWidth) -> scaledWidth / 2 - stringWidth / 2, (scaledHeight, fontHeight) -> fontHeight),
-		TOP_LEFT((scaledWidth, stringWidth) -> 10, (scaledHeight, fontHeight) -> fontHeight),
-		TOP_RIGHT((scaledWidth, stringWidth) -> scaledWidth - stringWidth - 10, (scaledHeight, fontHeight) -> fontHeight),
-		BOTTOM_CENTER((scaledWidth, stringWidth) -> scaledWidth / 2 - stringWidth / 2, (scaledHeight, fontHeight) -> scaledHeight - fontHeight - 45),
-		BOTTOM_LEFT((scaledWidth, stringWidth) -> 10, (scaledHeight, fontHeight) -> scaledHeight - fontHeight - 10),
-		BOTTOM_RIGHT((scaledWidth, stringWidth) -> scaledWidth - stringWidth - 10, (scaledHeight, fontHeight) -> scaledHeight - fontHeight - 10);
-		private final BiFunction<Integer, Integer, Integer> x;
-		private final BiFunction<Integer, Integer, Integer> y;
-
-		FatigueDisplayPosition(BiFunction<Integer, Integer, Integer> x, BiFunction<Integer, Integer, Integer> y) {
-			this.x = x;
-			this.y = y;
-		}
-
-		public int getX(int scaledWidth, int stringWidth) {
-			return this.x.apply(scaledWidth, stringWidth);
-		}
-
-		public int getY(int scaledHeight, int fontHeight) {
-			return this.y.apply(scaledHeight, fontHeight);
 		}
 	}
 
 	private void renderSleepGui(MatrixStack matrixStack, Screen screen) {
 		if (screen == null) return;
 
-		boolean currentlySleeping = speed != 0;
-		if (currentlySleeping) {
-			if (startTicks == -1L) startTicks = this.mc.world.getGameTime();
-		} else startTicks = -1L;
+		if (speed != 0) {
+			if (sleepStart == -1) sleepStart = this.mc.world.getGameTime();
+		} else sleepStart = -1;
 
-		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+		glColor4f(1, 1, 1, 1);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_FOG);
 
-		if (startTicks != -1L && SomniaClient.autoWakeTime != -1) {
-			// Progress Bar
+		if (sleepStart != -1 && SomniaClient.autoWakeTime > -1) {
 			mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
 
-			double rel = mc.world.getGameTime()-startTicks,
-   	    	       diff = SomniaClient.autoWakeTime -startTicks,
-                   progress = rel / diff;
+			double sleepDuration = mc.world.getGameTime() - sleepStart,
+				   remaining = SomniaClient.autoWakeTime - sleepStart,
+                   progress = sleepDuration / remaining;
 
-			int x = 20,
-				maxWidth = (screen.width-(x*2));
+			int maxWidth = screen.width - 40;
 
 			glEnable(GL_BLEND);
 			glColor4f(1, 1, 1, 0.2F);
-			renderProgressBar(matrixStack, x, 10, maxWidth, 1);
+			renderProgressBar(matrixStack, maxWidth, 1);
 
 			glDisable(GL_BLEND);
 			glColor4f(1, 1, 1, 1);
-			renderProgressBar(matrixStack, x, 10, maxWidth, progress);
+			renderProgressBar(matrixStack, maxWidth, progress);
 
-			// Multiplier
 			int offsetX = SomniaConfig.displayETASleep.equals("center") ? screen.width/2 - 80 : SomniaConfig.displayETASleep.equals("right") ? maxWidth - 160 : 0;
-			renderScaledString(matrixStack, x + offsetX, String.format("%sx%s", SpeedColor.getColorForSpeed(speed).code, speed));
+			renderScaledString(matrixStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(speed).code, speed));
 
-			// ETA
-			double total = 0;
-			Double[] values = speedValues.stream()
+			double average = speedValues.stream()
 					.filter(Objects::nonNull)
-					.toArray(Double[]::new); //Copy speedValues before iterating over it to prevent a ConcurrentModificationException
-			for (double value : values) total += value;
-			double avg = total / values.length;
-			int etaTotalSeconds = (int)((diff-rel) / (avg*20));
+					.mapToDouble(Double::doubleValue)
+					.summaryStatistics()
+					.getAverage();
+			long etaTotalSeconds = Math.round((remaining - sleepDuration) / (average * 20));
 
-			renderScaledString(matrixStack, x + 50 + 10 + offsetX, getETAString(etaTotalSeconds));
+			renderScaledString(matrixStack, offsetX + 80, getETAString(etaTotalSeconds));
 
-			renderClock(maxWidth - 40, 30);
+			renderClock(maxWidth - 40);
 		}
 	}
 
-	private String getETAString(int totalSeconds) {
-		int etaSeconds = totalSeconds % 60, etaMinutes = (totalSeconds - etaSeconds) / 60;
+	private String getETAString(long totalSeconds) {
+		long etaSeconds = totalSeconds % 60, etaMinutes = (totalSeconds - etaSeconds) / 60;
 		return String.format(SpeedColor.WHITE.code + "(%s:%s)", (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
 	}
 
-	private void renderProgressBar(MatrixStack matrixStack, int x, int y, int maxWidth, double progress) {
+	private void renderProgressBar(MatrixStack matrixStack, int maxWidth, double progress) {
+		int x = 20;
 		int amount = (int) (progress * maxWidth);
 		while (amount > 0) {
-			if (mc.currentScreen != null) this.mc.currentScreen.blit(matrixStack, x, y, 0, 69, (Math.min(amount, 180)), 5);
-
+			if (mc.currentScreen != null) this.mc.currentScreen.blit(matrixStack, x, 10, 0, 69, Math.min(amount, 180), 5);
 			amount -= 180;
 			x += 180;
 		}
@@ -208,9 +171,9 @@ public class ClientTickHandler {
 		glPopMatrix();
 	}
 
-	private void renderClock(int x, int y) {
+	private void renderClock(int x) {
 		glPushMatrix();
-		glTranslatef(x, y, 0);
+		glTranslatef(x, 30, 0);
 		glScalef(4, 4, 1);
 		mc.getItemRenderer().renderItemAndEffectIntoGUI(mc.player, clockItemStack, 0, 0);
 		glPopMatrix();
@@ -240,6 +203,31 @@ public class ClientTickHandler {
 			}
 
 			return SpeedColor.WHITE;
+		}
+	}
+
+	@SuppressWarnings("unused")
+	public enum FatigueDisplayPosition {
+		TOP_CENTER((scaledWidth, stringWidth) -> scaledWidth / 2 - stringWidth / 2, (scaledHeight, fontHeight) -> fontHeight),
+		TOP_LEFT((scaledWidth, stringWidth) -> 10, (scaledHeight, fontHeight) -> fontHeight),
+		TOP_RIGHT((scaledWidth, stringWidth) -> scaledWidth - stringWidth - 10, (scaledHeight, fontHeight) -> fontHeight),
+		BOTTOM_CENTER((scaledWidth, stringWidth) -> scaledWidth / 2 - stringWidth / 2, (scaledHeight, fontHeight) -> scaledHeight - fontHeight - 45),
+		BOTTOM_LEFT((scaledWidth, stringWidth) -> 10, (scaledHeight, fontHeight) -> scaledHeight - fontHeight - 10),
+		BOTTOM_RIGHT((scaledWidth, stringWidth) -> scaledWidth - stringWidth - 10, (scaledHeight, fontHeight) -> scaledHeight - fontHeight - 10);
+		private final BiFunction<Integer, Integer, Integer> x;
+		private final BiFunction<Integer, Integer, Integer> y;
+
+		FatigueDisplayPosition(BiFunction<Integer, Integer, Integer> x, BiFunction<Integer, Integer, Integer> y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		public int getX(int scaledWidth, int stringWidth) {
+			return this.x.apply(scaledWidth, stringWidth);
+		}
+
+		public int getY(int scaledHeight, int fontHeight) {
+			return this.y.apply(scaledHeight, fontHeight);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.network.packet;
+package mods.su5ed.somnia.common.network.packet;
 
 import mods.su5ed.somnia.client.SomniaClient;
 import net.minecraft.network.PacketBuffer;

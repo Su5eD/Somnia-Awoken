@@ -1,8 +1,8 @@
 package mods.su5ed.somnia.client.gui;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
-import mods.su5ed.somnia.network.NetworkHandler;
-import mods.su5ed.somnia.network.packet.PacketResetSpawn;
+import mods.su5ed.somnia.common.network.NetworkHandler;
+import mods.su5ed.somnia.common.network.packet.PacketResetSpawn;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.StringTextComponent;

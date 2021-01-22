@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.config;
+package mods.su5ed.somnia.common.config;
 
 import mods.su5ed.somnia.Somnia;
 import net.minecraftforge.common.ForgeConfigSpec;
