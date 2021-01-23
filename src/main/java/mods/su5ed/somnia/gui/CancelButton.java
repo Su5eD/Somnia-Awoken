@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.client.gui;
+package mods.su5ed.somnia.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;

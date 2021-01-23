@@ -1,11 +1,11 @@
-package mods.su5ed.somnia;
+package mods.su5ed.somnia.core;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
-import mods.su5ed.somnia.common.ForgeEventHandler;
-import mods.su5ed.somnia.common.PlayerSleepTickHandler;
-import mods.su5ed.somnia.common.config.ConfigHolder;
-import mods.su5ed.somnia.common.network.NetworkHandler;
-import mods.su5ed.somnia.server.ServerTickHandler;
+import mods.su5ed.somnia.config.ConfigHolder;
+import mods.su5ed.somnia.handler.ForgeEventHandler;
+import mods.su5ed.somnia.handler.PlayerSleepTickHandler;
+import mods.su5ed.somnia.handler.ServerTickHandler;
+import mods.su5ed.somnia.network.NetworkHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;

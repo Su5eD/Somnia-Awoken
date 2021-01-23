@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.common.network.packet;
+package mods.su5ed.somnia.network.packet;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.fml.network.NetworkEvent;

@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.common.network.packet;
+package mods.su5ed.somnia.network.packet;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import net.minecraft.client.Minecraft;

@@ -1,4 +1,6 @@
-package mods.su5ed.somnia.client;
+package mods.su5ed.somnia.core;
+
+import mods.su5ed.somnia.handler.ClientTickHandler;
 
 public class SomniaClient {
     public static final ClientTickHandler clientTickHandler = new ClientTickHandler();

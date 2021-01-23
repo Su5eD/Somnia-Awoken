@@ -1,4 +1,4 @@
-package mods.su5ed.somnia.common.network.packet;
+package mods.su5ed.somnia.network.packet;
 
 import com.google.common.base.MoreObjects;
 import net.minecraft.block.BlockState;

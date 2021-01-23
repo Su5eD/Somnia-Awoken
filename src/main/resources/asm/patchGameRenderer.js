@@ -23,7 +23,7 @@ function initializeCoreMod() {
                         && insn.getOpcode() === Opcodes.INVOKEVIRTUAL) {
                         insn.setOpcode(Opcodes.INVOKESTATIC);
                         insn.name = "renderWorld";
-                        insn.owner = "mods/su5ed/somnia/common/util/ASMHooks";
+                        insn.owner = "mods/su5ed/somnia/util/ASMHooks";
 
                         method.instructions.remove(method.instructions.get(i - 6));
                     }

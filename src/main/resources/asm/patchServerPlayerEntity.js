@@ -28,7 +28,7 @@ function initializeCoreMod() {
                             var list = new InsnList();
                             var label = new LabelNode();
                             list.add(label)
-                            list.add(new FieldInsnNode(Opcodes.GETSTATIC, "mods/su5ed/somnia/common/config/SomniaConfig", "ignoreMonsters", "Z"));
+                            list.add(new FieldInsnNode(Opcodes.GETSTATIC, "mods/su5ed/somnia/config/SomniaConfig", "ignoreMonsters", "Z"));
                             list.add(new JumpInsnNode(Opcodes.IFNE, jumpInsnNode.label));
                             list.add(new VarInsnNode(Opcodes.ALOAD, 0));
                             list.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/entity/player/PlayerEntity", "isCreative", "()Z", false));
@@ -40,7 +40,7 @@ function initializeCoreMod() {
                             ASM.log("INFO", "Injecting wake time update");
                             list = new InsnList();
                             list.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                            list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/common/util/ASMHooks", "updateWakeTime", "(Lnet/minecraft/entity/player/PlayerEntity;)V", false));
+                            list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/util/ASMHooks", "updateWakeTime", "(Lnet/minecraft/entity/player/PlayerEntity;)V", false));
                             method.instructions.insert(node, list);
                         }
                     }

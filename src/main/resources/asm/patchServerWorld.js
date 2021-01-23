@@ -18,7 +18,7 @@ function initializeCoreMod() {
                     method.instructions.remove(method.instructions.get(68));
                 }
 
-                method.instructions.insert(method.instructions.get(67), new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/common/util/ASMHooks", "doMobSpawning", "(Lnet/minecraft/world/server/ServerWorld;)Z", false));
+                method.instructions.insert(method.instructions.get(67), new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/util/ASMHooks", "doMobSpawning", "(Lnet/minecraft/world/server/ServerWorld;)Z", false));
                 return method;
             }
         },
@@ -43,7 +43,7 @@ function initializeCoreMod() {
                 }
                 var insnList = new InsnList();
                 insnList.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/world/server/ServerChunkProvider", "world", "Lnet/minecraft/world/server/ServerWorld;"))
-                insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/common/util/ASMHooks", "doMobSpawning", "(Lnet/minecraft/world/server/ServerWorld;)Z", false));
+                insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/util/ASMHooks", "doMobSpawning", "(Lnet/minecraft/world/server/ServerWorld;)Z", false));
 
                 method.instructions.insert(method.instructions.get(32), insnList);
                 return method;

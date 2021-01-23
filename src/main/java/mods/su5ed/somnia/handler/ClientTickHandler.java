@@ -1,11 +1,12 @@
-package mods.su5ed.somnia.client;
+package mods.su5ed.somnia.handler;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
-import mods.su5ed.somnia.common.config.SomniaConfig;
-import mods.su5ed.somnia.common.network.NetworkHandler;
-import mods.su5ed.somnia.common.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.config.SomniaConfig;
+import mods.su5ed.somnia.core.SomniaClient;
+import mods.su5ed.somnia.network.NetworkHandler;
+import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.IngameMenuScreen;

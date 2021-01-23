@@ -1,7 +1,7 @@
-package mods.su5ed.somnia.common.network;
+package mods.su5ed.somnia.network;
 
-import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.common.network.packet.*;
+import mods.su5ed.somnia.core.Somnia;
+import mods.su5ed.somnia.network.packet.*;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;

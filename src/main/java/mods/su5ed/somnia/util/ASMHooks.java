@@ -1,11 +1,11 @@
-package mods.su5ed.somnia.common.util;
+package mods.su5ed.somnia.util;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
-import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.client.SomniaClient;
-import mods.su5ed.somnia.common.config.SomniaConfig;
-import mods.su5ed.somnia.server.ServerTickHandler;
+import mods.su5ed.somnia.config.SomniaConfig;
+import mods.su5ed.somnia.core.Somnia;
+import mods.su5ed.somnia.core.SomniaClient;
+import mods.su5ed.somnia.handler.ServerTickHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.GameRules;

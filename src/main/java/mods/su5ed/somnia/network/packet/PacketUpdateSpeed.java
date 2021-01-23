@@ -1,6 +1,6 @@
-package mods.su5ed.somnia.common.network.packet;
+package mods.su5ed.somnia.network.packet;
 
-import mods.su5ed.somnia.client.SomniaClient;
+import mods.su5ed.somnia.core.SomniaClient;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;

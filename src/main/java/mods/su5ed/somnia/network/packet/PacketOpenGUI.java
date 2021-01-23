@@ -1,6 +1,6 @@
-package mods.su5ed.somnia.common.network.packet;
+package mods.su5ed.somnia.network.packet;
 
-import mods.su5ed.somnia.client.gui.WakeTimeSelectScreen;
+import mods.su5ed.somnia.gui.WakeTimeSelectScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;

@@ -1,11 +1,11 @@
-package mods.su5ed.somnia.server;
+package mods.su5ed.somnia.handler;
 
-import mods.su5ed.somnia.Somnia;
-import mods.su5ed.somnia.common.config.SomniaConfig;
-import mods.su5ed.somnia.common.network.NetworkHandler;
-import mods.su5ed.somnia.common.network.packet.PacketUpdateSpeed;
-import mods.su5ed.somnia.common.network.packet.PacketWakeUpPlayer;
-import mods.su5ed.somnia.common.util.SomniaState;
+import mods.su5ed.somnia.config.SomniaConfig;
+import mods.su5ed.somnia.core.Somnia;
+import mods.su5ed.somnia.network.NetworkHandler;
+import mods.su5ed.somnia.network.packet.PacketUpdateSpeed;
+import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.util.SomniaState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.play.server.SUpdateTimePacket;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -17,7 +17,7 @@ import net.minecraftforge.fml.hooks.BasicEventHooks;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-import static mods.su5ed.somnia.common.util.SomniaState.SIMULATING;
+import static mods.su5ed.somnia.util.SomniaState.SIMULATING;
 
 public class ServerTickHandler {
 	private static int tickHandlers = 0;

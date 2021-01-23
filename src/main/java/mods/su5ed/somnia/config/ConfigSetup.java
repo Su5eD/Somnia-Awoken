@@ -1,6 +1,6 @@
-package mods.su5ed.somnia.common.config;
+package mods.su5ed.somnia.config;
 
-import mods.su5ed.somnia.Somnia;
+import mods.su5ed.somnia.core.Somnia;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;

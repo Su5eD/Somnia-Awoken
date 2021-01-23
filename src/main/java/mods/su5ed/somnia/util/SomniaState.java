@@ -1,8 +1,8 @@
-package mods.su5ed.somnia.common.util;
+package mods.su5ed.somnia.util;
 
-import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
+import mods.su5ed.somnia.core.Somnia;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.server.ServerWorld;
 
