@@ -85,7 +85,7 @@ processResources {
 jar {
     manifest {
         attributes([
-            "Specification-Title": "Somnnia",
+            "Specification-Title": "Somnnia Awoken",
             "Specification-Vendor": "Su5eD",
             "Specification-Version": "1",
             "Implementation-Title": project.name,

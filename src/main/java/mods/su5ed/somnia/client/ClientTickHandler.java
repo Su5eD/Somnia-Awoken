@@ -8,7 +8,6 @@ import mods.su5ed.somnia.common.network.NetworkHandler;
 import mods.su5ed.somnia.common.network.packet.PacketWakeUpPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.IngameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.ItemStack;
@@ -19,6 +18,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import static org.lwjgl.opengl.GL11.*;
 
 public class ClientTickHandler {
+	public static final DecimalFormat MULTIPLIER_FORMAT = new DecimalFormat("0.0");
 	private final Minecraft mc = Minecraft.getInstance();
 	private final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
 	private final List<Double> speedValues = new ArrayList<>();
@@ -47,23 +48,21 @@ public class ClientTickHandler {
 	public void onClientTick(TickEvent.ClientTickEvent event) {
 		if (event.phase == TickEvent.Phase.END) {
 			Minecraft mc = Minecraft.getInstance();
-			if (mc.player == null) return;
+			if (mc.player != null) {
+				if (mc.player.isSleeping() && SomniaConfig.muteSoundWhenSleeping && !muted) {
+					muted = true;
+					volume = mc.gameSettings.getSoundLevel(SoundCategory.MASTER);
+					mc.gameSettings.setSoundLevel(SoundCategory.MASTER, 0);
+				} else if (muted) {
+					muted = false;
+					mc.gameSettings.setSoundLevel(SoundCategory.MASTER, volume);
+				}
 
-			if (mc.player.isSleeping() && SomniaConfig.muteSoundWhenSleeping && !muted) {
-				muted = true;
-				volume = mc.gameSettings.getSoundLevel(SoundCategory.MASTER);
-				mc.gameSettings.setSoundLevel(SoundCategory.MASTER, 0);
-			} else if (muted) {
-				muted = false;
-				mc.gameSettings.setSoundLevel(SoundCategory.MASTER, volume);
-			}
-
-			if (SomniaClient.autoWakeTime > -1) System.out.println("Remaining sleep time: "+(mc.world.getGameTime() - SomniaClient.autoWakeTime));
-			if (SomniaClient.autoWakeTime > -1 && mc.world.getGameTime() >= SomniaClient.autoWakeTime) {
-				System.out.println("Wake time: "+SomniaClient.autoWakeTime);
-				SomniaClient.autoWakeTime = -1;
-				mc.player.wakeUp();
-				NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
+				if (SomniaClient.autoWakeTime > -1 && mc.world.getGameTime() >= SomniaClient.autoWakeTime) {
+					SomniaClient.autoWakeTime = -1;
+					mc.player.wakeUp();
+					NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
+				}
 			}
 		}
 	}
@@ -84,16 +83,15 @@ public class ClientTickHandler {
 				.resolve()
 				.map(IFatigue::getFatigue)
 				.orElse(0D);
-		FontRenderer fontRenderer = mc.fontRenderer;
 		MatrixStack matrixStack = new MatrixStack();
 		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative() && !mc.player.isSpectator()) {
 			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && fatigue > SomniaConfig.minimumFatigueToSleep) return;
 			String str = String.format(SpeedColor.WHITE.code + "Fatigue: %.2f", fatigue);
-			int stringWidth = fontRenderer.getStringWidth(str);
-			int scaledWidth = mc.getMainWindow().getScaledWidth();
-			int scaledHeight = mc.getMainWindow().getScaledHeight();
+			int width = mc.fontRenderer.getStringWidth(str),
+				scaledWidth = mc.getMainWindow().getScaledWidth(),
+				scaledHeight = mc.getMainWindow().getScaledHeight();
 			FatigueDisplayPosition pos = mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : FatigueDisplayPosition.valueOf(SomniaConfig.displayFatigue);
-			fontRenderer.drawString(matrixStack, str, pos.getX(scaledWidth, stringWidth), pos.getY(scaledHeight, fontRenderer.FONT_HEIGHT), Integer.MIN_VALUE);
+			mc.fontRenderer.drawString(matrixStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, mc.fontRenderer.FONT_HEIGHT), Integer.MIN_VALUE);
 		}
 
 		if (mc.player.isSleeping() && SomniaConfig.somniaGui && fatigue != -1) renderSleepGui(matrixStack, mc.currentScreen);
@@ -121,29 +119,29 @@ public class ClientTickHandler {
 				   remaining = SomniaClient.autoWakeTime - sleepStart,
                    progress = sleepDuration / remaining;
 
-			int maxWidth = screen.width - 40;
+			int width = screen.width - 40;
 
 			glEnable(GL_BLEND);
 			glColor4f(1, 1, 1, 0.2F);
-			renderProgressBar(matrixStack, maxWidth, 1);
+			renderProgressBar(matrixStack, width, 1);
 
 			glDisable(GL_BLEND);
 			glColor4f(1, 1, 1, 1);
-			renderProgressBar(matrixStack, maxWidth, progress);
+			renderProgressBar(matrixStack, width, progress);
 
-			int offsetX = SomniaConfig.displayETASleep.equals("center") ? screen.width/2 - 80 : SomniaConfig.displayETASleep.equals("right") ? maxWidth - 160 : 0;
-			renderScaledString(matrixStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(speed).code, speed));
+			int offsetX = SomniaConfig.displayETASleep.equals("center") ? screen.width/2 - 80 : SomniaConfig.displayETASleep.equals("right") ? width - 160 : 0;
+			renderScaledString(matrixStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(speed).code, MULTIPLIER_FORMAT.format(speed)));
 
 			double average = speedValues.stream()
 					.filter(Objects::nonNull)
 					.mapToDouble(Double::doubleValue)
 					.summaryStatistics()
 					.getAverage();
-			long etaTotalSeconds = Math.round((remaining - sleepDuration) / (average * 20));
+			long eta = Math.round((remaining - sleepDuration) / (average * 20));
 
-			renderScaledString(matrixStack, offsetX + 80, getETAString(etaTotalSeconds));
+			renderScaledString(matrixStack, offsetX + 80, getETAString(eta));
 
-			renderClock(maxWidth - 40);
+			renderClock(width - 40);
 		}
 	}
 
@@ -152,13 +150,10 @@ public class ClientTickHandler {
 		return String.format(SpeedColor.WHITE.code + "(%s:%s)", (etaMinutes<10?"0":"") + etaMinutes, (etaSeconds<10?"0":"") + etaSeconds);
 	}
 
-	private void renderProgressBar(MatrixStack matrixStack, int maxWidth, double progress) {
-		int x = 20;
-		int amount = (int) (progress * maxWidth);
-		while (amount > 0) {
+	private void renderProgressBar(MatrixStack matrixStack, int width, double progress) {
+		int x = 20;;
+		for (int amount = (int) (progress * width); amount > 0; amount -= 180, x += 180) {
 			if (mc.currentScreen != null) this.mc.currentScreen.blit(matrixStack, x, 10, 0, 69, Math.min(amount, 180), 5);
-			amount -= 180;
-			x += 180;
 		}
 	}
 

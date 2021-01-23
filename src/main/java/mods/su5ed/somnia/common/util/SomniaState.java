@@ -3,22 +3,22 @@ package mods.su5ed.somnia.common.util;
 import mods.su5ed.somnia.Somnia;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
-import mods.su5ed.somnia.server.ServerTickHandler;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.List;
 import java.util.Optional;
 
 public enum SomniaState {
-	IDLE,
-	ACTIVE,
-	WAITING_PLAYERS,
-	NOT_NOW,
-	COOLDOWN;
+	INACTIVE,
+	SIMULATING,
+	WAITING,
+	UNAVAILABLE;
 
-	public static SomniaState getState(ServerTickHandler handler) {
-		if (!SomniaUtil.isValidSleepTime((int) (handler.worldServer.getGameTime() % 24000))) return NOT_NOW;
-		List<ServerPlayerEntity> players = handler.worldServer.getPlayers();
+	public static SomniaState forWorld(ServerWorld world) {
+		if (!SomniaUtil.isValidSleepTime(world)) return UNAVAILABLE;
+		List<ServerPlayerEntity> players = world.getPlayers();
+
 		if (!players.isEmpty()) {
 			boolean anySleeping = false, allSleeping = true;
 			int somniaSleep = 0, normalSleep = 0;
@@ -34,10 +34,10 @@ public enum SomniaState {
 			}
 
 			if (allSleeping) {
-				if (somniaSleep >= normalSleep) return ACTIVE;
-			} else if (anySleeping) return WAITING_PLAYERS;
+				if (somniaSleep >= normalSleep) return SIMULATING;
+			} else if (anySleeping) return WAITING;
 		}
 
-		return IDLE;
+		return INACTIVE;
 	}
 }

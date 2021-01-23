@@ -17,23 +17,14 @@ import net.minecraftforge.fml.hooks.BasicEventHooks;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-import static mods.su5ed.somnia.common.util.SomniaState.ACTIVE;
+import static mods.su5ed.somnia.common.util.SomniaState.SIMULATING;
 
 public class ServerTickHandler {
-	public static final String TRANSLATION_FORMAT = "somnia.status.%s";
-			
-	private static int activeTickHandlers = 0;
-	
+	private static int tickHandlers = 0;
 	public ServerWorld worldServer;
 	public SomniaState currentState;
-	
-	public long lastSleepStart,
-				currentSleepPeriod; // Incremented while mbCheck is true, reset when state is changed
-	public long	checkTimer = 0, 	// Used to schedule GUI update packets and sleep state checks
-				lastTpsMillis = 0,
-				liTps = 0, 			// Counts ticks
-				tps	= 0;			// Set per second to liTPS, used to work out actual multiplier to send to clients
-	
+	public long timer = 0;
+	private double overflow = 0;
 	private double multiplier = SomniaConfig.baseMultiplier;
 	
 	public ServerTickHandler(ServerWorld worldServer) {
@@ -41,38 +32,31 @@ public class ServerTickHandler {
 	}
 	
 	public void tickStart() {
-		if (++checkTimer == 10) {
-			checkTimer = 0;
+		if (++timer == 10) {
+			timer = 0;
 
 			SomniaState prevState = currentState;
-			currentState = SomniaState.getState(this);
+			currentState = SomniaState.forWorld(worldServer);
 			
 			if (prevState != currentState) {
-				currentSleepPeriod = 0;
-				if (currentState == ACTIVE) { // acceleration started
-					lastSleepStart = worldServer.getGameTime();
-					activeTickHandlers++;
+				if (currentState == SIMULATING) {
+					tickHandlers++;
 				}
-				else if (prevState == ACTIVE) { // acceleration stopped
-					activeTickHandlers--;
+				else if (prevState == SIMULATING) {
+					tickHandlers--;
 					
-					if (currentState == SomniaState.NOT_NOW) {
+					if (currentState == SomniaState.UNAVAILABLE) {
 						closeGuiWithMessage(currentState.toString());
 					}
 				}
 			}
 			
-			if (currentState == ACTIVE || currentState == SomniaState.WAITING_PLAYERS) {
-				NetworkHandler.sendToDimension(new PacketUpdateSpeed(this.currentState == ACTIVE ? (double)tps/20D : 0), worldServer.getDimensionKey());
+			if (currentState == SIMULATING || currentState == SomniaState.WAITING) {
+				NetworkHandler.sendToDimension(new PacketUpdateSpeed(this.currentState == SIMULATING ? multiplier + overflow : 0), worldServer.getDimensionKey());
 			}
 		}
 
-		if (currentState == ACTIVE) {
-			long time = worldServer.getGameTime();
-			doMultipliedTicking();
-			System.out.println("Time diff: " + (worldServer.getGameTime() - time));
-			System.out.println("Multiplier: " + (multiplier + overflow));
-		}
+		if (currentState == SIMULATING) doMultipliedTicking();
 	}
 	
 	private void closeGuiWithMessage(@Nullable String key) {
@@ -81,47 +65,36 @@ public class ServerTickHandler {
 				.forEach(player -> {
 					NetworkHandler.sendToClient(new PacketWakeUpPlayer(), player);
 					if (player.isSleeping()) player.wakeUp();
-					if (key != null) player.sendMessage(new TranslationTextComponent(String.format(TRANSLATION_FORMAT, key)), UUID.randomUUID());
+					if (key != null) player.sendMessage(new TranslationTextComponent("somnia.status." + key), UUID.randomUUID());
 				});
 	}
-	
-	private double overflow = 0;
 
 	private void doMultipliedTicking() {
 		double target = multiplier + overflow;
-		double flooredTarget = Math.floor(target);
+		int flooredTarget = (int) target;
 		overflow = target - flooredTarget;
 		
-		long delta = System.currentTimeMillis();
-		for (int i = 0; i < flooredTarget; i++) doMultipliedServerTicking();
-		delta = System.currentTimeMillis() - delta;
+		long timeMillis = System.currentTimeMillis();
 
-		if (delta > SomniaConfig.delta / activeTickHandlers) multiplier -= 0.1;
-		else multiplier += 0.1;
+		for (int i = 0; i < flooredTarget; i++) doMultipliedServerTicking();
+
+		multiplier += (System.currentTimeMillis() - timeMillis <= SomniaConfig.delta / tickHandlers) ? 0.1 : -0.1;
 		
 		if (multiplier > SomniaConfig.multiplierCap) multiplier = SomniaConfig.multiplierCap;
 		if (multiplier < SomniaConfig.baseMultiplier) multiplier = SomniaConfig.baseMultiplier;
-		
-		long currentTimeMillis = System.currentTimeMillis();
-		if (currentTimeMillis - lastTpsMillis > 1000) {
-			tps = liTps;
-			liTps = 0;
-			lastTpsMillis = currentTimeMillis;
-		}
 	}
 	
 	private void doMultipliedServerTicking() {
 		BasicEventHooks.onPreWorldTick(worldServer);
-		worldServer.tick(worldServer.getServer()::isAheadOfTime);
-		BasicEventHooks.onPostWorldTick(worldServer);
 
 		worldServer.getPlayers().stream()
-			.map(player -> new TickEvent.PlayerTickEvent(TickEvent.Phase.START, player))
-			.forEach(Somnia.forgeEventHandler::onPlayerTick);
+				.map(player -> new TickEvent.PlayerTickEvent(TickEvent.Phase.START, player))
+				.forEach(Somnia.forgeEventHandler::onPlayerTick);
+
+		worldServer.tick(worldServer.getServer()::isAheadOfTime);
 
 		worldServer.getServer().getPlayerList().func_232642_a_(new SUpdateTimePacket(worldServer.getGameTime(), worldServer.getDayTime(), worldServer.getGameRules().getBoolean(GameRules.DO_DAYLIGHT_CYCLE)), worldServer.getDimensionKey());
 
-		liTps++;
-		currentSleepPeriod++;
+		BasicEventHooks.onPostWorldTick(worldServer);
 	}
 }

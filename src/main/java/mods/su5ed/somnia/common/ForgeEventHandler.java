@@ -122,7 +122,7 @@ public class ForgeEventHandler {
 		PlayerEntity player = event.getPlayer();
 		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
 			if (props.shouldSleepNormally() && player.sleepTimer == 100) {
-				props.setFatigue(props.getFatigue() - SomniaUtil.calculateFatigueToReplenish(player));
+				props.setFatigue(props.getFatigue() - SomniaUtil.getFatigueToReplenish(player));
 			}
 			props.maxFatigueCounter();
 			props.shouldResetSpawn(true);
@@ -130,7 +130,6 @@ public class ForgeEventHandler {
 		});
 
 		if (player.world.isRemote) {
-			System.out.println("Wake time: "+SomniaClient.autoWakeTime);
 			SomniaClient.autoWakeTime = -1;
 		}
 	}

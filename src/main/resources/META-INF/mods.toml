@@ -5,11 +5,11 @@ issueTrackerURL="https://github.com/Su5eD/Somnia/issues/"
 [[mods]]
 modId="somnia"
 version="${version}"
-displayName="Somnia"
+displayName="Somnia Awoken"
 displayURL="https://github.com/Su5eD/Somnia"
 logoFile="logo.png"
-credits=""
-authors="MALfunction84, Kingrunes, Su5eD"
+credits="MALfunction84 and Kingrunes, authors of the previous versions"
+authors="Su5eD"
 description='''
 Simulating the world while you sleep
 '''
