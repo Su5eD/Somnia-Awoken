@@ -29,4 +29,8 @@ public interface IFatigue extends INBTSerializable<CompoundNBT> {
     void setSleepNormally(boolean sleepNormally);
 
     boolean shouldSleepNormally();
+
+    long getWakeTime();
+
+    void setWakeTime(long wakeTime);
 }

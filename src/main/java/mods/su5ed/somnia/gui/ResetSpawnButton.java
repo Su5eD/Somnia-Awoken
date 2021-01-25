@@ -17,7 +17,7 @@ public class ResetSpawnButton extends Button {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null) return;
 
-            mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+            mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
                 props.shouldResetSpawn(((ResetSpawnButton) button).resetSpawn);
                 NetworkHandler.INSTANCE.sendToServer(new PacketResetSpawn(props.resetSpawn()));
             });

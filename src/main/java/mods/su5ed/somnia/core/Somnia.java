@@ -38,6 +38,7 @@ public class Somnia {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(forgeEventHandler = new ForgeEventHandler());
         MinecraftForge.EVENT_BUS.register(new PlayerSleepTickHandler());
+        MinecraftForge.EVENT_BUS.register(SomniaClient.clientTickHandler);
     }
 
     private void setup(final FMLCommonSetupEvent event) {

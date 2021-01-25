@@ -42,7 +42,7 @@ public class CommandSomnia {
 	}
 
 	private static int setFatigue(double amount, ServerPlayerEntity player) {
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			props.setFatigue(amount);
 			NetworkHandler.sendToClient(new PacketUpdateFatigue(props.getFatigue()), player);
 		});

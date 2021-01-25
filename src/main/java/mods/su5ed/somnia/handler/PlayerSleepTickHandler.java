@@ -11,7 +11,7 @@ public class PlayerSleepTickHandler {
 	
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			if (event.phase == TickEvent.Phase.START) tickStart(props, event.player);
 			else tickEnd(props, event.player);
 		});

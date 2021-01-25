@@ -8,6 +8,7 @@ public class Fatigue implements IFatigue {
     private double fatigue;
     private int fatigueUpdateCounter = 0, sideEffectStage = -1;
     private boolean resetSpawn = true, sleepOverride = false, sleepNormally = false;
+    private long wakeTime;
 
     @Override
     public double getFatigue()
@@ -78,6 +79,16 @@ public class Fatigue implements IFatigue {
     @Override
     public boolean shouldSleepNormally() {
         return this.sleepNormally;
+    }
+
+    @Override
+    public long getWakeTime() {
+        return this.wakeTime;
+    }
+
+    @Override
+    public void setWakeTime(long wakeTime) {
+        this.wakeTime = wakeTime;
     }
 
     @Override

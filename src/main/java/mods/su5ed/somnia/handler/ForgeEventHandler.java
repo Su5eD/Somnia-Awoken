@@ -31,6 +31,7 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.*;
 import net.minecraftforge.event.world.WorldEvent;
@@ -54,9 +55,9 @@ public class ForgeEventHandler {
 
 	@SubscribeEvent
 	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase != TickEvent.Phase.START || event.player.world.isRemote || (event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping())) return;
+		if (event.phase != TickEvent.Phase.START || event.player.world.isRemote || (!event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping())) return;
 
-		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			double fatigue = props.getFatigue();
 
 			boolean isSleeping = props.sleepOverride() || event.player.isSleeping();
@@ -119,7 +120,7 @@ public class ForgeEventHandler {
 	@SubscribeEvent
 	public void onWakeUp(PlayerWakeUpEvent event) {
 		PlayerEntity player = event.getPlayer();
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			if (props.shouldSleepNormally() && player.sleepTimer == 100) {
 				props.setFatigue(props.getFatigue() - SomniaUtil.getFatigueToReplenish(player));
 			}
@@ -136,7 +137,7 @@ public class ForgeEventHandler {
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
 		PlayerEntity player = event.getPlayer();
-		Optional<IFatigue> props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).resolve();
+		Optional<IFatigue> props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).resolve();
 		if (props.isPresent()) {
 			if (props.get().shouldSleepNormally()) {
 				return;
@@ -158,14 +159,14 @@ public class ForgeEventHandler {
 			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
 		}
 
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			props.setSleepNormally(player.isSneaking());
 		});
 	}
 
 	@SubscribeEvent
 	public void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
-		event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			if (!props.resetSpawn()) event.setCanceled(true);
 		});
 	}
@@ -173,9 +174,9 @@ public class ForgeEventHandler {
 	@SubscribeEvent
 	public void onPlayerClone(PlayerEvent.Clone event) {
 		if (!event.getEntity().world.isRemote) {
-			event.getOriginal().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+			event.getOriginal().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 				CompoundNBT old = props.serializeNBT();
-				event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(fatigue -> {
+				event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(fatigue -> {
 					fatigue.deserializeNBT(old);
 				});
 			});
@@ -198,7 +199,7 @@ public class ForgeEventHandler {
 	}
 
 	private void sync(ServerPlayerEntity player) {
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).ifPresent(props -> {
+		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			NetworkHandler.sendToClient(new PacketUpdateFatigue(props.getFatigue()), player);
 		});
 	}
@@ -258,5 +259,12 @@ public class ForgeEventHandler {
 
 			NetworkHandler.sendToClient(new PacketWakeUpPlayer(), (ServerPlayerEntity) event.getEntityLiving());
 		}
+	}
+
+	@SubscribeEvent
+	public void onLivingDeath(LivingDeathEvent event) {
+		event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
+			props.setFatigue(0);
+		});
 	}
 }

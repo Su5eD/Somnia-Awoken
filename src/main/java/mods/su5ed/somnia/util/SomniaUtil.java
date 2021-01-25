@@ -18,7 +18,7 @@ public class SomniaUtil {
     }
 
     public static boolean checkFatigue(PlayerEntity player) {
-        return player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null)
+        return player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
                 .map(props -> player.isCreative() || props.getFatigue() >= SomniaConfig.minimumFatigueToSleep)
                 .orElse(false);
     }

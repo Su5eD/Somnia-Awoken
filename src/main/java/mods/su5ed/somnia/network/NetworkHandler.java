@@ -51,6 +51,11 @@ public class NetworkHandler {
                 .decoder(PacketActivateBlock::new)
                 .consumer(PacketActivateBlock::handle)
                 .add();
+        INSTANCE.messageBuilder(PacketUpdateWakeTime.class, id++)
+                .encoder(PacketUpdateWakeTime::encode)
+                .decoder(PacketUpdateWakeTime::new)
+                .consumer(PacketUpdateWakeTime::handle)
+                .add();
     }
 
     public static void sendToClient(Object packet, ServerPlayerEntity player) {

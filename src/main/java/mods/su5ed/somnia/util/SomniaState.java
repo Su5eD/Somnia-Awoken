@@ -28,7 +28,7 @@ public enum SomniaState {
 				anySleeping |= sleeping;
 				allSleeping &= sleeping;
 
-				Optional<IFatigue> props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY, null).resolve();
+				Optional<IFatigue> props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).resolve();
 				if (props.isPresent() && props.get().shouldSleepNormally()) normalSleep++;
 				else somniaSleep++;
 			}

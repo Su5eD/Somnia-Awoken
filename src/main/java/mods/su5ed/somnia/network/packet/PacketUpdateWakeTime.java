@@ -7,26 +7,28 @@ import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class PacketResetSpawn {
-    private final boolean resetSpawn;
+public class PacketUpdateWakeTime {
+    private final long wakeTime;
 
-    public PacketResetSpawn(boolean resetSpawn) {
-        this.resetSpawn = resetSpawn;
+    public PacketUpdateWakeTime(long wakeTime) {
+        this.wakeTime = wakeTime;
     }
 
-    public PacketResetSpawn(PacketBuffer buffer) {
-        this.resetSpawn = buffer.readBoolean();
+    public PacketUpdateWakeTime(PacketBuffer buffer) {
+        this.wakeTime = buffer.readLong();
     }
 
     public void encode(PacketBuffer buffer) {
-        buffer.writeBoolean(this.resetSpawn);
+        buffer.writeLong(this.wakeTime);
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayerEntity player = ctx.get().getSender();
             if (player != null) {
-                player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> props.shouldResetSpawn(this.resetSpawn));
+                player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
+                    props.setWakeTime(this.wakeTime);
+                });
             }
         });
         return true;
