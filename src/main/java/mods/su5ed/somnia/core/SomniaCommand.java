@@ -15,20 +15,21 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class CommandSomnia {
+public class SomniaCommand {
+	public static final Set<UUID> OVERRIDES = new HashSet<>();
+
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(Commands.literal("somnia")
 				.requires(src -> src.hasPermissionLevel(3))
 				.then(Commands.literal("fatigue")
                     .then(Commands.literal("set")
 						.then(Commands.argument("amount", DoubleArgumentType.doubleArg())
-							.executes(ctx -> CommandSomnia.setFatigue(DoubleArgumentType.getDouble(ctx, "amount"), ctx.getSource().asPlayer()))
+							.executes(ctx -> SomniaCommand.setFatigue(DoubleArgumentType.getDouble(ctx, "amount"), ctx.getSource().asPlayer()))
 								.then(Commands.argument("target", EntityArgument.players())
-									.executes(ctx -> CommandSomnia.setFatigue(DoubleArgumentType.getDouble(ctx, "amount"), EntityArgument.getPlayer(ctx, "targets")))))))
+									.executes(ctx -> SomniaCommand.setFatigue(DoubleArgumentType.getDouble(ctx, "amount"), EntityArgument.getPlayer(ctx, "targets")))))))
 				.then(Commands.literal("override")
 					.then(Commands.literal("add")
 						.then(Commands.argument("target", EntityArgument.players())
@@ -37,7 +38,7 @@ public class CommandSomnia {
 						.then(Commands.argument("target", EntityArgument.players())
 							.executes(ctx -> removeOverride(EntityArgument.getPlayer(ctx, "target")))))
 					.then(Commands.literal("list")
-						.executes(CommandSomnia::listOverrides))));
+						.executes(SomniaCommand::listOverrides))));
 
 	}
 
@@ -50,19 +51,19 @@ public class CommandSomnia {
 	}
 
 	private static int addOverride(ServerPlayerEntity player) {
-		if (!Somnia.instance.ignoreList.add(player.getUniqueID())) player.sendStatusMessage(new StringTextComponent("Override already exists"), true);
+		if (!OVERRIDES.add(player.getUniqueID())) player.sendStatusMessage(new StringTextComponent("Override already exists"), true);
 
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int removeOverride(ServerPlayerEntity target) {
-		Somnia.instance.ignoreList.remove(target.getUniqueID());
+		OVERRIDES.remove(target.getUniqueID());
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int listOverrides(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
 		ServerPlayerEntity sender = ctx.getSource().asPlayer();
-		List<String> overrides = Somnia.instance.ignoreList.stream()
+		List<String> overrides = OVERRIDES.stream()
 				.map(sender.world::getPlayerByUuid)
 				.filter(Objects::nonNull)
 				.map(player -> player.getName().toString())

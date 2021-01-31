@@ -1,35 +1,29 @@
 package mods.su5ed.somnia.handler;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
-import mods.su5ed.somnia.api.capability.CapabilityFatigueProvider;
 import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.config.SomniaConfig;
-import mods.su5ed.somnia.core.CommandSomnia;
 import mods.su5ed.somnia.core.Somnia;
-import mods.su5ed.somnia.core.SomniaClient;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketOpenGUI;
 import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
+import mods.su5ed.somnia.network.packet.PacketUpdateWakeTime;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
 import mods.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -38,23 +32,15 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.util.Iterator;
 import java.util.Optional;
 
+@Mod.EventBusSubscriber
 public class ForgeEventHandler {
 	@SubscribeEvent
-	public void onEntityCapabilityAttach(AttachCapabilitiesEvent<Entity> event) {
-		event.addCapability(new ResourceLocation(Somnia.MODID, "fatigue"), new CapabilityFatigueProvider());
-	}
-
-	@SubscribeEvent
-	public void onCommandRegister(RegisterCommandsEvent event) {
-		CommandSomnia.register(event.getDispatcher());
-	}
-
-	@SubscribeEvent
-	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase != TickEvent.Phase.START || event.player.world.isRemote || (!event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping())) return;
 
 		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
@@ -88,7 +74,7 @@ public class ForgeEventHandler {
 		});
 	}
 
-	public Effect getEffectForStage(int stage) {
+	public static Effect getEffectForStage(int stage) {
 		int potionID = 0;
 		switch (stage) {
 			case 1:
@@ -108,7 +94,7 @@ public class ForgeEventHandler {
 		return effect;
 	}
 
-	public int getSideEffectStage(double fatigue, int lastSideEffectStage) {
+	public static int getSideEffectStage(double fatigue, int lastSideEffectStage) {
 		if (lastSideEffectStage < SomniaConfig.sideEffectStage1 && SomniaConfig.sideEffectStage1 < fatigue) return SomniaConfig.sideEffectStage1;
 		else if (lastSideEffectStage < SomniaConfig.sideEffectStage2 && SomniaConfig.sideEffectStage2 < fatigue) return SomniaConfig.sideEffectStage2;
 		else if (lastSideEffectStage < SomniaConfig.sideEffectStage3 && SomniaConfig.sideEffectStage3 < fatigue) return SomniaConfig.sideEffectStage3;
@@ -118,7 +104,12 @@ public class ForgeEventHandler {
 	}
 
 	@SubscribeEvent
-	public void onWakeUp(PlayerWakeUpEvent event) {
+	public static void onTickEnd(TickEvent.ServerTickEvent event) {
+		if (event.phase == TickEvent.Phase.END) ServerTickHandler.HANDLERS.forEach(ServerTickHandler::tickEnd);
+	}
+
+	@SubscribeEvent
+	public static void onWakeUp(PlayerWakeUpEvent event) {
 		PlayerEntity player = event.getPlayer();
 		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			if (props.shouldSleepNormally() && player.sleepTimer == 100) {
@@ -129,13 +120,11 @@ public class ForgeEventHandler {
 			props.setSleepNormally(false);
 		});
 
-		if (player.world.isRemote) {
-			SomniaClient.autoWakeTime = -1;
-		}
+		NetworkHandler.INSTANCE.sendToServer(new PacketUpdateWakeTime(-1));
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
+	public static void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
 		PlayerEntity player = event.getPlayer();
 		Optional<IFatigue> props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).resolve();
 		if (props.isPresent()) {
@@ -148,7 +137,7 @@ public class ForgeEventHandler {
 	}
 
 	@SubscribeEvent
-	public void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
+	public static void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
 		PlayerEntity player = event.getPlayer();
 		if (!SomniaUtil.checkFatigue(player)) {
 			player.sendStatusMessage(new TranslationTextComponent("somnia.status.cooldown"), true);
@@ -165,47 +154,16 @@ public class ForgeEventHandler {
 	}
 
 	@SubscribeEvent
-	public void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
-		event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
-			if (!props.resetSpawn()) event.setCanceled(true);
+	public static void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
+		event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
+				.map(IFatigue::resetSpawn)
+				.ifPresent(resetSpawn -> {
+			if (!resetSpawn) event.setCanceled(true);
 		});
 	}
 
 	@SubscribeEvent
-	public void onPlayerClone(PlayerEvent.Clone event) {
-		if (!event.getEntity().world.isRemote) {
-			event.getOriginal().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
-				CompoundNBT old = props.serializeNBT();
-				event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(fatigue -> {
-					fatigue.deserializeNBT(old);
-				});
-			});
-		}
-	}
-
-	@SubscribeEvent
-	public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-		sync((ServerPlayerEntity) event.getPlayer());
-	}
-
-	@SubscribeEvent
-	public void onPlayerDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
-		sync((ServerPlayerEntity) event.getPlayer());
-	}
-
-	@SubscribeEvent
-	public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-		sync((ServerPlayerEntity) event.getPlayer());
-	}
-
-	private void sync(ServerPlayerEntity player) {
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
-			NetworkHandler.sendToClient(new PacketUpdateFatigue(props.getFatigue()), player);
-		});
-	}
-
-	@SubscribeEvent
-	public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+	public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
 		World world = event.getWorld();
 		if (!world.isRemote) {
 			BlockPos pos = event.getPos();
@@ -227,19 +185,19 @@ public class ForgeEventHandler {
 	}
 
 	@SubscribeEvent
-	public void worldLoadHook(WorldEvent.Load event) {
+	public static void worldLoadHook(WorldEvent.Load event) {
 		if (event.getWorld() instanceof ServerWorld) {
 			ServerWorld worldServer = (ServerWorld) event.getWorld();
-			Somnia.instance.tickHandlers.add(new ServerTickHandler(worldServer));
+			ServerTickHandler.HANDLERS.add(new ServerTickHandler(worldServer));
 			Somnia.LOGGER.info("Registering tick handler for loading world!");
 		}
 	}
 
 	@SubscribeEvent
-	public void worldUnloadHook(WorldEvent.Unload event) {
+	public static void worldUnloadHook(WorldEvent.Unload event) {
 		if (event.getWorld() instanceof ServerWorld) {
 			ServerWorld worldServer = (ServerWorld) event.getWorld();
-			Iterator<ServerTickHandler> iter = Somnia.instance.tickHandlers.iterator();
+			Iterator<ServerTickHandler> iter = ServerTickHandler.HANDLERS.iterator();
 			ServerTickHandler serverTickHandler;
 			while (iter.hasNext()) {
 				serverTickHandler = iter.next();
@@ -253,18 +211,13 @@ public class ForgeEventHandler {
 	}
 
 	@SubscribeEvent
-	public void onPlayerDamage(LivingHurtEvent event) {
-		if (event.getEntityLiving() instanceof ServerPlayerEntity) {
-			if (!(event.getEntityLiving()).isSleeping()) return;
-
-			NetworkHandler.sendToClient(new PacketWakeUpPlayer(), (ServerPlayerEntity) event.getEntityLiving());
-		}
+	public static void onPlayerDamage(LivingHurtEvent event) {
+		LivingEntity entity = event.getEntityLiving();
+		if (entity instanceof ServerPlayerEntity && entity.isSleeping()) NetworkHandler.sendToClient(new PacketWakeUpPlayer(), (ServerPlayerEntity) entity);
 	}
 
 	@SubscribeEvent
-	public void onLivingDeath(LivingDeathEvent event) {
-		event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
-			props.setFatigue(0);
-		});
+	public static void onLivingDeath(LivingDeathEvent event) {
+		event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> props.setFatigue(0));
 	}
 }

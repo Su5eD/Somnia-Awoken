@@ -6,11 +6,13 @@ import mods.su5ed.somnia.config.SomniaConfig;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
+@Mod.EventBusSubscriber
 public class PlayerSleepTickHandler {
 	
 	@SubscribeEvent
-	public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
 		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			if (event.phase == TickEvent.Phase.START) tickStart(props, event.player);
 			else tickEnd(props, event.player);
@@ -18,7 +20,7 @@ public class PlayerSleepTickHandler {
 
 	}
 
-	public void tickStart(IFatigue props, PlayerEntity player) {
+	public static void tickStart(IFatigue props, PlayerEntity player) {
 		if (player.isSleeping()) {
 			//BlockPos pos = player.getBedLocation(player.dimension);
 
@@ -48,7 +50,7 @@ public class PlayerSleepTickHandler {
 		}
 	}
 
-	public void tickEnd(IFatigue props, PlayerEntity player) {
+	public static void tickEnd(IFatigue props, PlayerEntity player) {
 		if (props.sleepOverride()) {
 			player.startSleeping(player.getBedPosition().orElse(player.getPosition()));
 			props.setSleepOverride(false);

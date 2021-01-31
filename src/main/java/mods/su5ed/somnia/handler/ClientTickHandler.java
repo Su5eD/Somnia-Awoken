@@ -4,8 +4,8 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.config.SomniaConfig;
-import mods.su5ed.somnia.core.SomniaClient;
 import mods.su5ed.somnia.network.NetworkHandler;
+import mods.su5ed.somnia.network.packet.PacketUpdateWakeTime;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
@@ -15,7 +15,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.SoundCategory;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -27,22 +26,20 @@ import java.util.stream.Collectors;
 import static org.lwjgl.opengl.GL11.*;
 
 public class ClientTickHandler {
+	public static final ClientTickHandler INSTANCE = new ClientTickHandler();
 	public static final DecimalFormat MULTIPLIER_FORMAT = new DecimalFormat("0.0");
+	private static final ItemStack CLOCK = new ItemStack(Items.CLOCK);
 	private final Minecraft mc = Minecraft.getInstance();
-	private final ItemStack clockItemStack = new ItemStack(Items.CLOCK);
 	private final List<Double> speedValues = new ArrayList<>();
 	public long sleepStart = -1;
 	public double speed;
-
 	private boolean muted;
 	private float volume;
 
-	public ClientTickHandler() {
-		MinecraftForge.EVENT_BUS.register(this);
-
+	static {
 		CompoundNBT clockNbt = new CompoundNBT();
 		clockNbt.putBoolean("quark:clock_calculated", true);
-		this.clockItemStack.setTag(clockNbt); //Disables Quark's clock display override
+		CLOCK.setTag(clockNbt); //Disables Quark's clock display override
 	}
 	
 	@SubscribeEvent
@@ -59,11 +56,14 @@ public class ClientTickHandler {
 					mc.gameSettings.setSoundLevel(SoundCategory.MASTER, volume);
 				}
 
-				if (SomniaClient.autoWakeTime > -1 && mc.world.getGameTime() >= SomniaClient.autoWakeTime) {
-					SomniaClient.autoWakeTime = -1;
-					mc.player.wakeUp();
-					NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
-				}
+				mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
+						.map(IFatigue::getWakeTime)
+						.filter(wakeTime -> wakeTime > -1 && mc.world.getGameTime() > wakeTime)
+						.ifPresent(wakeTime -> {
+							NetworkHandler.INSTANCE.sendToServer(new PacketUpdateWakeTime(-1));
+							mc.player.wakeUp();
+							NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
+						});
 			}
 		}
 	}
@@ -113,37 +113,42 @@ public class ClientTickHandler {
 		glDisable(GL_LIGHTING);
 		glDisable(GL_FOG);
 
-		if (sleepStart != -1 && SomniaClient.autoWakeTime > -1) {
-			mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
+		mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
+				.map(IFatigue::getWakeTime)
+				.filter(wakeTime -> wakeTime > -1)
+				.ifPresent(wakeTime -> {
+					if (sleepStart != -1) {
+						mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
 
-			double sleepDuration = mc.world.getGameTime() - sleepStart,
-				   remaining = SomniaClient.autoWakeTime - sleepStart,
-                   progress = sleepDuration / remaining;
+						double sleepDuration = mc.world.getGameTime() - sleepStart,
+								remaining = wakeTime - sleepStart,
+								progress = sleepDuration / remaining;
 
-			int width = screen.width - 40;
+						int width = screen.width - 40;
 
-			glEnable(GL_BLEND);
-			glColor4f(1, 1, 1, 0.2F);
-			renderProgressBar(matrixStack, width, 1);
+						glEnable(GL_BLEND);
+						glColor4f(1, 1, 1, 0.2F);
+						renderProgressBar(matrixStack, width, 1);
 
-			glDisable(GL_BLEND);
-			glColor4f(1, 1, 1, 1);
-			renderProgressBar(matrixStack, width, progress);
+						glDisable(GL_BLEND);
+						glColor4f(1, 1, 1, 1);
+						renderProgressBar(matrixStack, width, progress);
 
-			int offsetX = SomniaConfig.displayETASleep.equals("center") ? screen.width/2 - 80 : SomniaConfig.displayETASleep.equals("right") ? width - 160 : 0;
-			renderScaledString(matrixStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(speed).code, MULTIPLIER_FORMAT.format(speed)));
+						int offsetX = SomniaConfig.displayETASleep.equals("center") ? screen.width/2 - 80 : SomniaConfig.displayETASleep.equals("right") ? width - 160 : 0;
+						renderScaledString(matrixStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(speed).code, MULTIPLIER_FORMAT.format(speed)));
 
-			double average = speedValues.stream()
-					.filter(Objects::nonNull)
-					.mapToDouble(Double::doubleValue)
-					.summaryStatistics()
-					.getAverage();
-			long eta = Math.round((remaining - sleepDuration) / (average * 20));
+						double average = speedValues.stream()
+								.filter(Objects::nonNull)
+								.mapToDouble(Double::doubleValue)
+								.summaryStatistics()
+								.getAverage();
+						long eta = Math.round((remaining - sleepDuration) / (average * 20));
 
-			renderScaledString(matrixStack, offsetX + 80, getETAString(eta));
+						renderScaledString(matrixStack, offsetX + 80, getETAString(eta));
 
-			renderClock(width - 40);
-		}
+						renderClock(width - 40);
+					}
+				});
 	}
 
 	private String getETAString(long totalSeconds) {
@@ -171,7 +176,7 @@ public class ClientTickHandler {
 		glPushMatrix();
 		glTranslatef(x, 30, 0);
 		glScalef(4, 4, 1);
-		mc.getItemRenderer().renderItemAndEffectIntoGUI(mc.player, clockItemStack, 0, 0);
+		mc.getItemRenderer().renderItemAndEffectIntoGUI(mc.player, CLOCK, 0, 0);
 		glPopMatrix();
 	}
 
