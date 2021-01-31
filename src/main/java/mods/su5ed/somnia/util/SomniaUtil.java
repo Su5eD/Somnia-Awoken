@@ -28,8 +28,8 @@ public class SomniaUtil {
         time += 6000;
 
         time = time % 24000;
-        String hours = String.valueOf(Math.floor(time / 1000D));
-        String minutes = String.valueOf((time % 1000) / 1000D * 60);
+        String hours = String.valueOf(time / 1000);
+        String minutes = String.valueOf((int) ((time % 1000) / 1000D * 60));
 
         if (hours.length() == 1) hours = "0" + hours;
         if (minutes.length() == 1) minutes = "0" + minutes;

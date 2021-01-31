@@ -14,8 +14,7 @@ public class CapabilityFatigueProvider implements ICapabilityProvider, ICapabili
     private final Fatigue instance = new Fatigue();
 
     @Override
-    public CompoundNBT serializeNBT()
-    {
+    public CompoundNBT serializeNBT() {
         return this.instance.serializeNBT();
     }
 
@@ -28,7 +27,6 @@ public class CapabilityFatigueProvider implements ICapabilityProvider, ICapabili
     @Override
     @SuppressWarnings("unchecked")
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        if (cap == CapabilityFatigue.FATIGUE_CAPABILITY) return LazyOptional.of(() -> (T) this.instance);
-        return LazyOptional.empty();
+        return cap == CapabilityFatigue.FATIGUE_CAPABILITY ? LazyOptional.of(() -> (T) this.instance) : LazyOptional.empty();
     }
 }
