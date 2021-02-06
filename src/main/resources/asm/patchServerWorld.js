@@ -12,7 +12,7 @@ function initializeCoreMod() {
                 var Opcodes = Java.type('org.objectweb.asm.Opcodes');
                 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
 
-                ASM.log("DEBUG", "Patching ServerWorld#func_217441_a")
+                ASM.log("DEBUG", "Patching ServerWorld")
 
                 for(var h = 0; h < 3; h++) {
                     method.instructions.remove(method.instructions.get(68));
@@ -36,13 +36,13 @@ function initializeCoreMod() {
                 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
                 var FieldInsnNode = Java.type('org.objectweb.asm.tree.FieldInsnNode');
 
-                ASM.log("DEBUG", "Patching ServerChunkProvider#func_217220_m")
+                ASM.log("DEBUG", "Patching ServerChunkProvider")
 
                 for(var h = 0; h < 4; h++) {
                     method.instructions.remove(method.instructions.get(33));
                 }
                 var insnList = new InsnList();
-                insnList.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/world/server/ServerChunkProvider", "world", "Lnet/minecraft/world/server/ServerWorld;"))
+                insnList.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/world/server/ServerChunkProvider", ASM.mapField("field_73251_h"), "Lnet/minecraft/world/server/ServerWorld;"))
                 insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "mods/su5ed/somnia/util/ASMHooks", "doMobSpawning", "(Lnet/minecraft/world/server/ServerWorld;)Z", false));
 
                 method.instructions.insert(method.instructions.get(32), insnList);

@@ -19,6 +19,8 @@ function initializeCoreMod() {
 
                 ASM.log("INFO", "Patching class ServerPlayerEntity")
 
+                var updateAllPlayersSleepingFlagMethod = ASM.mapMethod("func_72854_c");
+
                 for (var i = 0; i < method.instructions.size(); i++) {
                     var node = method.instructions.get(i);
                     if (node instanceof MethodInsnNode) {
@@ -31,12 +33,12 @@ function initializeCoreMod() {
                             list.add(new FieldInsnNode(Opcodes.GETSTATIC, "mods/su5ed/somnia/config/SomniaConfig", "ignoreMonsters", "Z"));
                             list.add(new JumpInsnNode(Opcodes.IFNE, jumpInsnNode.label));
                             list.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                            list.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/entity/player/PlayerEntity", "isCreative", "()Z", false));
+                            list.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/entity/player/PlayerEntity", ASM.mapMethod("func_184812_l_"), "()Z", false));
                             list.add(new JumpInsnNode(Opcodes.IFNE, jumpInsnNode.label));
                             method.instructions.insert(jumpInsnNode, list);
                         }
 
-                        if (node.opcode === Opcodes.INVOKEVIRTUAL && node.owner === "net/minecraft/world/server/ServerWorld" && node.name === "updateAllPlayersSleepingFlag") {
+                        if (node.opcode === Opcodes.INVOKEVIRTUAL && node.owner === "net/minecraft/world/server/ServerWorld" && node.name === updateAllPlayersSleepingFlagMethod) {
                             ASM.log("INFO", "Injecting wake time update");
                             list = new InsnList();
                             list.add(new VarInsnNode(Opcodes.ALOAD, 0));

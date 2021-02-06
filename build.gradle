@@ -12,9 +12,9 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-def VERSION_CLASSIFIER = VERSION_CLASSIFIER != "" ? "-"+VERSION_CLASSIFIER : ""
+def VERSION_PRE_RELEASE = VERSION_PRE_RELEASE != "" ? "-" + VERSION_PRE_RELEASE : ""
 def BUILD_NUMBER = "$System.env.GITHUB_RUN_NUMBER" != "null" ? "-$System.env.GITHUB_RUN_NUMBER" : ""
-version = VERSION_MC + "-" + VERSION_MAJOR + "." + VERSION_MINOR + (Integer.parseInt(VERSION_REVISION) > 0 ? "."+VERSION_REVISION : "") + BUILD_NUMBER + VERSION_CLASSIFIER
+version = VERSION_MC + "-" + VERSION_MAJOR + "." + VERSION_MINOR + (Integer.parseInt(VERSION_REVISION) > 0 ? "."+VERSION_REVISION : "") + BUILD_NUMBER + VERSION_PRE_RELEASE
 group = 'mods.su5ed'
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
@@ -23,7 +23,7 @@ minecraft {
 
     mappings channel: 'snapshot', version: '20201028-1.16.3'
     
-    accessTransformer = file('src/main/resources/META-INF/somnia_at.cfg')
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {

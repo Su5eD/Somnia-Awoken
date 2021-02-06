@@ -12,13 +12,15 @@ function initializeCoreMod() {
                 var Opcodes = Java.type('org.objectweb.asm.Opcodes');
                 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
 
-                ASM.log("DEBUG", "Patching GameRenderer#updateCameraAndRender");
+                ASM.log("DEBUG", "Patching GameRenderer");
+
+                var renderWorldMethod = ASM.mapMethod("func_228378_a_");
 
                 for (var i = 0; i < method.instructions.size(); i++) {
                     var insn = method.instructions.get(i);
                     if (insn instanceof MethodInsnNode
                         && insn.owner === "net/minecraft/client/renderer/GameRenderer"
-                        && insn.name === "renderWorld"
+                        && insn.name === renderWorldMethod
                         && insn.desc === "(FJLcom/mojang/blaze3d/matrix/MatrixStack;)V"
                         && insn.getOpcode() === Opcodes.INVOKEVIRTUAL) {
                         insn.setOpcode(Opcodes.INVOKESTATIC);

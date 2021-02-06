@@ -1,7 +1,7 @@
 package mods.su5ed.somnia.network.packet;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
-import mods.su5ed.somnia.util.SomniaUtil;
+import mods.su5ed.somnia.network.packet.handler.ClientPacketHandler;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -29,7 +29,7 @@ public class PacketUpdateWakeTime {
         ctx.get().enqueueWork(() -> {
             ServerPlayerEntity player = ctx.get().getSender();
             if (player != null) player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> props.setWakeTime(this.wakeTime));
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> SomniaUtil.updateWakeTimeClient(this.wakeTime));
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.updateWakeTime(this.wakeTime));
         });
         return true;
     }

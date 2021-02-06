@@ -8,7 +8,6 @@ import mods.su5ed.somnia.core.Somnia;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketOpenGUI;
 import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
-import mods.su5ed.somnia.network.packet.PacketUpdateWakeTime;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
 import mods.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.block.BlockState;
@@ -120,9 +119,8 @@ public class ForgeEventHandler {
 			props.maxFatigueCounter();
 			props.shouldResetSpawn(true);
 			props.setSleepNormally(false);
+			props.setWakeTime(-1);
 		});
-
-		NetworkHandler.INSTANCE.sendToServer(new PacketUpdateWakeTime(-1));
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGHEST)

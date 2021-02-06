@@ -3,13 +3,13 @@ package mods.su5ed.somnia.util;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
-import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.handler.ServerTickHandler;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketUpdateWakeTime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
@@ -31,12 +31,12 @@ public class ASMHooks {
 
     public static void updateWakeTime(PlayerEntity player) {
         player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
-                .map(IFatigue::getWakeTime)
-                .filter(wakeTime -> wakeTime < 0)
-                .ifPresent(wakeTime -> {
+                .filter(props -> props.getWakeTime() < 0)
+                .ifPresent(props -> {
                     long totalWorldTime = player.world.getGameTime();
-                    wakeTime = SomniaUtil.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
-                    NetworkHandler.INSTANCE.sendToServer(new PacketUpdateWakeTime(wakeTime));
+                    long wakeTime = SomniaUtil.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
+                    props.setWakeTime(wakeTime);
+                    NetworkHandler.sendToClient(new PacketUpdateWakeTime(wakeTime), (ServerPlayerEntity) player);
                 });
     }
 

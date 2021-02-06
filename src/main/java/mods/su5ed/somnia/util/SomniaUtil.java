@@ -2,7 +2,6 @@ package mods.su5ed.somnia.util;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.config.SomniaConfig;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.server.ServerWorld;
 
@@ -50,9 +49,5 @@ public class SomniaUtil {
     public static boolean isValidSleepTime(ServerWorld world) {
         long time = world.getGameTime() % 24000;
         return time >= SomniaConfig.validSleepStart && time <= SomniaConfig.validSleepEnd;
-    }
-
-    public static void updateWakeTimeClient(long wakeTime) {
-        Minecraft.getInstance().player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> props.setWakeTime(wakeTime));
     }
 }

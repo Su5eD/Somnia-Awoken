@@ -4,7 +4,9 @@ import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.config.ConfigHolder;
 import mods.su5ed.somnia.handler.ClientTickHandler;
 import mods.su5ed.somnia.network.NetworkHandler;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -24,7 +26,7 @@ public class Somnia {
         context.registerConfig(ModConfig.Type.CLIENT, ConfigHolder.CLIENT_SPEC);
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        MinecraftForge.EVENT_BUS.register(ClientTickHandler.INSTANCE);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(ClientTickHandler.INSTANCE));
     }
 
     private void setup(final FMLCommonSetupEvent event) {

@@ -57,10 +57,13 @@ public class ClientTickHandler {
 				}
 
 				mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
-						.map(IFatigue::getWakeTime)
-						.filter(wakeTime -> wakeTime > -1 && mc.world.getGameTime() > wakeTime)
-						.ifPresent(wakeTime -> {
+						.filter(props -> {
+							long wakeTime = props.getWakeTime();
+							return wakeTime > -1 && mc.world.getGameTime() >= wakeTime;
+						})
+						.ifPresent(props -> {
 							NetworkHandler.INSTANCE.sendToServer(new PacketUpdateWakeTime(-1));
+							props.setWakeTime(-1);
 							mc.player.wakeUp();
 							NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
 						});

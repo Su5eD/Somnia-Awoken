@@ -1,6 +1,7 @@
 package mods.su5ed.somnia.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketActivateBlock;
 import mods.su5ed.somnia.network.packet.PacketUpdateWakeTime;
@@ -23,6 +24,8 @@ public class WakeTimeButton extends Button {
 
             long targetWakeTime = SomniaUtil.calculateWakeTime(mc.world.getGameTime(), (int) wakeTime);
             NetworkHandler.INSTANCE.sendToServer(new PacketUpdateWakeTime(targetWakeTime));
+            mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
+                    .ifPresent(props -> props.setWakeTime(targetWakeTime));
 
             RayTraceResult mouseOver = mc.objectMouseOver;
             if (mouseOver instanceof BlockRayTraceResult) {
