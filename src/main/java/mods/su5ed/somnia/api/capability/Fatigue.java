@@ -8,7 +8,7 @@ public class Fatigue implements IFatigue {
     private double fatigue;
     private int fatigueUpdateCounter = 0, sideEffectStage = -1;
     private boolean resetSpawn = true, sleepOverride = false, sleepNormally = false;
-    private long wakeTime;
+    private long wakeTime = -1;
 
     @Override
     public double getFatigue()

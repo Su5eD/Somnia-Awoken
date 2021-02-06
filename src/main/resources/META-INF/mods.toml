@@ -1,6 +1,6 @@
 modLoader="javafml"
 loaderVersion="[33,)"
-license="Somnia Mod License"
+license="GNU Lesser General Public License v3.0"
 issueTrackerURL="https://github.com/Su5eD/Somnia/issues/"
 [[mods]]
 modId="somnia"

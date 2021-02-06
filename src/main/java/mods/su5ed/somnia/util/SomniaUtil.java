@@ -39,7 +39,7 @@ public class SomniaUtil {
 
     public static double getFatigueToReplenish(PlayerEntity player) {
         long worldTime = player.world.getGameTime();
-        long wakeTime = SomniaUtil.calculateWakeTime(worldTime, 0);
+        long wakeTime = SomniaUtil.calculateWakeTime(worldTime, player.world.isNightTime() ? 0 : 12000);
         return SomniaConfig.fatigueReplenishRate * (wakeTime - worldTime);
     }
 

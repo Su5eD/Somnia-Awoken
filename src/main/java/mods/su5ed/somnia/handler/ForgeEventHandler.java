@@ -2,6 +2,7 @@ package mods.su5ed.somnia.handler;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
+import mods.su5ed.somnia.compat.DarkUtilsPlugin;
 import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.core.Somnia;
 import mods.su5ed.somnia.network.NetworkHandler;
@@ -32,6 +33,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.Iterator;
@@ -112,7 +114,7 @@ public class ForgeEventHandler {
 	public static void onWakeUp(PlayerWakeUpEvent event) {
 		PlayerEntity player = event.getPlayer();
 		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
-			if (props.shouldSleepNormally() && player.sleepTimer == 100) {
+			if (props.shouldSleepNormally() || (ModList.get().isLoaded("darkutils") && DarkUtilsPlugin.hasSleepCharm(player))) {
 				props.setFatigue(props.getFatigue() - SomniaUtil.getFatigueToReplenish(player));
 			}
 			props.maxFatigueCounter();
@@ -126,6 +128,8 @@ public class ForgeEventHandler {
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public static void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
 		PlayerEntity player = event.getPlayer();
+		if (ModList.get().isLoaded("darkutils") && DarkUtilsPlugin.hasSleepCharm(player)) return;
+
 		Optional<IFatigue> props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).resolve();
 		if (props.isPresent()) {
 			if (props.get().shouldSleepNormally()) {
