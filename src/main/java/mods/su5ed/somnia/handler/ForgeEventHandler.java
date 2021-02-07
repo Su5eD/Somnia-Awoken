@@ -35,6 +35,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -64,42 +65,60 @@ public class ForgeEventHandler {
 					int lastSideEffectStage = props.getSideEffectStage();
 					int currentStage = getSideEffectStage(fatigue, lastSideEffectStage);
 					props.setSideEffectStage(currentStage);
-					if (currentStage > -1) event.player.addPotionEffect(new EffectInstance(getEffectForStage(currentStage)));
+					if (currentStage > lastSideEffectStage || currentStage >= SomniaConfig.sideEffectStage4) {
+						EffectInstance effect = getEffectForStage(currentStage, lastSideEffectStage);
+						if (effect != null) event.player.addPotionEffect(effect);
+					}
 					else {
-						if (lastSideEffectStage < SomniaConfig.sideEffectStage2) event.player.removePotionEffect(getEffectForStage(SomniaConfig.sideEffectStage2Potion));
-						else if (lastSideEffectStage < SomniaConfig.sideEffectStage3) event.player.removePotionEffect(getEffectForStage(SomniaConfig.sideEffectStage3Potion));
-						else if (lastSideEffectStage < SomniaConfig.sideEffectStage4) event.player.removePotionEffect(getEffectForStage(SomniaConfig.sideEffectStage4Potion));
+						int stage = lastSideEffectStage < SomniaConfig.sideEffectStage2 ? SomniaConfig.sideEffectStage2 :
+									lastSideEffectStage < SomniaConfig.sideEffectStage3 ? SomniaConfig.sideEffectStage3 :
+									lastSideEffectStage < SomniaConfig.sideEffectStage4 ? SomniaConfig.sideEffectStage4 : 0;
+						EffectInstance effect = getEffectForStage(stage, 0);
+						if (effect != null) event.player.removePotionEffect(effect.getPotion());
 					}
 				}
 			}
 		});
 	}
 
-	public static Effect getEffectForStage(int stage) {
+	@Nullable
+	public static EffectInstance getEffectForStage(int stage, int previousStage) {
 		int potionID = 0;
-		switch (stage) {
-			case 1:
-				potionID = SomniaConfig.sideEffectStage1Potion;
-				break;
-			case 2:
-				potionID = SomniaConfig.sideEffectStage2Potion;
-				break;
-			case 3:
-				potionID = SomniaConfig.sideEffectStage3Potion;
-				break;
-			case 4:
-				potionID = SomniaConfig.sideEffectStage4Potion;
+		int duration = 0;
+		int amplifier = 0;
+
+		if (stage == SomniaConfig.sideEffectStage1 && previousStage < SomniaConfig.sideEffectStage1) {
+			potionID = SomniaConfig.sideEffectStage1Potion;
+			duration = SomniaConfig.sideEffectStage1Duration;
+			amplifier = SomniaConfig.sideEffectStage1Amplifier;
 		}
+		else if (stage == SomniaConfig.sideEffectStage2 && previousStage < SomniaConfig.sideEffectStage2) {
+			potionID = SomniaConfig.sideEffectStage2Potion;
+			duration = SomniaConfig.sideEffectStage2Duration;
+			amplifier = SomniaConfig.sideEffectStage2Amplifier;
+		}
+		else if (stage == SomniaConfig.sideEffectStage3 && previousStage < SomniaConfig.sideEffectStage3) {
+			potionID = SomniaConfig.sideEffectStage3Potion;
+			duration = SomniaConfig.sideEffectStage3Duration;
+			amplifier = SomniaConfig.sideEffectStage3Amplifier;
+		}
+		else if (stage >= SomniaConfig.sideEffectStage4) {
+			potionID = SomniaConfig.sideEffectStage4Potion;
+			duration = 150;
+			amplifier = SomniaConfig.sideEffectStage4Amplifier;
+		}
+
 		Effect effect = Effect.get(potionID);
-		if (effect == null) throw new IllegalArgumentException("Invalid potion ID provided for side effect stage "+stage);
-		return effect;
+		if (effect == null) return null;
+
+		return new EffectInstance(effect, duration, amplifier);
 	}
 
 	public static int getSideEffectStage(double fatigue, int lastSideEffectStage) {
-		if (lastSideEffectStage < SomniaConfig.sideEffectStage1 && SomniaConfig.sideEffectStage1 < fatigue) return SomniaConfig.sideEffectStage1;
-		else if (lastSideEffectStage < SomniaConfig.sideEffectStage2 && SomniaConfig.sideEffectStage2 < fatigue) return SomniaConfig.sideEffectStage2;
-		else if (lastSideEffectStage < SomniaConfig.sideEffectStage3 && SomniaConfig.sideEffectStage3 < fatigue) return SomniaConfig.sideEffectStage3;
-		else if (lastSideEffectStage > SomniaConfig.sideEffectStage4) return SomniaConfig.sideEffectStage4;
+		if (SomniaConfig.sideEffectStage4 < fatigue) return SomniaConfig.sideEffectStage4;
+		else if (SomniaConfig.sideEffectStage3 < fatigue) return SomniaConfig.sideEffectStage3;
+		else if (SomniaConfig.sideEffectStage2 < fatigue) return SomniaConfig.sideEffectStage2;
+		else if (SomniaConfig.sideEffectStage1 < fatigue) return SomniaConfig.sideEffectStage1;
 
 		return -1;
 	}
