@@ -1,5 +1,6 @@
 package mods.su5ed.somnia.handler;
 
+import mods.su5ed.somnia.api.SomniaAPI;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
 import mods.su5ed.somnia.compat.DarkUtilsPlugin;
@@ -16,6 +17,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.UseAction;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.ActionResultType;
@@ -26,6 +28,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.*;
 import net.minecraftforge.event.world.WorldEvent;
@@ -34,6 +37,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -203,6 +207,22 @@ public class ForgeEventHandler {
 			}
 		}
 
+	}
+
+	@SubscribeEvent
+	public static void onLivingEntityUseItem(LivingEntityUseItemEvent.Finish event) {
+		ItemStack stack = event.getItem();
+		if (stack.getUseAction() == UseAction.DRINK) {
+			for (Pair<ItemStack, Double> pair : SomniaAPI.getCoffeeList()) {
+				if (pair.getLeft().isItemEqual(stack)) {
+					event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
+						.ifPresent(props -> {
+							props.setFatigue(props.getFatigue() - pair.getRight());
+							props.maxFatigueCounter();
+						});
+				}
+			}
+		}
 	}
 
 	@SubscribeEvent

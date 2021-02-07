@@ -1,6 +1,7 @@
 package mods.su5ed.somnia.core;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
+import mods.su5ed.somnia.compat.Coffees;
 import mods.su5ed.somnia.config.ConfigHolder;
 import mods.su5ed.somnia.handler.ClientTickHandler;
 import mods.su5ed.somnia.network.NetworkHandler;
@@ -32,5 +33,6 @@ public class Somnia {
     private void setup(final FMLCommonSetupEvent event) {
         CapabilityFatigue.register();
         NetworkHandler.registerMessages();
+        Coffees.registerCoffees();
     }
 }
