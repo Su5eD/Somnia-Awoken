@@ -79,7 +79,7 @@ repositories {
     }
     maven {
         name 'Curios'
-        url 'https://maven.theillusivec4.top/'
+        url 'https://maven.theillusivec4.top'
     }
 }
 
@@ -88,8 +88,8 @@ dependencies {
 
     compile "net.darkhax.darkutilities:DarkUtilities-1.16.4:7.0.8:deobf"
     compile fg.deobf("top.theillusivec4.curios:curios-forge:1.16.4-4.0.2.1")
-    compile fg.deobf("net.darkhax.bookshelf:Bookshelf-1.16.4:9.3.25")
-    compile fg.deobf("net.darkhax.runelic:Runelic-1.16.4:6.0.5")
+    compile "net.darkhax.bookshelf:Bookshelf-1.16.4:9.3.25:deobf"
+    compile "net.darkhax.runelic:Runelic-1.16.4:6.0.5:deobf"
 }
 
 processResources {
