@@ -67,19 +67,20 @@ public class ForgeEventHandler {
 
 				if (SomniaConfig.fatigueSideEffects) {
 					int lastSideEffectStage = props.getSideEffectStage();
-					int currentStage = getSideEffectStage(fatigue, lastSideEffectStage);
-					props.setSideEffectStage(currentStage);
+					int currentStage = getSideEffectStage(fatigue);
+
 					if (currentStage > lastSideEffectStage || currentStage >= SomniaConfig.sideEffectStage4) {
 						EffectInstance effect = getEffectForStage(currentStage, lastSideEffectStage);
 						if (effect != null) event.player.addPotionEffect(effect);
-					}
-					else {
-						int stage = lastSideEffectStage < SomniaConfig.sideEffectStage2 ? SomniaConfig.sideEffectStage2 :
-									lastSideEffectStage < SomniaConfig.sideEffectStage3 ? SomniaConfig.sideEffectStage3 :
-									lastSideEffectStage < SomniaConfig.sideEffectStage4 ? SomniaConfig.sideEffectStage4 : 0;
-						EffectInstance effect = getEffectForStage(stage, 0);
-						if (effect != null) event.player.removePotionEffect(effect.getPotion());
-					}
+					} else if (currentStage < lastSideEffectStage) {
+						EffectInstance effect = getEffectForStage(lastSideEffectStage, 0);
+						if (effect != null) {
+							EffectInstance active = event.player.getActivePotionEffect(effect.getPotion());
+							if (active != null && active.getAmplifier() == effect.getAmplifier()) event.player.removePotionEffect(effect.getPotion());
+						}
+					} else return;
+
+					props.setSideEffectStage(currentStage);
 				}
 			}
 		});
@@ -118,7 +119,7 @@ public class ForgeEventHandler {
 		return new EffectInstance(effect, duration, amplifier);
 	}
 
-	public static int getSideEffectStage(double fatigue, int lastSideEffectStage) {
+	public static int getSideEffectStage(double fatigue) {
 		if (SomniaConfig.sideEffectStage4 < fatigue) return SomniaConfig.sideEffectStage4;
 		else if (SomniaConfig.sideEffectStage3 < fatigue) return SomniaConfig.sideEffectStage3;
 		else if (SomniaConfig.sideEffectStage2 < fatigue) return SomniaConfig.sideEffectStage2;
@@ -173,9 +174,7 @@ public class ForgeEventHandler {
 			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
 		}
 
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
-			props.setSleepNormally(player.isSneaking());
-		});
+		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> props.setSleepNormally(player.isSneaking()));
 	}
 
 	@SubscribeEvent
