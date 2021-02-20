@@ -3,6 +3,7 @@ package mods.su5ed.somnia.handler;
 import mods.su5ed.somnia.api.SomniaAPI;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
+import mods.su5ed.somnia.compat.Compat;
 import mods.su5ed.somnia.compat.DarkUtilsPlugin;
 import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.core.Somnia;
@@ -10,6 +11,7 @@ import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketOpenGUI;
 import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.util.ASMHooks;
 import mods.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
@@ -175,6 +177,8 @@ public class ForgeEventHandler {
 		}
 
 		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> props.setSleepNormally(player.isSneaking()));
+
+		if (Compat.isSleepingInBag(player)) ASMHooks.updateWakeTime(player);
 	}
 
 	@SubscribeEvent

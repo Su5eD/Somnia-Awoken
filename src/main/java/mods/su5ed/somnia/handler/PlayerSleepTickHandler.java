@@ -2,7 +2,6 @@ package mods.su5ed.somnia.handler;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
-import mods.su5ed.somnia.compat.Compat;
 import mods.su5ed.somnia.compat.DarkUtilsPlugin;
 import mods.su5ed.somnia.config.SomniaConfig;
 import net.minecraft.entity.player.PlayerEntity;
@@ -26,7 +25,7 @@ public class PlayerSleepTickHandler {
 	public static void tickStart(IFatigue props, PlayerEntity player) {
 		if (player.isSleeping()) {
 
-			if (props.shouldSleepNormally() || player.getSleepTimer() > 99 && ModList.get().isLoaded("darkutils") && DarkUtilsPlugin.hasSleepCharm(player) || Compat.isSleepingInBag(player)) {
+			if (props.shouldSleepNormally() || player.getSleepTimer() > 99 && ModList.get().isLoaded("darkutils") && DarkUtilsPlugin.hasSleepCharm(player)) {
 				props.setSleepOverride(false);
 				return;
 			}
