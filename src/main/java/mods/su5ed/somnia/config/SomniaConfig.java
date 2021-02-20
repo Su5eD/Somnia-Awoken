@@ -44,7 +44,6 @@ public class SomniaConfig {
 
     //Performance
     public static boolean disableCreatureSpawning;
-    public static boolean disableMoodSoundAndLightCheck;
     public static boolean disableRendering;
 
     //Timings

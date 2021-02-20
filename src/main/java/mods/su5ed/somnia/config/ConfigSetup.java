@@ -62,7 +62,6 @@ public class ConfigSetup {
         SomniaConfig.wakeTimeSelectItem = ConfigHolder.COMMON.wakeTimeSelectItem.get();
     
         SomniaConfig.disableCreatureSpawning = ConfigHolder.COMMON.disableCreatureSpawning.get();
-        SomniaConfig.disableMoodSoundAndLightCheck = ConfigHolder.COMMON.disableMoodSoundAndLightCheck.get();
     
         SomniaConfig.enterSleepStart = ConfigHolder.COMMON.enterSleepStart.get();
         SomniaConfig.enterSleepEnd = ConfigHolder.COMMON.enterSleepEnd.get();

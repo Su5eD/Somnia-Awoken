@@ -87,7 +87,6 @@ public class ConfigHolder {
         protected final ForgeConfigSpec.ConfigValue<String> wakeTimeSelectItem;
 
         protected final ForgeConfigSpec.BooleanValue disableCreatureSpawning;
-        protected final ForgeConfigSpec.BooleanValue disableMoodSoundAndLightCheck;
 
         protected final ForgeConfigSpec.ConfigValue<Integer> enterSleepStart;
         protected final ForgeConfigSpec.ConfigValue<Integer> enterSleepEnd;
@@ -196,9 +195,6 @@ public class ConfigHolder {
             disableCreatureSpawning = builder
                     .comment("Disables mob spawning while you sleep")
                     .define("disableCreatureSpawning", false);
-            disableMoodSoundAndLightCheck = builder
-                    .comment("Disabled chunk light checking from being called every tick while you sleep")
-                    .define("disableMoodSoundAndLightCheck", false);
             builder.pop();
 
             builder.push("timings");
