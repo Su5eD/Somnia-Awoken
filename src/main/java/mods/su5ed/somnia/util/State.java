@@ -2,6 +2,7 @@ package mods.su5ed.somnia.util;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.api.capability.IFatigue;
+import mods.su5ed.somnia.compat.Compat;
 import mods.su5ed.somnia.core.SomniaCommand;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.server.ServerWorld;
@@ -29,7 +30,7 @@ public enum State {
 				allSleeping &= sleeping;
 
 				Optional<IFatigue> props = player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).resolve();
-				if (props.isPresent() && props.get().shouldSleepNormally()) normalSleep++;
+				if (props.isPresent() && props.get().shouldSleepNormally() || Compat.isSleepingInBag(player)) normalSleep++;
 				else somniaSleep++;
 			}
 
