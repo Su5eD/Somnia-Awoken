@@ -93,7 +93,6 @@ dependencies {
     compile fg.deobf("top.theillusivec4.curios:curios-forge:1.16.4-4.0.2.1")
     compile "net.darkhax.bookshelf:Bookshelf-1.16.4:9.3.25:deobf"
     compile "net.darkhax.runelic:Runelic-1.16.4:6.0.5:deobf"
-    compile fg.deobf("curse.maven:sleeping-bags-384485:3105540")
 }
 
 processResources {
