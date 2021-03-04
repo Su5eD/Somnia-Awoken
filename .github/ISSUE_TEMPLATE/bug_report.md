@@ -8,6 +8,9 @@ assignees: ''
 
 <!-- Before reporting a bug, please make sure you're using the newest version of Somnia -->
 
+**What version of Somnia Awoken are you using?**
+The version of Somnia Awoken you're playing.
+
 **Describe the bug**  
 A clear and concise description of what the bug is.
 

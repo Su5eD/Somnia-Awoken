@@ -40,11 +40,14 @@ public class ASMHooks {
                 });
     }
 
-    public static void renderWorld(float partialTicks, long finishTimeNano, MatrixStack stack) {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+    public static boolean skipRenderWorld(float partialTicks, long finishTimeNano, MatrixStack stack) {
+        return DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> {
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player.isSleeping() && SomniaConfig.disableRendering) GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, false);
-            else mc.gameRenderer.renderWorld(partialTicks, finishTimeNano, stack);
+            if (mc.player.isSleeping() && SomniaConfig.disableRendering) {
+                GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, false);
+                return true;
+            }
+            return false;
         });
     }
 }
