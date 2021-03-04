@@ -200,7 +200,7 @@ public class ForgeEventHandler {
 			Direction direction = state.get(HorizontalBlock.HORIZONTAL_FACING);
 			PlayerEntity player = event.getPlayer();
 
-			if (!((ServerPlayerEntity) player).func_241147_a_(pos, direction)) return;
+			if (!Compat.isBed(state, pos, world, player) || !((ServerPlayerEntity) player).func_241147_a_(pos, direction)) return;
 
 			ItemStack stack = player.inventory.getCurrentItem();
 			if (!stack.isEmpty() && stack.getItem().getRegistryName().toString().equals(SomniaConfig.wakeTimeSelectItem)) {

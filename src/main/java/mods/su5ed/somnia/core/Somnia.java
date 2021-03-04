@@ -2,12 +2,14 @@ package mods.su5ed.somnia.core;
 
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.compat.Coffees;
+import mods.su5ed.somnia.compat.Compat;
 import mods.su5ed.somnia.config.ConfigHolder;
 import mods.su5ed.somnia.handler.ClientTickHandler;
 import mods.su5ed.somnia.network.NetworkHandler;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -34,5 +36,7 @@ public class Somnia {
         CapabilityFatigue.register();
         NetworkHandler.registerMessages();
         Coffees.registerCoffees();
+
+        Compat.comforts = ModList.get().isLoaded("comforts");
     }
 }
