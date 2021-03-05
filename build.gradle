@@ -95,6 +95,7 @@ dependencies {
     compile "net.darkhax.runelic:Runelic-1.16.4:6.0.5:deobf"
     //compile fg.deobf("curse.maven:sleeping-bags-384485:3105540")
     //compile fg.deobf("curse.maven:comforts-276951:3156807")
+    //compile fg.deobf("curse.maven:cyclic-239286:3168180")
 }
 
 processResources {

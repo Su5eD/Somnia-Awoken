@@ -32,7 +32,9 @@ public class Compat {
         String namespace = name.getNamespace();
         String path = name.getPath();
 
-        return namespace.equals("sleeping_bags") && path.endsWith("sleeping_bag") || namespace.equals("comforts") && path.startsWith("sleeping_bag");
+        return namespace.equals("sleeping_bags") && path.endsWith("sleeping_bag") ||
+                namespace.equals("comforts") && path.startsWith("sleeping_bag") ||
+                namespace.equals("cyclic") && path.equals("sleeping_mat");
     }
 
     public static boolean isBed(BlockState state, BlockPos pos, IBlockReader world, LivingEntity sleeper) {
