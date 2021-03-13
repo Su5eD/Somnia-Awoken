@@ -89,7 +89,7 @@ public class ClientTickHandler {
 				.map(IFatigue::getFatigue)
 				.orElse(0D);
 		MatrixStack matrixStack = new MatrixStack();
-		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative() && !mc.player.isSpectator()) {
+		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative() && !mc.player.isSpectator() && !mc.gameSettings.hideGUI) {
 			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && fatigue > SomniaConfig.minimumFatigueToSleep) return;
 			String str;
 			if (SomniaConfig.simpleFatigueDisplay) str = SpeedColor.WHITE.code + SideEffectStage.getSideEffectStageDescription(fatigue);
