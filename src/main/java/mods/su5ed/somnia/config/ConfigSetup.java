@@ -19,6 +19,7 @@ public class ConfigSetup {
 
     private static void updateClientConfig() {
         SomniaConfig.displayFatigue = ConfigHolder.CLIENT.displayFatigue.get();
+        SomniaConfig.simpleFatigueDisplay = ConfigHolder.CLIENT.simpleFatigueDisplay.get();
         SomniaConfig.displayETASleep = ConfigHolder.CLIENT.displayETASleep.get();
 
         SomniaConfig.somniaGui = ConfigHolder.CLIENT.somniaGui.get();
@@ -32,25 +33,6 @@ public class ConfigSetup {
         SomniaConfig.fatigueSideEffects = ConfigHolder.COMMON.fatigueSideEffects.get();
         SomniaConfig.minimumFatigueToSleep = ConfigHolder.COMMON.minimumFatigueToSleep.get();
         SomniaConfig.sideEffectStages = ConfigHolder.COMMON.sideEffectStages.get();
-    
-        SomniaConfig.sideEffectStage1 = ConfigHolder.COMMON.sideEffectStage1.get();
-        SomniaConfig.sideEffectStage1Potion = ConfigHolder.COMMON.sideEffectStage1Potion.get();
-        SomniaConfig.sideEffectStage1Duration = ConfigHolder.COMMON.sideEffectStage1Duration.get();
-        SomniaConfig.sideEffectStage1Amplifier = ConfigHolder.COMMON.sideEffectStage1Amplifier.get();
-
-        SomniaConfig.sideEffectStage2 = ConfigHolder.COMMON.sideEffectStage2.get();
-        SomniaConfig.sideEffectStage2Potion = ConfigHolder.COMMON.sideEffectStage2Potion.get();
-        SomniaConfig.sideEffectStage2Duration = ConfigHolder.COMMON.sideEffectStage2Duration.get();
-        SomniaConfig.sideEffectStage2Amplifier = ConfigHolder.COMMON.sideEffectStage2Amplifier.get();
-
-        SomniaConfig.sideEffectStage3 = ConfigHolder.COMMON.sideEffectStage3.get();
-        SomniaConfig.sideEffectStage3Potion = ConfigHolder.COMMON.sideEffectStage3Potion.get();
-        SomniaConfig.sideEffectStage3Duration = ConfigHolder.COMMON.sideEffectStage3Duration.get();
-        SomniaConfig.sideEffectStage3Amplifier = ConfigHolder.COMMON.sideEffectStage3Amplifier.get();
-
-        SomniaConfig.sideEffectStage4 = ConfigHolder.COMMON.sideEffectStage4.get();
-        SomniaConfig.sideEffectStage4Potion = ConfigHolder.COMMON.sideEffectStage4Potion.get();
-        SomniaConfig.sideEffectStage4Amplifier = ConfigHolder.COMMON.sideEffectStage4Amplifier.get();
     
         SomniaConfig.delta = ConfigHolder.COMMON.delta.get();
         SomniaConfig.baseMultiplier = ConfigHolder.COMMON.baseMultiplier.get();

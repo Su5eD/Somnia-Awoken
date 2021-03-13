@@ -26,6 +26,7 @@ public class ConfigHolder {
 
     protected static final class ClientConfig {
         protected final ForgeConfigSpec.ConfigValue<String> displayFatigue;
+        protected final ForgeConfigSpec.BooleanValue simpleFatigueDisplay;
         protected final ForgeConfigSpec.ConfigValue<String> displayETASleep;
         protected final ForgeConfigSpec.BooleanValue somniaGui;
         protected final ForgeConfigSpec.BooleanValue disableRendering;
@@ -33,8 +34,11 @@ public class ConfigHolder {
         public ClientConfig(ForgeConfigSpec.Builder builder) {
             builder.push("fatigue");
             displayFatigue = builder
-                    .comment("The fatigue counter's position. Accepted values: TOM_CENTER, TOP_LEFT, TOP_RIGHT, BOTTOM_CENTER, BOTTOM_LEFT, BOTTOM_RIGHT")
+                    .comment("The fatigue counter's position. Accepted values: TOP_CENTER, TOP_LEFT, TOP_RIGHT, BOTTOM_CENTER, BOTTOM_LEFT, BOTTOM_RIGHT")
                     .define("displayFatigue", "BOTTOM_RIGHT");
+            simpleFatigueDisplay = builder
+                    .comment("Simplifies the numerical fatigue counter to words")
+                    .define("simpleFatigueDisplay", false);
             displayETASleep = builder
                     .comment("The ETA and multiplier display position in Somnia's sleep gui. Accepted values: right, center, left")
                     .define("displayETASleep", "left");
@@ -60,25 +64,6 @@ public class ConfigHolder {
         protected final ForgeConfigSpec.BooleanValue fatigueSideEffects;
         protected final ForgeConfigSpec.ConfigValue<Integer> minimumFatigueToSleep;
         protected final ForgeConfigSpec.ConfigValue<List<? extends List<Integer>>> sideEffectStages;
-
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage1;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage1Potion;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage1Duration;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage1Amplifier;
-
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage2;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage2Potion;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage2Duration;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage2Amplifier;
-
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage3;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage3Potion;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage3Duration;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage3Amplifier;
-
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage4;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage4Potion;
-        protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage4Amplifier;
 
         protected final ForgeConfigSpec.ConfigValue<Double> delta;
         protected final ForgeConfigSpec.ConfigValue<Double> baseMultiplier;
@@ -120,57 +105,6 @@ public class ConfigHolder {
                             Arrays.asList(90, 95, 19, 200, 1),
                             Arrays.asList(95, 100, 2, -1, 3)
                     ), obj -> obj instanceof List);
-            builder.pop();
-
-            builder.comment("Fatigue levels to enter each side effect stage, their potion IDs, amplifiers and duration (ticks)").push("fatigueSideEffects");
-            sideEffectStage1 = builder
-                    .comment("Amount of fatigue required to enter the first side effect stage")
-                    .define("sideEffectStage1", 70);
-            sideEffectStage1Potion = builder
-                    .comment("Potion effect ID of the first stage")
-                    .define("sideEffectStage1Potion", 9);
-            sideEffectStage1Duration = builder
-                    .comment("Effect duration of the first stage")
-                    .define("sideEffectStage1Duration", 150);
-            sideEffectStage1Amplifier = builder
-                    .comment("Potion effect amplifier of the first stage")
-                    .define("sideEffectStage1Amplifier", 0);
-
-            sideEffectStage2 = builder
-                    .comment("Amount of fatigue required to enter the second side effect stage")
-                    .define("sideEffectStage2", 80);
-            sideEffectStage2Potion = builder
-                    .comment("Potion effect ID of the second stage")
-                    .define("sideEffectStage2Potion", 2);
-            sideEffectStage2Duration = builder
-                    .comment("Effect duration of the second stage")
-                    .define("sideEffectStage2Duration", 300);
-            sideEffectStage2Amplifier = builder
-                    .comment("Potion effect amplifier of the second stage")
-                    .define("sideEffectStage2Amplifier", 2);
-
-            sideEffectStage3 = builder
-                    .comment("Amount of fatigue required to enter the third side effect stage")
-                    .define("sideEffectStage3", 90);
-            sideEffectStage3Potion = builder
-                    .comment("Potion effect ID of the third stage")
-                    .define("sideEffectStage3Potion", 19);
-            sideEffectStage3Duration = builder
-                    .comment("Effect duration of the third stage")
-                    .define("sideEffectStage3Duration", 200);
-            sideEffectStage3Amplifier = builder
-                    .comment("Potion effect amplifier of the third stage")
-                    .define("sideEffectStage3Amplifier", 1);
-
-            sideEffectStage4 = builder
-                    .comment("Amount of fatigue required to enter the fourth side effect stage")
-                    .define("sideEffectStage4", 95);
-            sideEffectStage4Potion = builder
-                    .comment("Potion effect ID of the fourth stage")
-                    .define("sideEffectStage4Potion", 2);
-            sideEffectStage4Amplifier = builder
-                    .comment("Potion effect amplifier of the fourth stage")
-                    .define("sideEffectStage4Amplifier", 3);
             builder.pop();
 
             builder.push("logic");

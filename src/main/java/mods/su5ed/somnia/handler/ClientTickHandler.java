@@ -7,6 +7,7 @@ import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketUpdateWakeTime;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
+import mods.su5ed.somnia.util.SideEffectStage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.IngameMenuScreen;
@@ -90,7 +91,10 @@ public class ClientTickHandler {
 		MatrixStack matrixStack = new MatrixStack();
 		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative() && !mc.player.isSpectator()) {
 			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && fatigue > SomniaConfig.minimumFatigueToSleep) return;
-			String str = String.format(SpeedColor.WHITE.code + "Fatigue: %.2f", fatigue);
+			String str;
+			if (SomniaConfig.simpleFatigueDisplay) str = SpeedColor.WHITE.code + SideEffectStage.getSideEffectStageDescription(fatigue);
+			else str = String.format(SpeedColor.WHITE.code + "Fatigue: %.2f", fatigue);
+
 			int width = mc.fontRenderer.getStringWidth(str),
 				scaledWidth = mc.getMainWindow().getScaledWidth(),
 				scaledHeight = mc.getMainWindow().getScaledHeight();

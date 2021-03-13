@@ -1,6 +1,7 @@
 package mods.su5ed.somnia.util;
 
 import mods.su5ed.somnia.config.SomniaConfig;
+import net.minecraft.client.resources.I18n;
 
 import java.util.List;
 
@@ -37,12 +38,10 @@ public class SideEffectStage {
     }
 
     public static String getSideEffectStageDescription(double fatigue) {
-        /*int stage = getSideEffectStage(fatigue);
-        float ratio = SomniaConfig.sideEffectStages.length / 4F;
+        int stage = getForFatigue(fatigue);
+        float ratio = SomniaConfig.sideEffectStages.size() / 4F;
         int desc = Math.round(stage / ratio);
-        return SomniaUtil.translate("somnia.side_effect."+desc);*/
-        //TODO: Add simplified fatigue display
-        return null;
+        return I18n.format("somnia.side_effect."+desc);
     }
 
     public static int getForFatigue(double fatigue) {
