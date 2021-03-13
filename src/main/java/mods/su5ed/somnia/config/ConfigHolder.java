@@ -3,6 +3,9 @@ package mods.su5ed.somnia.config;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class ConfigHolder {
     
     public static final ForgeConfigSpec COMMON_SPEC;
@@ -56,6 +59,7 @@ public class ConfigHolder {
         protected final ForgeConfigSpec.ConfigValue<Double> fatigueReplenishRate;
         protected final ForgeConfigSpec.BooleanValue fatigueSideEffects;
         protected final ForgeConfigSpec.ConfigValue<Integer> minimumFatigueToSleep;
+        protected final ForgeConfigSpec.ConfigValue<List<? extends List<Integer>>> sideEffectStages;
 
         protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage1;
         protected final ForgeConfigSpec.ConfigValue<Integer> sideEffectStage1Potion;
@@ -108,6 +112,14 @@ public class ConfigHolder {
             minimumFatigueToSleep = builder
                     .comment("The required amount of fatigue to sleep")
                     .define("minimumFatigueToSleep", 20);
+            sideEffectStages = builder
+                    .comment("Definitions of each side effect stage in order: min fatigue, max fatigue, potion ID, duration, amplifier. For a permanent effect, set the duration to -1.")
+                    .defineList("sideEffectStages", Arrays.asList(
+                            Arrays.asList(70, 80, 9, 150, 0),
+                            Arrays.asList(80, 90, 2, 300, 2),
+                            Arrays.asList(90, 95, 19, 200, 1),
+                            Arrays.asList(95, 100, 2, -1, 3)
+                    ), obj -> obj instanceof List);
             builder.pop();
 
             builder.comment("Fatigue levels to enter each side effect stage, their potion IDs, amplifiers and duration (ticks)").push("fatigueSideEffects");

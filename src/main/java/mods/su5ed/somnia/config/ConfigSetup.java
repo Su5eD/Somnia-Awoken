@@ -31,6 +31,7 @@ public class ConfigSetup {
         SomniaConfig.fatigueReplenishRate = ConfigHolder.COMMON.fatigueReplenishRate.get();
         SomniaConfig.fatigueSideEffects = ConfigHolder.COMMON.fatigueSideEffects.get();
         SomniaConfig.minimumFatigueToSleep = ConfigHolder.COMMON.minimumFatigueToSleep.get();
+        SomniaConfig.sideEffectStages = ConfigHolder.COMMON.sideEffectStages.get();
     
         SomniaConfig.sideEffectStage1 = ConfigHolder.COMMON.sideEffectStage1.get();
         SomniaConfig.sideEffectStage1Potion = ConfigHolder.COMMON.sideEffectStage1Potion.get();

@@ -12,6 +12,7 @@ import mods.su5ed.somnia.network.packet.PacketOpenGUI;
 import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
 import mods.su5ed.somnia.network.packet.PacketWakeUpPlayer;
 import mods.su5ed.somnia.util.ASMHooks;
+import mods.su5ed.somnia.util.SideEffectStage;
 import mods.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
@@ -41,7 +42,6 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -69,65 +69,26 @@ public class ForgeEventHandler {
 
 				if (SomniaConfig.fatigueSideEffects) {
 					int lastSideEffectStage = props.getSideEffectStage();
-					int currentStage = getSideEffectStage(fatigue);
-
-					if (currentStage > lastSideEffectStage || currentStage >= SomniaConfig.sideEffectStage4) {
-						EffectInstance effect = getEffectForStage(currentStage, lastSideEffectStage);
-						if (effect != null) event.player.addPotionEffect(effect);
-					} else if (currentStage < lastSideEffectStage) {
-						EffectInstance effect = getEffectForStage(lastSideEffectStage, 0);
-						if (effect != null) {
-							EffectInstance active = event.player.getActivePotionEffect(effect.getPotion());
-							if (active != null && active.getAmplifier() == effect.getAmplifier()) event.player.removePotionEffect(effect.getPotion());
+					SideEffectStage[] stages = SideEffectStage.getSideEffectStages();
+					SideEffectStage firstStage = stages[0];
+					if (fatigue < firstStage.minFatigue) {
+						props.setSideEffectStage(-1);
+						for (SideEffectStage stage : stages) {
+							if (lastSideEffectStage < stage.minFatigue) event.player.removePotionEffect(Effect.get(stage.potionID));
 						}
-					} else return;
+					}
 
-					props.setSideEffectStage(currentStage);
+					for (int i = 0; i < SomniaConfig.sideEffectStages.size(); i++) {
+						SideEffectStage stage = stages[i];
+						boolean permanent = stage.duration < 0;
+						if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue && (permanent || lastSideEffectStage < stage.minFatigue)) {
+							if (!permanent) props.setSideEffectStage(stage.minFatigue);
+							event.player.addPotionEffect(new EffectInstance(Effect.get(stage.potionID), permanent ? 150 : stage.duration, stage.amplifier));
+						}
+					}
 				}
 			}
 		});
-	}
-
-	@Nullable
-	public static EffectInstance getEffectForStage(int stage, int previousStage) {
-		int potionID = 0;
-		int duration = 0;
-		int amplifier = 0;
-
-		if (stage == SomniaConfig.sideEffectStage1 && previousStage < SomniaConfig.sideEffectStage1) {
-			potionID = SomniaConfig.sideEffectStage1Potion;
-			duration = SomniaConfig.sideEffectStage1Duration;
-			amplifier = SomniaConfig.sideEffectStage1Amplifier;
-		}
-		else if (stage == SomniaConfig.sideEffectStage2 && previousStage < SomniaConfig.sideEffectStage2) {
-			potionID = SomniaConfig.sideEffectStage2Potion;
-			duration = SomniaConfig.sideEffectStage2Duration;
-			amplifier = SomniaConfig.sideEffectStage2Amplifier;
-		}
-		else if (stage == SomniaConfig.sideEffectStage3 && previousStage < SomniaConfig.sideEffectStage3) {
-			potionID = SomniaConfig.sideEffectStage3Potion;
-			duration = SomniaConfig.sideEffectStage3Duration;
-			amplifier = SomniaConfig.sideEffectStage3Amplifier;
-		}
-		else if (stage >= SomniaConfig.sideEffectStage4) {
-			potionID = SomniaConfig.sideEffectStage4Potion;
-			duration = 150;
-			amplifier = SomniaConfig.sideEffectStage4Amplifier;
-		}
-
-		Effect effect = Effect.get(potionID);
-		if (effect == null) return null;
-
-		return new EffectInstance(effect, duration, amplifier);
-	}
-
-	public static int getSideEffectStage(double fatigue) {
-		if (SomniaConfig.sideEffectStage4 < fatigue) return SomniaConfig.sideEffectStage4;
-		else if (SomniaConfig.sideEffectStage3 < fatigue) return SomniaConfig.sideEffectStage3;
-		else if (SomniaConfig.sideEffectStage2 < fatigue) return SomniaConfig.sideEffectStage2;
-		else if (SomniaConfig.sideEffectStage1 < fatigue) return SomniaConfig.sideEffectStage1;
-
-		return -1;
 	}
 
 	@SubscribeEvent

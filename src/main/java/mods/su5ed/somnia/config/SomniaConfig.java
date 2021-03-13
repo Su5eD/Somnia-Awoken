@@ -1,5 +1,7 @@
 package mods.su5ed.somnia.config;
 
+import java.util.List;
+
 public class SomniaConfig {
     //Fatigue
     public static String displayFatigue;
@@ -8,6 +10,7 @@ public class SomniaConfig {
     public static double fatigueReplenishRate;
     public static boolean fatigueSideEffects;
     public static double minimumFatigueToSleep;
+    public static List<? extends List<Integer>> sideEffectStages;
 
     //Side Effects
     public static int sideEffectStage1;
