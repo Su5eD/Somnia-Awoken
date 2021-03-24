@@ -41,8 +41,8 @@ public class WakeTimeButton extends Button {
     }
 
     @Override
-    public void renderButton(MatrixStack matrix, int mouseX, int mouseY, float partialTicks) {
-        super.renderButton(matrix, mouseX, mouseY, partialTicks);
+    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
         this.setMessage(new StringTextComponent(this.isHovered ? this.hoverText : this.buttonText));
     }
 }
