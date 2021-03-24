@@ -49,7 +49,7 @@ import java.util.Optional;
 public class ForgeEventHandler {
 	@SubscribeEvent
 	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase != TickEvent.Phase.START || event.player.world.isRemote || (!event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping())) return;
+		if (event.phase != TickEvent.Phase.START || event.player.level.isClientSide || (!event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping())) return;
 
 		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			double fatigue = props.getFatigue();
@@ -74,7 +74,7 @@ public class ForgeEventHandler {
 					if (fatigue < firstStage.minFatigue) {
 						props.setSideEffectStage(-1);
 						for (SideEffectStage stage : stages) {
-							if (lastSideEffectStage < stage.minFatigue) event.player.removePotionEffect(Effect.get(stage.potionID));
+							if (lastSideEffectStage < stage.minFatigue) event.player.removeEffect(Effect.byId(stage.potionID));
 						}
 					}
 
@@ -83,7 +83,7 @@ public class ForgeEventHandler {
 						boolean permanent = stage.duration < 0;
 						if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue && (permanent || lastSideEffectStage < stage.minFatigue)) {
 							if (!permanent) props.setSideEffectStage(stage.minFatigue);
-							event.player.addPotionEffect(new EffectInstance(Effect.get(stage.potionID), permanent ? 150 : stage.duration, stage.amplifier));
+							event.player.addEffect(new EffectInstance(Effect.byId(stage.potionID), permanent ? 150 : stage.duration, stage.amplifier));
 						}
 					}
 				}
@@ -129,15 +129,15 @@ public class ForgeEventHandler {
 	public static void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
 		PlayerEntity player = event.getPlayer();
 		if (!SomniaUtil.checkFatigue(player)) {
-			player.sendStatusMessage(new TranslationTextComponent("somnia.status.cooldown"), true);
+			player.displayClientMessage(new TranslationTextComponent("somnia.status.cooldown"), true);
 			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
 		}
 		else if (!SomniaConfig.sleepWithArmor && !player.isCreative() && SomniaUtil.doesPlayerWearArmor(player)) {
-			player.sendStatusMessage(new TranslationTextComponent("somnia.status.armor"), true);
+			player.displayClientMessage(new TranslationTextComponent("somnia.status.armor"), true);
 			event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
 		}
 
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> props.setSleepNormally(player.isSneaking()));
+		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> props.setSleepNormally(player.isShiftKeyDown()));
 
 		if (Compat.isSleepingInBag(player)) ASMHooks.updateWakeTime(player);
 	}
@@ -154,16 +154,16 @@ public class ForgeEventHandler {
 	@SubscribeEvent
 	public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
 		World world = event.getWorld();
-		if (!world.isRemote) {
+		if (!world.isClientSide) {
 			BlockPos pos = event.getPos();
 			BlockState state = world.getBlockState(pos);
-			if (!state.hasProperty(HorizontalBlock.HORIZONTAL_FACING)) return;
-			Direction direction = state.get(HorizontalBlock.HORIZONTAL_FACING);
+			if (!state.hasProperty(HorizontalBlock.FACING)) return;
+			Direction direction = state.getValue(HorizontalBlock.FACING);
 			PlayerEntity player = event.getPlayer();
 
-			if (!Compat.isBed(state, pos, world, player) || !((ServerPlayerEntity) player).func_241147_a_(pos, direction)) return;
+			if (!Compat.isBed(state, pos, world, player) || !((ServerPlayerEntity) player).bedInRange(pos, direction)) return;
 
-			ItemStack stack = player.inventory.getCurrentItem();
+			ItemStack stack = player.inventory.getSelected();
 			if (!stack.isEmpty() && stack.getItem().getRegistryName().toString().equals(SomniaConfig.wakeTimeSelectItem)) {
 				NetworkHandler.sendToClient(new PacketOpenGUI(), (ServerPlayerEntity) player);
 				event.setCancellationResult(ActionResultType.SUCCESS);
@@ -176,9 +176,9 @@ public class ForgeEventHandler {
 	@SubscribeEvent
 	public static void onLivingEntityUseItem(LivingEntityUseItemEvent.Finish event) {
 		ItemStack stack = event.getItem();
-		if (stack.getUseAction() == UseAction.DRINK) {
+		if (stack.getUseAnimation() == UseAction.DRINK) {
 			for (Pair<ItemStack, Double> pair : SomniaAPI.getCoffeeList()) {
-				if (pair.getLeft().isItemEqual(stack)) {
+				if (pair.getLeft().sameItem(stack)) {
 					event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
 						.ifPresent(props -> {
 							props.setFatigue(props.getFatigue() - pair.getRight());

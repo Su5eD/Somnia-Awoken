@@ -9,7 +9,7 @@ public class PacketWakeUpPlayer {
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->  {
             ServerPlayerEntity player = ctx.get().getSender();
-            if (player != null) player.wakeUp();
+            if (player != null) player.stopSleeping();
         });
         return true;
     }

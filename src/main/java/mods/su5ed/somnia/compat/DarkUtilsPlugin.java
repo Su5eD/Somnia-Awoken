@@ -13,11 +13,11 @@ public class DarkUtilsPlugin {
         if (ModList.get().isLoaded("curios") && CuriosPlugin.hasCurio(player, SLEEP_CHARM)) return true;
 
         for (EquipmentSlotType slot : EquipmentSlotType.values()) {
-            ItemStack stack = player.getItemStackFromSlot(slot);
+            ItemStack stack = player.getItemBySlot(slot);
             if (!stack.isEmpty() && stack.getItem().getRegistryName().equals(SLEEP_CHARM)) return true;
         }
 
-        for(ItemStack stack : player.inventory.mainInventory) {
+        for(ItemStack stack : player.inventory.items) {
             if (!stack.isEmpty() && stack.getItem().getRegistryName().equals(SLEEP_CHARM)) return true;
         }
 

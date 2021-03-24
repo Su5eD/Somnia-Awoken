@@ -59,7 +59,7 @@ public class NetworkHandler {
     }
 
     public static void sendToClient(Object packet, ServerPlayerEntity player) {
-        INSTANCE.sendTo(packet, player.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+        INSTANCE.sendTo(packet, player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     }
 
     public static void sendToDimension(Object packet, RegistryKey<World> dimension) {

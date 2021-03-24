@@ -20,29 +20,29 @@ public class WakeTimeButton extends Button {
     public WakeTimeButton(int x, int y, int widthIn, int heightIn, String buttonText, long wakeTime) {
         super(x, y, widthIn, heightIn, new StringTextComponent(buttonText), button -> {
             Minecraft mc = Minecraft.getInstance();
-            if (mc.world == null) return;
+            if (mc.level == null) return;
 
-            long targetWakeTime = SomniaUtil.calculateWakeTime(mc.world.getGameTime(), (int) wakeTime);
+            long targetWakeTime = SomniaUtil.calculateWakeTime(mc.level.getGameTime(), (int) wakeTime);
             NetworkHandler.INSTANCE.sendToServer(new PacketUpdateWakeTime(targetWakeTime));
             mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
                     .ifPresent(props -> props.setWakeTime(targetWakeTime));
 
-            RayTraceResult mouseOver = mc.objectMouseOver;
+            RayTraceResult mouseOver = mc.hitResult;
             if (mouseOver instanceof BlockRayTraceResult) {
-                Vector3d hitVec = mouseOver.getHitVec();
-                PacketActivateBlock packet = new PacketActivateBlock(((BlockRayTraceResult)mouseOver).getPos(), ((BlockRayTraceResult)mouseOver).getFace(), (float) hitVec.x, (float) hitVec.y, (float) hitVec.z);
+                Vector3d hitVec = mouseOver.getLocation();
+                PacketActivateBlock packet = new PacketActivateBlock(((BlockRayTraceResult)mouseOver).getBlockPos(), ((BlockRayTraceResult)mouseOver).getDirection(), (float) hitVec.x, (float) hitVec.y, (float) hitVec.z);
                 NetworkHandler.INSTANCE.sendToServer(packet);
             }
 
-            mc.displayGuiScreen(null);
+            mc.setScreen(null);
         });
         this.buttonText = buttonText;
         this.hoverText = SomniaUtil.timeStringForWorldTime(wakeTime);
     }
 
     @Override
-    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
+    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        super.renderButton(matrixStack, mouseX, mouseY, partialTicks);
         this.setMessage(new StringTextComponent(this.isHovered ? this.hoverText : this.buttonText));
     }
 }

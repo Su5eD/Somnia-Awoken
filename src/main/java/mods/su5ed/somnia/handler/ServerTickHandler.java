@@ -47,7 +47,7 @@ public class ServerTickHandler {
 			}
 			
 			if (state == SIMULATING || state == State.WAITING) {
-				NetworkHandler.sendToDimension(new PacketUpdateSpeed(state == SIMULATING ? multiplier + overflow : 0), worldServer.getDimensionKey());
+				NetworkHandler.sendToDimension(new PacketUpdateSpeed(state == SIMULATING ? multiplier + overflow : 0), worldServer.dimension());
 			}
 
 			this.currentState = state;
@@ -57,7 +57,7 @@ public class ServerTickHandler {
 	}
 	
 	private void closeGuiWithMessage(@Nullable String key) {
-		worldServer.getPlayers().stream()
+		worldServer.players().stream()
 				.filter(LivingEntity::isSleeping)
 				.forEach(player -> {
 					NetworkHandler.sendToClient(new PacketWakeUpPlayer(), player);
@@ -83,13 +83,13 @@ public class ServerTickHandler {
 	private void doMultipliedServerTicking() {
 		BasicEventHooks.onPreWorldTick(worldServer);
 
-		worldServer.getPlayers().stream()
+		worldServer.players().stream()
 				.map(player -> new TickEvent.PlayerTickEvent(TickEvent.Phase.START, player))
 				.forEach(ForgeEventHandler::onPlayerTick);
 
-		worldServer.tick(worldServer.getServer()::isAheadOfTime);
+		worldServer.tick(worldServer.getServer()::haveTime);
 
-		worldServer.getServer().getPlayerList().func_232642_a_(new SUpdateTimePacket(worldServer.getGameTime(), worldServer.getDayTime(), worldServer.getGameRules().getBoolean(GameRules.DO_DAYLIGHT_CYCLE)), worldServer.getDimensionKey());
+		worldServer.getServer().getPlayerList().broadcastAll(new SUpdateTimePacket(worldServer.getGameTime(), worldServer.getDayTime(), worldServer.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)), worldServer.dimension());
 
 		BasicEventHooks.onPostWorldTick(worldServer);
 	}

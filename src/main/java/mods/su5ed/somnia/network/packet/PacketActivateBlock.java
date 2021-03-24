@@ -30,7 +30,7 @@ public class PacketActivateBlock {
 
     public PacketActivateBlock(PacketBuffer buffer) {
         this.pos = buffer.readBlockPos();
-        this.side = Direction.byIndex(buffer.readByte());
+        this.side = Direction.from3DDataValue(buffer.readByte());
         this.hitX = buffer.readFloat();
         this.hitY = buffer.readFloat();
         this.hitZ = buffer.readFloat();
@@ -38,7 +38,7 @@ public class PacketActivateBlock {
 
     public void encode(PacketBuffer buffer) {
         buffer.writeBlockPos(pos);
-        buffer.writeByte(this.side.getIndex());
+        buffer.writeByte(this.side.get3DDataValue());
         buffer.writeFloat(this.hitX);
         buffer.writeFloat(this.hitY);
         buffer.writeFloat(this.hitZ);
@@ -48,10 +48,10 @@ public class PacketActivateBlock {
         ctx.get().enqueueWork(() -> {
             ServerPlayerEntity player = ctx.get().getSender();
             if (player != null) {
-                BlockState state = player.world.getBlockState(pos);
+                BlockState state = player.level.getBlockState(pos);
                 BlockRayTraceResult rayTraceResult = new BlockRayTraceResult(new Vector3d(this.hitX, this.hitY, this.hitZ), this.side, pos, false);
 
-                state.onBlockActivated(player.world, player, MoreObjects.firstNonNull(player.swingingHand, Hand.MAIN_HAND), rayTraceResult);
+                state.use(player.level, player, MoreObjects.firstNonNull(player.swingingArm, Hand.MAIN_HAND), rayTraceResult);
             }
         });
         return true;

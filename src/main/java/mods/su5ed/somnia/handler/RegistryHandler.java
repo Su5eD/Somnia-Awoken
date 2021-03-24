@@ -47,7 +47,7 @@ public class RegistryHandler {
 
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
-        if (!event.getEntity().world.isRemote) {
+        if (!event.getEntity().level.isClientSide) {
             event.getOriginal().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
                 CompoundNBT old = props.serializeNBT();
                 event.getPlayer().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(fatigue -> {

@@ -17,14 +17,14 @@ public enum State {
 
 	public static State forWorld(ServerWorld world) {
 		if (!SomniaUtil.isValidSleepTime(world)) return UNAVAILABLE;
-		List<ServerPlayerEntity> players = world.getPlayers();
+		List<ServerPlayerEntity> players = world.players();
 
 		if (!players.isEmpty()) {
 			boolean anySleeping = false, allSleeping = true;
 			int somniaSleep = 0, normalSleep = 0;
 
 			for (ServerPlayerEntity player : players) {
-				boolean sleeping = player.isSleeping() || SomniaCommand.OVERRIDES.contains(player.getUniqueID());
+				boolean sleeping = player.isSleeping() || SomniaCommand.OVERRIDES.contains(player.getUUID());
 				anySleeping |= sleeping;
 				allSleeping &= sleeping;
 

@@ -36,14 +36,14 @@ public class PlayerSleepTickHandler {
 			if (SomniaConfig.fading) {
 				int sleepTimer = player.getSleepTimer()+1;
 				if (sleepTimer >= 99) sleepTimer = 98;
-				player.sleepTimer = sleepTimer;
+				player.sleepCounter = sleepTimer;
 			}
 		}
 	}
 
 	public static void tickEnd(IFatigue props, PlayerEntity player) {
 		if (props.sleepOverride()) {
-			player.startSleeping(player.getBedPosition().orElse(player.getPosition()));
+			player.startSleeping(player.getSleepingPos().orElse(player.blockPosition()));
 			props.setSleepOverride(false);
 		}
 	}

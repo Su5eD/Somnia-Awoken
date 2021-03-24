@@ -23,11 +23,11 @@ public class SomniaCommand {
 
 	public static void register(CommandDispatcher<CommandSource> dispatcher) {
 		dispatcher.register(Commands.literal("somnia")
-				.requires(src -> src.hasPermissionLevel(3))
+				.requires(src -> src.hasPermission(3))
 				.then(Commands.literal("fatigue")
                     .then(Commands.literal("set")
 						.then(Commands.argument("amount", DoubleArgumentType.doubleArg())
-							.executes(ctx -> SomniaCommand.setFatigue(DoubleArgumentType.getDouble(ctx, "amount"), ctx.getSource().asPlayer()))
+							.executes(ctx -> SomniaCommand.setFatigue(DoubleArgumentType.getDouble(ctx, "amount"), ctx.getSource().getPlayerOrException()))
 								.then(Commands.argument("target", EntityArgument.players())
 									.executes(ctx -> SomniaCommand.setFatigue(DoubleArgumentType.getDouble(ctx, "amount"), EntityArgument.getPlayer(ctx, "targets")))))))
 				.then(Commands.literal("override")
@@ -51,26 +51,26 @@ public class SomniaCommand {
 	}
 
 	private static int addOverride(ServerPlayerEntity player) {
-		if (!OVERRIDES.add(player.getUniqueID())) player.sendStatusMessage(new StringTextComponent("Override already exists"), true);
+		if (!OVERRIDES.add(player.getUUID())) player.displayClientMessage(new StringTextComponent("Override already exists"), true);
 
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int removeOverride(ServerPlayerEntity target) {
-		OVERRIDES.remove(target.getUniqueID());
+		OVERRIDES.remove(target.getUUID());
 		return Command.SINGLE_SUCCESS;
 	}
 
 	private static int listOverrides(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
-		ServerPlayerEntity sender = ctx.getSource().asPlayer();
+		ServerPlayerEntity sender = ctx.getSource().getPlayerOrException();
 		List<String> overrides = OVERRIDES.stream()
-				.map(sender.world::getPlayerByUuid)
+				.map(sender.level::getPlayerByUUID)
 				.filter(Objects::nonNull)
 				.map(player -> player.getName().toString())
 				.collect(Collectors.toList());
 
 		ITextComponent chatComponent = new StringTextComponent(!overrides.isEmpty() ? String.join(", ", overrides) : "Nothing to see here...");
-		sender.sendStatusMessage(chatComponent, false);
+		sender.displayClientMessage(chatComponent, false);
 		return Command.SINGLE_SUCCESS;
 	}
 }

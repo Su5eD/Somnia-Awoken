@@ -50,22 +50,22 @@ public class ClientTickHandler {
 			if (mc.player != null) {
 				if (mc.player.isSleeping() && SomniaConfig.muteSoundWhenSleeping && !muted) {
 					muted = true;
-					volume = mc.gameSettings.getSoundLevel(SoundCategory.MASTER);
-					mc.gameSettings.setSoundLevel(SoundCategory.MASTER, 0);
+					volume = mc.options.getSoundSourceVolume(SoundCategory.MASTER);
+					mc.options.setSoundCategoryVolume(SoundCategory.MASTER, 0);
 				} else if (muted) {
 					muted = false;
-					mc.gameSettings.setSoundLevel(SoundCategory.MASTER, volume);
+					mc.options.setSoundCategoryVolume(SoundCategory.MASTER, volume);
 				}
 
 				mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
 						.filter(props -> {
 							long wakeTime = props.getWakeTime();
-							return wakeTime > -1 && mc.world.getGameTime() >= wakeTime;
+							return wakeTime > -1 && mc.level.getGameTime() >= wakeTime;
 						})
 						.ifPresent(props -> {
 							NetworkHandler.INSTANCE.sendToServer(new PacketUpdateWakeTime(-1));
 							props.setWakeTime(-1);
-							mc.player.wakeUp();
+							mc.player.stopSleeping();
 							NetworkHandler.INSTANCE.sendToServer(new PacketWakeUpPlayer());
 						});
 			}
@@ -80,7 +80,7 @@ public class ClientTickHandler {
 	
 	@SubscribeEvent
 	public void onRenderTick(TickEvent.RenderTickEvent event) {
-		if (mc.currentScreen != null && !(mc.currentScreen instanceof IngameMenuScreen)) {
+		if (mc.screen != null && !(mc.screen instanceof IngameMenuScreen)) {
 			if (mc.player == null || !mc.player.isSleeping()) return;
 		}
 
@@ -89,20 +89,20 @@ public class ClientTickHandler {
 				.map(IFatigue::getFatigue)
 				.orElse(0D);
 		MatrixStack matrixStack = new MatrixStack();
-		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative() && !mc.player.isSpectator() && !mc.gameSettings.hideGUI) {
+		if (event.phase == TickEvent.Phase.END && !mc.player.isCreative() && !mc.player.isSpectator() && !mc.options.hideGui) {
 			if (!mc.player.isSleeping() && !SomniaConfig.fatigueSideEffects && fatigue > SomniaConfig.minimumFatigueToSleep) return;
 			String str;
 			if (SomniaConfig.simpleFatigueDisplay) str = SpeedColor.WHITE.code + SideEffectStage.getSideEffectStageDescription(fatigue);
 			else str = String.format(SpeedColor.WHITE.code + "Fatigue: %.2f", fatigue);
 
-			int width = mc.fontRenderer.getStringWidth(str),
-				scaledWidth = mc.getMainWindow().getScaledWidth(),
-				scaledHeight = mc.getMainWindow().getScaledHeight();
+			int width = mc.font.width(str),
+				scaledWidth = mc.getWindow().getGuiScaledWidth(),
+				scaledHeight = mc.getWindow().getGuiScaledHeight();
 			FatigueDisplayPosition pos = mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : FatigueDisplayPosition.valueOf(SomniaConfig.displayFatigue);
-			mc.fontRenderer.drawString(matrixStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, mc.fontRenderer.FONT_HEIGHT), Integer.MIN_VALUE);
+			mc.font.draw(matrixStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, mc.font.lineHeight), Integer.MIN_VALUE);
 		}
 
-		if (mc.player.isSleeping() && SomniaConfig.somniaGui && fatigue != -1) renderSleepGui(matrixStack, mc.currentScreen);
+		if (mc.player.isSleeping() && SomniaConfig.somniaGui && fatigue != -1) renderSleepGui(matrixStack, mc.screen);
 		else if (sleepStart != -1 || speed != 0) {
 			this.sleepStart = -1;
 			this.speed = 0;
@@ -113,7 +113,7 @@ public class ClientTickHandler {
 		if (screen == null) return;
 
 		if (speed != 0) {
-			if (sleepStart == -1) sleepStart = this.mc.world.getGameTime();
+			if (sleepStart == -1) sleepStart = this.mc.level.getGameTime();
 		} else sleepStart = -1;
 
 		glColor4f(1, 1, 1, 1);
@@ -125,9 +125,9 @@ public class ClientTickHandler {
 				.filter(wakeTime -> wakeTime > -1)
 				.ifPresent(wakeTime -> {
 					if (sleepStart != -1) {
-						mc.getTextureManager().bindTexture(AbstractGui.GUI_ICONS_LOCATION);
+						mc.getTextureManager().bind(AbstractGui.GUI_ICONS_LOCATION);
 
-						double sleepDuration = mc.world.getGameTime() - sleepStart,
+						double sleepDuration = mc.level.getGameTime() - sleepStart,
 								remaining = wakeTime - sleepStart,
 								progress = sleepDuration / remaining;
 
@@ -166,16 +166,16 @@ public class ClientTickHandler {
 	private void renderProgressBar(MatrixStack matrixStack, int width, double progress) {
 		int x = 20;;
 		for (int amount = (int) (progress * width); amount > 0; amount -= 180, x += 180) {
-			if (mc.currentScreen != null) this.mc.currentScreen.blit(matrixStack, x, 10, 0, 69, Math.min(amount, 180), 5);
+			if (mc.screen != null) this.mc.screen.blit(matrixStack, x, 10, 0, 69, Math.min(amount, 180), 5);
 		}
 	}
 
 	private void renderScaledString(MatrixStack matrixStack, int x, String str) {
-		if (mc.currentScreen == null) return;
+		if (mc.screen == null) return;
 		glPushMatrix();
 		glTranslatef(x, 20, 0);
 		glScalef(1.5F, 1.5F, 1);
-		mc.fontRenderer.drawStringWithShadow(matrixStack, str, 0, 0, Integer.MIN_VALUE);
+		mc.font.drawShadow(matrixStack, str, 0, 0, Integer.MIN_VALUE);
 		glPopMatrix();
 	}
 
@@ -183,7 +183,7 @@ public class ClientTickHandler {
 		glPushMatrix();
 		glTranslatef(x, 30, 0);
 		glScalef(4, 4, 1);
-		mc.getItemRenderer().renderItemAndEffectIntoGUI(mc.player, CLOCK, 0, 0);
+		mc.getItemRenderer().renderAndDecorateItem(mc.player, CLOCK, 0, 0);
 		glPopMatrix();
 	}
 

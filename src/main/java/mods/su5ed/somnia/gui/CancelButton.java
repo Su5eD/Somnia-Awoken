@@ -7,6 +7,6 @@ import net.minecraft.util.text.StringTextComponent;
 public class CancelButton extends Button {
 
     public CancelButton(int xIn, int yIn, int widthIn, int heightIn) {
-        super(xIn, yIn, widthIn, heightIn, new StringTextComponent("Cancel"), button -> Minecraft.getInstance().displayGuiScreen(null));
+        super(xIn, yIn, widthIn, heightIn, new StringTextComponent("Cancel"), button -> Minecraft.getInstance().setScreen(null));
     }
 }

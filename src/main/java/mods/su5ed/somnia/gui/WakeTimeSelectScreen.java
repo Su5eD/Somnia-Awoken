@@ -45,7 +45,7 @@ public class WakeTimeSelectScreen extends Screen
 		this.renderBackground(matrixStack);
 		super.render(matrixStack, mouseX, mouseY, partialTicks);
 		drawCenteredString(matrixStack, this.font, "Sleep until...?", this.width / 2, this.height / 2 - 5, 16777215);
-		if (this.minecraft != null && this.minecraft.player != null) drawCenteredString(matrixStack, this.font, SomniaUtil.timeStringForWorldTime(this.minecraft.player.world.getDayTime()), this.width/2, this.height/2 - 66, 16777215);
+		if (this.minecraft != null && this.minecraft.player != null) drawCenteredString(matrixStack, this.font, SomniaUtil.timeStringForWorldTime(this.minecraft.player.level.getDayTime()), this.width/2, this.height/2 - 66, 16777215);
 	}
 
 	@Override

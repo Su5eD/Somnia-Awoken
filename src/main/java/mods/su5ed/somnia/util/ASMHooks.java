@@ -19,7 +19,7 @@ import org.lwjgl.opengl.GL11;
 @SuppressWarnings("unused")
 public class ASMHooks {
     public static boolean doMobSpawning(ServerWorld world) {
-        boolean spawnMobs = world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING);
+        boolean spawnMobs = world.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
         if (!SomniaConfig.disableCreatureSpawning || !spawnMobs) return spawnMobs;
 
         return ServerTickHandler.HANDLERS.stream()
@@ -33,7 +33,7 @@ public class ASMHooks {
         player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
                 .filter(props -> props.getWakeTime() < 0)
                 .ifPresent(props -> {
-                    long totalWorldTime = player.world.getGameTime();
+                    long totalWorldTime = player.level.getGameTime();
                     long wakeTime = SomniaUtil.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
                     props.setWakeTime(wakeTime);
                     NetworkHandler.sendToClient(new PacketUpdateWakeTime(wakeTime), (ServerPlayerEntity) player);
@@ -44,7 +44,7 @@ public class ASMHooks {
         return DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player.isSleeping() && SomniaConfig.disableRendering) {
-                GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, false);
+                GlStateManager._clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, false);
                 return true;
             }
             return false;

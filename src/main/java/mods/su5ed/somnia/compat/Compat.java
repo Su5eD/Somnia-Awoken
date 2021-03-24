@@ -16,9 +16,9 @@ public class Compat {
 
     public static boolean isSleepingInHammock(PlayerEntity player) {
         if (comforts) {
-            Optional<BlockPos> pos = player.getBedPosition();
+            Optional<BlockPos> pos = player.getSleepingPos();
             if (pos.isPresent()) {
-                Block block = player.world.getBlockState(pos.get()).getBlock();
+                Block block = player.level.getBlockState(pos.get()).getBlock();
                 ResourceLocation regName = block.getRegistryName();
                 return regName.getNamespace().equals("comforts") && regName.getPath().startsWith("hammock");
             }
@@ -27,7 +27,7 @@ public class Compat {
     }
 
     public static boolean isSleepingInBag(PlayerEntity player) {
-        Item item = player.inventory.getCurrentItem().getItem();
+        Item item = player.inventory.getSelected().getItem();
         ResourceLocation name = item.getRegistryName();
         String namespace = name.getNamespace();
         String path = name.getPath();

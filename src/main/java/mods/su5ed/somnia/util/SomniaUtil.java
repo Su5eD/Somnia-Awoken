@@ -7,7 +7,7 @@ import net.minecraft.world.server.ServerWorld;
 
 public class SomniaUtil {
     public static boolean doesPlayerWearArmor(PlayerEntity player) {
-        return player.inventory.armorInventory.stream()
+        return player.inventory.armor.stream()
                 .anyMatch(stack -> !stack.isEmpty());
     }
 
@@ -37,8 +37,8 @@ public class SomniaUtil {
     }
 
     public static double getFatigueToReplenish(PlayerEntity player) {
-        long worldTime = player.world.getGameTime();
-        long wakeTime = SomniaUtil.calculateWakeTime(worldTime, player.world.isNightTime() ? 0 : 12000);
+        long worldTime = player.level.getGameTime();
+        long wakeTime = SomniaUtil.calculateWakeTime(worldTime, player.level.isNight() ? 0 : 12000);
         return SomniaConfig.fatigueReplenishRate * (wakeTime - worldTime);
     }
 

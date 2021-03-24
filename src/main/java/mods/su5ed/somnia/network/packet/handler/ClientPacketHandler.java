@@ -11,6 +11,6 @@ public class ClientPacketHandler {
 
     public static void openGUI() {
         Minecraft mc = Minecraft.getInstance();
-        if (!(mc.currentScreen instanceof WakeTimeSelectScreen)) mc.displayGuiScreen(new WakeTimeSelectScreen());
+        if (!(mc.screen instanceof WakeTimeSelectScreen)) mc.setScreen(new WakeTimeSelectScreen());
     }
 }

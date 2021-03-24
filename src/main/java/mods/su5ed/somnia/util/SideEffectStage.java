@@ -41,7 +41,7 @@ public class SideEffectStage {
         int stage = getForFatigue(fatigue);
         float ratio = SomniaConfig.sideEffectStages.size() / 4F;
         int desc = Math.round(stage / ratio);
-        return I18n.format("somnia.side_effect."+desc);
+        return I18n.get("somnia.side_effect."+desc);
     }
 
     public static int getForFatigue(double fatigue) {
