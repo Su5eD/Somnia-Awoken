@@ -23,6 +23,7 @@ public class ConfigSetup {
         SomniaConfig.displayETASleep = ConfigHolder.CLIENT.displayETASleep.get();
 
         SomniaConfig.somniaGui = ConfigHolder.CLIENT.somniaGui.get();
+        SomniaConfig.somniaGuiClockPosition = ConfigHolder.CLIENT.somniaGuiClockPosition.get();
 
         SomniaConfig.disableRendering = ConfigHolder.CLIENT.disableRendering.get();
     }

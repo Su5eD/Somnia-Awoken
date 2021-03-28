@@ -153,7 +153,7 @@ public class ClientTickHandler {
 
 						renderScaledString(matrixStack, offsetX + 80, getETAString(eta));
 
-						renderClock(width - 40);
+						renderClock(width);
 					}
 				});
 	}
@@ -179,9 +179,22 @@ public class ClientTickHandler {
 		glPopMatrix();
 	}
 
-	private void renderClock(int x) {
+	private void renderClock(int maxWidth) {
+		int x;
+		switch (SomniaConfig.somniaGuiClockPosition) {
+			case "left":
+				x = 40;
+				break;
+			case "center":
+				x = maxWidth / 2;
+				break;
+			default:
+			case "right":
+				x = maxWidth - 40;
+				break;
+		}
 		glPushMatrix();
-		glTranslatef(x, 30, 0);
+		glTranslatef(x, 35, 0);
 		glScalef(4, 4, 1);
 		mc.getItemRenderer().renderAndDecorateItem(mc.player, CLOCK, 0, 0);
 		glPopMatrix();

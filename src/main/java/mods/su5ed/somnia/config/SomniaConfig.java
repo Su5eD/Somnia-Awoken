@@ -24,6 +24,7 @@ public class SomniaConfig {
     public static boolean muteSoundWhenSleeping;
     public static boolean sleepWithArmor;
     public static boolean somniaGui;
+    public static String somniaGuiClockPosition;
     public static String wakeTimeSelectItem;
 
     //Performance

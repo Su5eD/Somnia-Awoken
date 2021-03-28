@@ -29,6 +29,7 @@ public class ConfigHolder {
         protected final ForgeConfigSpec.BooleanValue simpleFatigueDisplay;
         protected final ForgeConfigSpec.ConfigValue<String> displayETASleep;
         protected final ForgeConfigSpec.BooleanValue somniaGui;
+        protected final ForgeConfigSpec.ConfigValue<String> somniaGuiClockPosition;
         protected final ForgeConfigSpec.BooleanValue disableRendering;
 
         public ClientConfig(ForgeConfigSpec.Builder builder) {
@@ -48,6 +49,9 @@ public class ConfigHolder {
             somniaGui = builder
                     .comment("Provides an enhanced sleeping gui")
                     .define("somniaGui", true);
+            somniaGuiClockPosition = builder
+                    .comment("The display position of the clock in somnia's enhanced sleeping gui. Accepted values: right, center, left")
+                    .define("somniaGuiClockPosition", "right");
             builder.pop();
 
             builder.push("performance");
