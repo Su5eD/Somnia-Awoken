@@ -68,6 +68,7 @@ public class ConfigHolder {
         protected final ForgeConfigSpec.BooleanValue fatigueSideEffects;
         protected final ForgeConfigSpec.ConfigValue<Integer> minimumFatigueToSleep;
         protected final ForgeConfigSpec.ConfigValue<List<? extends List<Integer>>> sideEffectStages;
+        protected final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> replenishingItems;
 
         protected final ForgeConfigSpec.ConfigValue<Double> delta;
         protected final ForgeConfigSpec.ConfigValue<Double> baseMultiplier;
@@ -108,6 +109,20 @@ public class ConfigHolder {
                             Arrays.asList(80, 90, 2, 300, 2),
                             Arrays.asList(90, 95, 19, 200, 1),
                             Arrays.asList(95, 100, 2, -1, 3)
+                    ), obj -> obj instanceof List);
+            replenishingItems = builder
+                    .comment("Definitions of fatigue replenishing items. Each list consist of an item registry name, and the amount of fatigue it replenishes")
+                    .defineList("replenishingItems", Arrays.asList(
+                       Arrays.asList("coffeespawner:coffee", 10),
+                       Arrays.asList("coffeespawner:coffee_milk", 10),
+                       Arrays.asList("coffeespawner:coffee_sugar", 15),
+                       Arrays.asList("coffeespawner:coffee_milk_sugar", 15),
+                       Arrays.asList("coffeemod:coffee", 15),
+                       Arrays.asList("coffeemod:espresso", 15),
+                       Arrays.asList("coffeemod:latte", 15),
+                       Arrays.asList("coffeemod:caramel_macchiato", 10),
+                       Arrays.asList("coffeemod:mocha", 10),
+                       Arrays.asList("coffeemod:frappe", 10)
                     ), obj -> obj instanceof List);
             builder.pop();
 

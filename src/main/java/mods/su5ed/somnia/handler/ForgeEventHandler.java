@@ -19,6 +19,7 @@ import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.UseAction;
 import net.minecraft.potion.Effect;
@@ -42,11 +43,12 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber
 public class ForgeEventHandler {
+
 	@SubscribeEvent
 	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase != TickEvent.Phase.START || event.player.level.isClientSide || (!event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping())) return;
@@ -176,16 +178,17 @@ public class ForgeEventHandler {
 	@SubscribeEvent
 	public static void onLivingEntityUseItem(LivingEntityUseItemEvent.Finish event) {
 		ItemStack stack = event.getItem();
+		Item item = stack.getItem();
 		if (stack.getUseAnimation() == UseAction.DRINK) {
-			for (Pair<ItemStack, Double> pair : SomniaAPI.getCoffeeList()) {
-				if (pair.getLeft().sameItem(stack)) {
-					event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
-						.ifPresent(props -> {
-							props.setFatigue(props.getFatigue() - pair.getRight());
-							props.maxFatigueCounter();
-						});
-				}
-			}
+			Stream.of(SomniaConfig.replenishingItems, SomniaAPI.getCoffeeList())
+					.flatMap(Collection::stream)
+					.filter(pair -> pair.getLeft().getItem() == item)
+					.findFirst()
+					.ifPresent(pair -> event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
+							.ifPresent(props -> {
+								props.setFatigue(props.getFatigue() - pair.getRight());
+								props.maxFatigueCounter();
+							}));
 		}
 	}
 

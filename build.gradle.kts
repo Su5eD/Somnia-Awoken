@@ -98,6 +98,8 @@ dependencies {
     //"compile"(fg.deobf("curse.maven:sleeping-bags-384485:3105540"))
     //"compile"(fg.deobf("curse.maven:comforts-276951:3156807"))
     //"compile"(fg.deobf("curse.maven:cyclic-239286:3168180"))
+    //"compile"(fg.deobf("curse.maven:coffee-spawner-257588:3075380"))
+    //"compile"(fg.deobf("curse.maven:coffee-mod-381715:3115660"))
 }
 
 tasks.named<Copy>("processResources") {

@@ -1,5 +1,8 @@
 package mods.su5ed.somnia.config;
 
+import net.minecraft.item.Item;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.List;
 
 public class SomniaConfig {
@@ -12,6 +15,7 @@ public class SomniaConfig {
     public static boolean fatigueSideEffects;
     public static double minimumFatigueToSleep;
     public static List<? extends List<Integer>> sideEffectStages;
+    public static List<Pair<Item, Double>> replenishingItems;
 
     //Logic
     public static double delta;
