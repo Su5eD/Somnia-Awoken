@@ -1,9 +1,7 @@
 package mods.su5ed.somnia.config;
 
 import mods.su5ed.somnia.core.Somnia;
-import mods.su5ed.somnia.handler.ForgeEventHandler;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -12,7 +10,6 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Collection;
 import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = Somnia.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)

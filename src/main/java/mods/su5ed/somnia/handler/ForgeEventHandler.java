@@ -41,7 +41,6 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -180,7 +179,7 @@ public class ForgeEventHandler {
 		ItemStack stack = event.getItem();
 		Item item = stack.getItem();
 		if (stack.getUseAnimation() == UseAction.DRINK) {
-			Stream.of(SomniaConfig.replenishingItems, SomniaAPI.getCoffeeList())
+			Stream.of(SomniaConfig.replenishingItems, SomniaAPI.getReplenishingItems())
 					.flatMap(Collection::stream)
 					.filter(pair -> pair.getLeft().getItem() == item)
 					.findFirst()
