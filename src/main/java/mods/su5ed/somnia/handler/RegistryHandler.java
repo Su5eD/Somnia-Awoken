@@ -16,6 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
 public class RegistryHandler {
+
     @SubscribeEvent
     public static void onCommandRegister(RegisterCommandsEvent event) {
         SomniaCommand.register(event.getDispatcher());

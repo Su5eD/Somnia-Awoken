@@ -7,6 +7,7 @@ import mods.su5ed.somnia.compat.Compat;
 import mods.su5ed.somnia.compat.DarkUtilsPlugin;
 import mods.su5ed.somnia.config.SomniaConfig;
 import mods.su5ed.somnia.core.Somnia;
+import mods.su5ed.somnia.core.SomniaObjects;
 import mods.su5ed.somnia.network.NetworkHandler;
 import mods.su5ed.somnia.network.packet.PacketOpenGUI;
 import mods.su5ed.somnia.network.packet.PacketUpdateFatigue;
@@ -42,7 +43,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber
@@ -65,7 +68,16 @@ public class ForgeEventHandler {
 				extraFatigueRate -= SomniaConfig.fatigueReplenishRate / share / replenishedFatigue / 10;
 				replenishedFatigue -= replenish;
 			}
-			else fatigue += SomniaConfig.fatigueRate + extraFatigueRate;
+			else {
+				double rate = SomniaConfig.fatigueRate;
+				EffectInstance wakefulness = event.player.getEffect(SomniaObjects.AWAKENING_EFFECT.get());
+				if (wakefulness != null)
+				{
+					int amplifier = wakefulness.getAmplifier();
+					rate -= amplifier == 0 ? rate / 4 : rate / 3;
+				}
+				fatigue += rate + props.getExtraFatigueRate();
+			}
 
 			if (fatigue > 100) fatigue = 100;
 			else if (fatigue < 0) fatigue = 0;
