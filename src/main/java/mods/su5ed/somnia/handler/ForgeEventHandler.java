@@ -54,16 +54,31 @@ public class ForgeEventHandler {
 
 		event.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
 			double fatigue = props.getFatigue();
-
+			double extraFatigueRate = props.getExtraFatigueRate();
+			double replenishedFatigue = props.getReplenishedFatigue();
 			boolean isSleeping = props.sleepOverride() || event.player.isSleeping();
 
-			if (isSleeping) fatigue -= SomniaConfig.fatigueReplenishRate;
-			else fatigue += SomniaConfig.fatigueRate;
+			if (isSleeping) {
+				fatigue -= SomniaConfig.fatigueReplenishRate;
+				double share = SomniaConfig.fatigueReplenishRate / SomniaConfig.fatigueRate;
+				double replenish = SomniaConfig.fatigueReplenishRate * share;
+				extraFatigueRate -= SomniaConfig.fatigueReplenishRate / share / replenishedFatigue / 10;
+				replenishedFatigue -= replenish;
+			}
+			else fatigue += SomniaConfig.fatigueRate + extraFatigueRate;
 
 			if (fatigue > 100) fatigue = 100;
 			else if (fatigue < 0) fatigue = 0;
 
+			if (replenishedFatigue > 100) replenishedFatigue = 100;
+			else if (replenishedFatigue < 0) replenishedFatigue = 0;
+
+			if (extraFatigueRate < 0) extraFatigueRate = 0;
+
 			props.setFatigue(fatigue);
+			props.setReplenishedFatigue(replenishedFatigue);
+			props.setExtraFatigueRate(extraFatigueRate);
+
 			if (props.updateFatigueCounter() >= 100) {
 				props.resetFatigueCounter();
 				NetworkHandler.sendToClient(new PacketUpdateFatigue(fatigue), (ServerPlayerEntity) event.player);
@@ -185,7 +200,17 @@ public class ForgeEventHandler {
 					.findFirst()
 					.ifPresent(pair -> event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
 							.ifPresent(props -> {
-								props.setFatigue(props.getFatigue() - pair.getRight());
+								double fatigue = props.getFatigue();
+								double replenishedFatigue = props.getReplenishedFatigue();
+								double coffeeFatigueReplenish = pair.getMiddle();
+								double fatigueToReplenish = Math.min(fatigue, coffeeFatigueReplenish);
+								double newFatigue = replenishedFatigue + fatigueToReplenish;
+								props.setReplenishedFatigue(newFatigue);
+
+								double baseMultiplier = pair.getRight();
+								double multiplier = newFatigue * 4 * SomniaConfig.fatigueRate;
+								props.setExtraFatigueRate(props.getExtraFatigueRate() + baseMultiplier * multiplier);
+								props.setFatigue(fatigue - fatigueToReplenish);
 								props.maxFatigueCounter();
 							}));
 		}
@@ -225,6 +250,11 @@ public class ForgeEventHandler {
 
 	@SubscribeEvent
 	public static void onLivingDeath(LivingDeathEvent event) {
-		event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> props.setFatigue(0));
+		event.getEntityLiving().getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
+				.ifPresent(props -> {
+					props.setFatigue(0);
+					props.setReplenishedFatigue(0);
+					props.setExtraFatigueRate(0);
+				});
 	}
 }

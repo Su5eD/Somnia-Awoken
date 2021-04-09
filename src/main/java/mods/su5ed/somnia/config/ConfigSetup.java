@@ -9,6 +9,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.stream.Collectors;
 
@@ -42,8 +43,8 @@ public class ConfigSetup {
         SomniaConfig.sideEffectStages = ConfigHolder.COMMON.sideEffectStages.get();
         SomniaConfig.replenishingItems = ConfigHolder.COMMON.replenishingItems.get()
                 .stream()
-                .map(list -> Pair.of(getModItem((String) list.get(0)), Double.parseDouble(list.get(1).toString())))
-                .filter(pair -> pair.getLeft() != null)
+                .map(list -> Triple.of(getModItem((String) list.get(0)), Double.parseDouble(list.get(1).toString()), list.size() > 2 ? Double.parseDouble(list.get(2).toString()) : SomniaConfig.fatigueRate))
+                .filter(triple -> triple.getLeft() != null)
                 .collect(Collectors.toList());
 
         SomniaConfig.delta = ConfigHolder.COMMON.delta.get();

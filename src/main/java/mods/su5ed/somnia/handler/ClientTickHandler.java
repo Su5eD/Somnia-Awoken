@@ -164,7 +164,7 @@ public class ClientTickHandler {
 	}
 
 	private void renderProgressBar(MatrixStack matrixStack, int width, double progress) {
-		int x = 20;;
+		int x = 20;
 		for (int amount = (int) (progress * width); amount > 0; amount -= 180, x += 180) {
 			if (mc.screen != null) this.mc.screen.blit(matrixStack, x, 10, 0, 69, Math.min(amount, 180), 5);
 		}

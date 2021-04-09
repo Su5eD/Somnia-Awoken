@@ -111,7 +111,7 @@ public class ConfigHolder {
                             Arrays.asList(95, 100, 2, -1, 3)
                     ), obj -> obj instanceof List);
             replenishingItems = builder
-                    .comment("Definitions of fatigue replenishing items. Each list consist of an item registry name, and the amount of fatigue it replenishes")
+                    .comment("Definitions of fatigue replenishing items. Each list consist of an item registry name, the amount of fatigue it replenishes, and optionally a fatigue rate modifier")
                     .defineList("replenishingItems", Arrays.asList(
                        Arrays.asList("coffeespawner:coffee", 10),
                        Arrays.asList("coffeespawner:coffee_milk", 10),

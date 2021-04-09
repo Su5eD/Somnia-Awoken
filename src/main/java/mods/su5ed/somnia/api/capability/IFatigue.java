@@ -33,4 +33,12 @@ public interface IFatigue extends INBTSerializable<CompoundNBT> {
     long getWakeTime();
 
     void setWakeTime(long wakeTime);
+
+    double getExtraFatigueRate();
+
+    void setExtraFatigueRate(double rate);
+
+    double getReplenishedFatigue();
+
+    void setReplenishedFatigue(double replenishedFatigue);
 }
