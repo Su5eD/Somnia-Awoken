@@ -70,11 +70,15 @@ public class ForgeEventHandler {
 			}
 			else {
 				double rate = SomniaConfig.fatigueRate;
+
 				EffectInstance wakefulness = event.player.getEffect(SomniaObjects.AWAKENING_EFFECT.get());
-				if (wakefulness != null)
-				{
-					int amplifier = wakefulness.getAmplifier();
-					rate -= amplifier == 0 ? rate / 4 : rate / 3;
+				if (wakefulness != null) {
+					rate -= wakefulness.getAmplifier() == 0 ? rate / 4 : rate / 3;
+				}
+
+				EffectInstance insomnia = event.player.getEffect(SomniaObjects.INSOMNIA_EFFECT.get());
+				if (insomnia != null) {
+					rate += insomnia.getAmplifier() == 0 ? rate / 2 : rate;
 				}
 				fatigue += rate + props.getExtraFatigueRate();
 			}
