@@ -45,8 +45,8 @@ val versionCurios: String by project
 val versionBookshelf: String by project
 val versionRunelic: String by project
 val curseForgeId: String by project
-val buildNumber: String = System.getenv("GITHUB_RUN_NUMBER") ?: ""
-version = versionMc + "-" + versionMajor + "." + versionMinor + (if (versionPatch != "0") ".$versionPatch" else "") + (if (buildNumber.isNotEmpty()) ".$buildNumber" else "") + if (versionClassifier.isNotEmpty()) "-$versionClassifier" else ""
+
+version = versionMc + "-" + versionMajor + "." + versionMinor + (if (versionPatch != "0") ".$versionPatch" else "") + if (versionClassifier.isNotEmpty()) "-$versionClassifier" else ""
 group = "mods.su5ed"
 
 val versionRaw: String = version.toString().split("-")[1]
