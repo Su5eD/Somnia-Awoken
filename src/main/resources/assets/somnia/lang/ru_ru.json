@@ -1,8 +1,34 @@
 {
-  "somnia.status.armor": "Эта броня неудобна",
-  "somnia.status.cooldown": "Вы ещё не устали",
+  "somnia.config.title": "Конфигурация Somnia",
+  "somnia.config.fatigue": "Утомление",
+  "somnia.config.sideEffects": "Побочные эффекты",
+  "somnia.config.sideEffects.tooltip": "Уровни усталости вводятся для каждой стадии побочного эффекта, их идентификаторы зелий, уселители и продолжительность в (тиках)",
+  "somnia.config.logic": "Логика",
+  "somnia.config.options": "Параметры",
+  "somnia.config.performance": "Производительность",
+  "somnia.config.timings": "Сроки",
+
+  "somnia.status.armor": "Похоже, эта броня неудобна",
+  "somnia.status.cooldown": "Вы пока не устали",
   "somnia.status.expired": "Вы не можете спать вечно",
   "somnia.status.not_now": "Что-то мешает Вам заснуть",
   "somnia.status.waiting": "Ожидание сервера",
-  "somnia.status.waiting_players": "Ожидание остальных игроков"
+  "somnia.status.waiting_players": "Ожидание, пока другие игроки уснут",
+  "somnia.side_effect.0": "В полном сознании",
+  "somnia.side_effect.1": "Усталость",
+  "somnia.side_effect.2": "Измученность",
+  "somnia.side_effect.3": "Недосып",
+  "somnia.side_effect.4": "Ослабевание",
+
+  "effect.somnia.awakening": "Бодрствование",
+  "item.minecraft.potion.effect.awakening": "Зелье бодрствования",
+  "item.minecraft.splash_potion.effect.awakening": "Взрывное зелье Бодрствования",
+  "item.minecraft.tipped_arrow.effect.awakening": "Стрела бодрствования",
+  "item.minecraft.lingering_potion.effect.awakening": "Оседающее зелье Бодрствования",
+
+  "effect.somnia.insomnia": "Бессонница",
+  "item.minecraft.potion.effect.insomnia": "Зелье бессонницы",
+  "item.minecraft.splash_potion.effect.insomnia": "Взрывное зелье Бессонницы",
+  "item.minecraft.tipped_arrow.effect.insomnia": "Стрела бессонницы",
+  "item.minecraft.lingering_potion.effect.insomnia": "Оседающее зелье Бессонницы"
 }
