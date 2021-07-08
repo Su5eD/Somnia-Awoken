@@ -3,35 +3,21 @@ import com.matthewprenger.cursegradle.CurseProject
 import com.matthewprenger.cursegradle.CurseRelation
 import com.modrinth.minotaur.TaskModrinthUpload
 import net.minecraftforge.gradle.common.util.RunConfig
-import net.minecraftforge.gradle.userdev.DependencyManagementExtension
 import net.minecraftforge.gradle.userdev.UserDevExtension
+import wtf.gofancy.fancygradle.script.extensions.deobf
 import java.time.LocalDateTime
 
-buildscript {
-    repositories {
-        maven(url = "https://files.minecraftforge.net/maven")
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath(group = "net.minecraftforge.gradle", name = "ForgeGradle", version = "4.+") {
-            isChanging = true
-        }
-    }
-}
 plugins {
-    `java-library`
+    java
     eclipse
     `maven-publish`
+    id("net.minecraftforge.gradle") version "5.+"
     id("com.matthewprenger.cursegradle") version "1.4.0"
     id("com.modrinth.minotaur") version "1.1.0"
+    id("wtf.gofancy.fancygradle") version "1.0.1"
 }
-apply(plugin = "net.minecraftforge.gradle")
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
 
 val versionMc: String by project
 val versionMajor: String by project
@@ -40,6 +26,7 @@ val versionPatch: String by project
 val versionClassifier: String by project
 val versionType: String = versionClassifier.split(".")[0]
 
+val versionJEI: String by project
 val versionDarkUtils: String by project
 val versionCurios: String by project
 val versionBookshelf: String by project
@@ -50,7 +37,7 @@ version = versionMc + "-" + versionMajor + "." + versionMinor + (if (versionPatc
 group = "mods.su5ed"
 
 val versionRaw: String = version.toString().split("-")[1]
-val releaseClassifier: String = if (versionType.isNotEmpty()) versionType else "release"
+val releaseClassifier: String = versionType.ifEmpty { "release" }
 
 configure<UserDevExtension> {
     mappings("official", "1.16.5")
@@ -74,10 +61,6 @@ configure<UserDevExtension> {
 
 repositories {
     maven {
-        name = "CurseMaven"
-        url = uri("https://www.cursemaven.com")
-    }
-    maven {
         name = "BlameJared"
         url = uri("https://maven.blamejared.com")
     }
@@ -85,59 +68,54 @@ repositories {
         name = "Curios"
         url = uri("https://maven.theillusivec4.top")
     }
+    maven {
+        name = "Progwml6 maven"
+        url = uri("https://dvs1.progwml6.com/files/maven/")
+    }
 }
 
 dependencies {
-    "minecraft"("net.minecraftforge:forge:1.16.5-36.1.2")
+    minecraft("net.minecraftforge:forge:1.16.5-36.1.2")
 
-    val fg: DependencyManagementExtension = project.extensions["fg"] as DependencyManagementExtension
-    "compile"(fg.deobf("net.darkhax.darkutilities:DarkUtilities-1.16.5:$versionDarkUtils"))
-    "compile"(fg.deobf("top.theillusivec4.curios:curios-forge:$versionCurios"))
-    "compile"(fg.deobf("net.darkhax.bookshelf:Bookshelf-1.16.5:$versionBookshelf"))
-    "compile"(fg.deobf("net.darkhax.runelic:Runelic-1.16.5:$versionRunelic"))
-    //"compile"(fg.deobf("curse.maven:sleeping-bags-384485:3105540"))
-    //"compile"(fg.deobf("curse.maven:comforts-276951:3156807"))
-    //"compile"(fg.deobf("curse.maven:cyclic-239286:3168180"))
-    //"compile"(fg.deobf("curse.maven:coffee-spawner-257588:3075380"))
-    //"compile"(fg.deobf("curse.maven:coffee-mod-381715:3115660"))
+    implementation(fg.deobf(group = "mezz.jei", name = "jei-1.16.5", version = versionJEI))
+    compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-1.16.5", version = versionDarkUtils))
+    compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
+    compileOnly(fg.deobf(group = "net.darkhax.bookshelf", name = "Bookshelf-1.16.5", version = versionBookshelf))
+    compileOnly(fg.deobf(group = "net.darkhax.runelic", name = "Runelic-1.16.5", version = versionRunelic))
 }
 
-tasks.named<Copy>("processResources") {
-    from(sourceSets["main"].resources) {
-        include("META-INF/mods.toml")
-
-        expand("version" to project.version)
+tasks {
+    jar {
+        finalizedBy("reobfJar")
+        manifest {
+            attributes(
+                "Specification-Title" to "Somnia Awoken",
+                "Specification-Vendor" to "Su5eD",
+                "Specification-Version" to 1,
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+                "Implementation-Vendor" to "Su5eD",
+                "Implementation-Timestamp" to LocalDateTime.now()
+            )
+        }
     }
-}
-
-tasks.named<Jar>("jar") {
-    finalizedBy("reobfJar")
-    manifest {
-        attributes(
-            "Specification-Title" to "Somnia Awoken",
-            "Specification-Vendor" to "Su5eD",
-            "Specification-Version" to 1,
-            "Implementation-Title" to project.name,
-            "Implementation-Version" to project.version,
-            "Implementation-Vendor" to "Su5eD",
-            "Implementation-Timestamp" to LocalDateTime.now()
-        )
+    
+    processResources {
+        filesMatching("mods.toml") {
+            expand("version" to project.version)
+        }
     }
-}
-
-fun getVersionDisplayName(): String {
-    val name = "Somnia Awoken"
-    val classifier: String
-    val parts: List<String> = versionClassifier.split(".")
-    val classifierName = parts[0]
-    var firstLetter = classifierName.substring(0, 1)
-    if (classifierName.isNotEmpty()) {
-        val remainingLetters = classifierName.substring(1, classifierName.length)
-        firstLetter = firstLetter.toUpperCase()
-        classifier = firstLetter + remainingLetters + if (parts.size > 1) " ${parts[1]}" else ""
-    } else classifier = ""
-
-    return "$name $versionRaw $classifier"
+    
+    register<TaskModrinthUpload>("publishModrinth") {
+        token = System.getenv("MODRINTH_TOKEN") ?: project.findProperty("MODRINTH_TOKEN") as String? ?: "DUMMY"
+        projectId = "BiSrUr8O"
+        versionName = getVersionDisplayName()
+        versionNumber = versionRaw
+        uploadFile = jar
+        addLoader("forge")
+        releaseType = releaseClassifier
+        changelog = System.getenv("CHANGELOG")
+    }
 }
 
 curseforge {
@@ -163,13 +141,17 @@ curseforge {
     })
 }
 
-tasks.register<TaskModrinthUpload>("publishModrinth") {
-    token = System.getenv("MODRINTH_TOKEN") ?: project.findProperty("MODRINTH_TOKEN") as String? ?: "DUMMY"
-    projectId = "BiSrUr8O"
-    versionName = getVersionDisplayName()
-    versionNumber = versionRaw
-    uploadFile = tasks.getByName("jar")
-    addLoader("forge")
-    releaseType = releaseClassifier
-    changelog = System.getenv("CHANGELOG")
+fun getVersionDisplayName(): String {
+    val name = "Somnia Awoken"
+    val classifier: String
+    val parts: List<String> = versionClassifier.split(".")
+    val classifierName = parts[0]
+    var firstLetter = classifierName.substring(0, 1)
+    if (classifierName.isNotEmpty()) {
+        val remainingLetters = classifierName.substring(1, classifierName.length)
+        firstLetter = firstLetter.toUpperCase()
+        classifier = firstLetter + remainingLetters + if (parts.size > 1) " ${parts[1]}" else ""
+    } else classifier = ""
+
+    return "$name $versionRaw $classifier"
 }
