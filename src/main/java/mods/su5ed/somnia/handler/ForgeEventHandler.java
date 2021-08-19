@@ -25,6 +25,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.UseAction;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -32,9 +33,9 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.*;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -258,10 +259,25 @@ public class ForgeEventHandler {
 		}
 	}
 
+	//we need the earliest PlayerEntity#hurt listener
+	//because we have to set the sleep override to false before the mc stopSleeping call
+	//otherwise PlayerSleepTickHandler#tickEnd will make the player to start sleeping again
 	@SubscribeEvent
-	public static void onPlayerDamage(LivingHurtEvent event) {
+	public static void onPlayerDamage(LivingAttackEvent event) {
 		LivingEntity entity = event.getEntityLiving();
-		if (entity instanceof ServerPlayerEntity && entity.isSleeping()) NetworkHandler.sendToClient(new PacketWakeUpPlayer(), (ServerPlayerEntity) entity);
+
+		if (entity instanceof ServerPlayerEntity && entity.isSleeping()) {
+			ServerPlayerEntity player = (ServerPlayerEntity) entity;
+
+			if (player.isInvulnerableTo(event.getSource())) return;
+			if (player.isInvulnerable() && !event.getSource().isBypassInvul()) return;
+			if (player.isOnFire() && player.hasEffect(Effects.FIRE_RESISTANCE)) return;
+
+			entity.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
+					.ifPresent(props -> props.setSleepOverride(false));
+			entity.stopSleeping();
+			NetworkHandler.sendToClient(new PacketWakeUpPlayer(), (ServerPlayerEntity) entity);
+		}
 	}
 
 	@SubscribeEvent
