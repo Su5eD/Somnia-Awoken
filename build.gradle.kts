@@ -146,8 +146,8 @@ fun getVersionDisplayName(): String {
     val classifier: String
     val parts: List<String> = versionClassifier.split(".")
     val classifierName = parts[0]
-    var firstLetter = classifierName.substring(0, 1)
     if (classifierName.isNotEmpty()) {
+        var firstLetter = classifierName.substring(0, 1)
         val remainingLetters = classifierName.substring(1, classifierName.length)
         firstLetter = firstLetter.toUpperCase()
         classifier = firstLetter + remainingLetters + if (parts.size > 1) " ${parts[1]}" else ""
