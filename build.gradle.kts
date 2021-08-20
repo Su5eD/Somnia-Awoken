@@ -107,11 +107,13 @@ tasks {
     }
     
     register<TaskModrinthUpload>("publishModrinth") {
+        dependsOn(jar)
+        
         token = System.getenv("MODRINTH_TOKEN") ?: project.findProperty("MODRINTH_TOKEN") as String? ?: "DUMMY"
         projectId = "BiSrUr8O"
         versionName = getVersionDisplayName()
         versionNumber = versionRaw
-        uploadFile = jar
+        uploadFile = jar.get().archiveFile.get().asFile
         addLoader("forge")
         releaseType = releaseClassifier
         changelog = System.getenv("CHANGELOG")
