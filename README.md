@@ -1,7 +1,6 @@
-# Somnia
-A Minecraft mod that simulates the world while you sleep, initially released 2011.
-
 <div align="center">
+    <img src="https://i.imgur.com/lSH3rqg.png" alt="Somnia Logo" width="70%"/>
+    <br></br>
     <a href="https://github.com/Su5eD/Somnia/actions">
         <img src="https://github.com/Su5eD/Somnia/workflows/Main/badge.svg" alt="Build Status">
     </a>
@@ -13,18 +12,23 @@ A Minecraft mod that simulates the world while you sleep, initially released 201
     </a>
 </div>
 
-## How it works
+
+## About
+A Minecraft mod that simulates the world while you sleep, initially released 2011.
+
 Instead of skipping the night, the world is sped up while you sleep.
 You can now sleep at any time, as long as you have enough fatigue, which you gain passively over time. 
-Be careful - getting too tired gives you negative effects.
+Be careful though - getting too tired might apply debuffs.
 
 ![Simulation](https://i.imgur.com/Jxd013f.gif)
 
 ## Getting started
 All information is available on Somnia's [wiki](https://github.com/Su5eD/Somnia/wiki)
 
-## Highlighted changes
+## Highlighted Features
 - Works properly on servers
-- Fixed selecting wake time 
-- QoL updates
-- Increased configurability
+- Custom wake time selection
+- High configurability
+- Option of vanilla sleep
+- Adds potions to modify fatigue gain rate
+- ...and more!
