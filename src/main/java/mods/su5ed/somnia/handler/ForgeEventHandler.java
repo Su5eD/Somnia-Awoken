@@ -107,7 +107,8 @@ public class ForgeEventHandler {
 					if (fatigue < firstStage.minFatigue) {
 						props.setSideEffectStage(-1);
 						for (SideEffectStage stage : stages) {
-							if (lastSideEffectStage < stage.minFatigue) event.player.removeEffect(Effect.byId(stage.potionID));
+							Effect effect = Effect.byId(stage.potionID);
+							if (lastSideEffectStage < stage.minFatigue && event.player.hasEffect(effect)) event.player.removeEffect(effect);
 						}
 					}
 

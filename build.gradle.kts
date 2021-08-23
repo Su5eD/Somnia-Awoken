@@ -85,7 +85,19 @@ dependencies {
 }
 
 tasks {
+    // Thanks, JEI
+    val replaceResources = register<Copy>("replaceResources") {
+        outputs.upToDateWhen { false }
+        //Copy it into the build dir
+        from(sourceSets.main.get().resources) {
+            include("META-INF/mods.toml")
+            expand("version" to project.version)
+        }
+        into("$buildDir/resources/main/")
+    }
+    
     jar {
+        dependsOn(replaceResources)
         finalizedBy("reobfJar")
         manifest {
             attributes(
@@ -101,8 +113,16 @@ tasks {
     }
     
     processResources {
+        duplicatesStrategy = DuplicatesStrategy.FAIL
+    	exclude("META-INF/mods.toml")
+        finalizedBy(replaceResources)
+    }
+    
+    processResources {
+        inputs.property("version", project.version)
+        
         filesMatching("mods.toml") {
-            expand("version" to project.version)
+            println("hello")
         }
     }
     
