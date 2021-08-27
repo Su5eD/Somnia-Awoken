@@ -104,20 +104,15 @@ public class ForgeEventHandler {
 					int lastSideEffectStage = props.getSideEffectStage();
 					SideEffectStage[] stages = SideEffectStage.getSideEffectStages();
 					SideEffectStage firstStage = stages[0];
-					if (fatigue < firstStage.minFatigue) {
-						props.setSideEffectStage(-1);
-						for (SideEffectStage stage : stages) {
-							Effect effect = Effect.byId(stage.potionID);
-							if (lastSideEffectStage < stage.minFatigue && event.player.hasEffect(effect)) event.player.removeEffect(effect);
-						}
-					}
+					if (fatigue < firstStage.minFatigue) props.setSideEffectStage(-1);
 
-					for (int i = 0; i < SomniaConfig.sideEffectStages.size(); i++) {
-						SideEffectStage stage = stages[i];
+					for (SideEffectStage stage : stages) {
 						boolean permanent = stage.duration < 0;
-						if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue && (permanent || lastSideEffectStage < stage.minFatigue)) {
-							if (!permanent) props.setSideEffectStage(stage.minFatigue);
-							event.player.addEffect(new EffectInstance(Effect.byId(stage.potionID), permanent ? 150 : stage.duration, stage.amplifier));
+						if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue) {
+							props.setSideEffectStage(stage.minFatigue);
+							if (permanent || lastSideEffectStage < stage.minFatigue) {
+								event.player.addEffect(new EffectInstance(Effect.byId(stage.potionID), permanent ? 150 : stage.duration, stage.amplifier));
+							}
 						}
 					}
 				}
