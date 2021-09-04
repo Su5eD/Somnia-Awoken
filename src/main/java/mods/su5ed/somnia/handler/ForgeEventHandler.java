@@ -206,7 +206,8 @@ public class ForgeEventHandler {
 	public static void onLivingEntityUseItem(LivingEntityUseItemEvent.Finish event) {
 		ItemStack stack = event.getItem();
 		Item item = stack.getItem();
-		if (stack.getUseAnimation() == UseAction.DRINK) {
+		UseAction action = stack.getUseAnimation();
+		if (action == UseAction.EAT || action == UseAction.DRINK) {
 			Stream.of(SomniaConfig.replenishingItems, SomniaAPI.getReplenishingItems())
 					.flatMap(Collection::stream)
 					.filter(pair -> pair.getLeft().getItem() == item)
