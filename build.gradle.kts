@@ -1,53 +1,60 @@
 import com.matthewprenger.cursegradle.CurseArtifact
 import com.matthewprenger.cursegradle.CurseProject
 import com.matthewprenger.cursegradle.CurseRelation
-import com.modrinth.minotaur.TaskModrinthUpload
+import fr.brouillard.oss.jgitver.GitVersionCalculator
+import fr.brouillard.oss.jgitver.Strategies
 import net.minecraftforge.gradle.common.util.RunConfig
-import net.minecraftforge.gradle.userdev.UserDevExtension
 import wtf.gofancy.fancygradle.script.extensions.deobf
 import java.time.LocalDateTime
 
-plugins {
-    java
-    eclipse
-    `maven-publish`
-    id("net.minecraftforge.gradle") version "5.+"
-    id("com.matthewprenger.cursegradle") version "1.4.0"
-    id("com.modrinth.minotaur") version "1.1.0"
-    id("wtf.gofancy.fancygradle") version "1.0.1"
+buildscript {
+    dependencies {
+        classpath(group = "fr.brouillard.oss", name = "jgitver", version = "0.14.+")
+    }
 }
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+plugins {
+    java
+    `maven-publish`
+    id("net.minecraftforge.gradle") version "5.1.+"
+    id("wtf.gofancy.fancygradle") version "1.1.+"
+    id("com.matthewprenger.cursegradle") version "1.4.+"
+    id("com.modrinth.minotaur") version "2.+"
+}
 
 val versionMc: String by project
-val versionMajor: String by project
-val versionMinor: String by project
-val versionPatch: String by project
-val versionClassifier: String by project
-val versionType: String = versionClassifier.split(".")[0]
+val versionForge: String by project
+
+val curseForgeId: String by project
+val modrinthId: String by project
 
 val versionJEI: String by project
 val versionDarkUtils: String by project
 val versionCurios: String by project
 val versionBookshelf: String by project
 val versionRunelic: String by project
-val curseForgeId: String by project
 
-version = versionMc + "-" + versionMajor + "." + versionMinor + (if (versionPatch != "0") ".$versionPatch" else "") + if (versionClassifier.isNotEmpty()) "-$versionClassifier" else ""
+val baseVersion = getGitVersion()
+version = "$versionMc-$baseVersion"
 group = "mods.su5ed"
 
-val versionRaw: String = version.toString().split("-")[1]
-val releaseClassifier: String = versionType.ifEmpty { "release" }
+val publishVersionName = "Somnia Awoken ${project.version}"
+val publishReleaseType = System.getenv("PUBLISH_RELEASE_TYPE") ?: "release"
 
-configure<UserDevExtension> {
-    mappings("official", "1.16.5")
+java {
+    withSourcesJar()
+    
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+}
+
+minecraft {
+    mappings("official", versionMc)
 
     accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
 
     runs {
         val config = Action<RunConfig> {
             properties(mapOf(
-                "forge.logging.markers" to "SCAN,REGISTRIES,REGISTRYDUMP,COREMODLOG",
                 "forge.logging.console.level" to "debug"
             ))
             workingDirectory = project.file("run").canonicalPath
@@ -75,30 +82,17 @@ repositories {
 }
 
 dependencies {
-    minecraft("net.minecraftforge:forge:1.16.5-36.1.2")
+    minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
 
-    implementation(fg.deobf(group = "mezz.jei", name = "jei-1.16.5", version = versionJEI))
-    compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-1.16.5", version = versionDarkUtils))
+    implementation(fg.deobf(group = "mezz.jei", name = "jei-1.18.2-forge-api", version = versionJEI))
+    compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.18.2", version = versionDarkUtils))
     compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
-    compileOnly(fg.deobf(group = "net.darkhax.bookshelf", name = "Bookshelf-1.16.5", version = versionBookshelf))
-    compileOnly(fg.deobf(group = "net.darkhax.runelic", name = "Runelic-1.16.5", version = versionRunelic))
+    compileOnly(fg.deobf(group = "net.darkhax.bookshelf", name = "Bookshelf-Forge-1.18.2", version = versionBookshelf))
+    compileOnly(fg.deobf(group = "net.darkhax.runelic", name = "Runelic-Forge-1.18.2", version = versionRunelic))
 }
 
 tasks {
-    // Thanks, JEI
-    val replaceResources = register<Copy>("replaceResources") {
-        outputs.upToDateWhen { false }
-        //Copy it into the build dir
-        from(sourceSets.main.get().resources) {
-            include("META-INF/mods.toml")
-            expand("version" to project.version)
-        }
-        into("$buildDir/resources/main/")
-    }
-    
     jar {
-        dependsOn(replaceResources)
-        finalizedBy("reobfJar")
         manifest {
             attributes(
                 "Specification-Title" to "Somnia Awoken",
@@ -111,44 +105,27 @@ tasks {
             )
         }
     }
-    
-    processResources {
-        duplicatesStrategy = DuplicatesStrategy.FAIL
-    	exclude("META-INF/mods.toml")
-        finalizedBy(replaceResources)
-    }
-    
-    processResources {
-        inputs.property("version", project.version)
-        
-        filesMatching("mods.toml") {
-            println("hello")
-        }
-    }
-    
-    register<TaskModrinthUpload>("publishModrinth") {
-        dependsOn(jar)
-        
-        token = System.getenv("MODRINTH_TOKEN") ?: project.findProperty("MODRINTH_TOKEN") as String? ?: "DUMMY"
-        projectId = "BiSrUr8O"
-        versionName = getVersionDisplayName()
-        versionNumber = versionRaw
-        uploadFile = jar.get().archiveFile.get().asFile
-        addLoader("forge")
-        releaseType = releaseClassifier
-        changelog = System.getenv("CHANGELOG")
-    }
+}
+
+modrinth {
+    token.set(System.getenv("MODRINTH_TOKEN"))
+    projectId.set(modrinthId)
+    versionName.set(publishVersionName)
+    versionType.set(publishReleaseType)
+    uploadFile.set(tasks.jar.get())
+    gameVersions.addAll(versionMc)
+    // TODO changelog
 }
 
 curseforge {
-    apiKey = System.getenv("CURSEFORGE_TOKEN") ?: project.findProperty("CURSEFORGE_TOKEN") as String? ?: "DUMMY"
+    apiKey = System.getenv("CURSEFORGE_TOKEN") ?: "UNKNOWN"
     project(closureOf<CurseProject> {
         id = curseForgeId
         changelogType = "markdown"
-        changelog = System.getenv("CHANGELOG") ?: ""
-        releaseType = releaseClassifier
-        mainArtifact(tasks.getByName("jar"), closureOf<CurseArtifact> {
-            displayName = getVersionDisplayName()
+//        changelog = System.getenv("CHANGELOG") ?: ""
+        releaseType = publishReleaseType
+        mainArtifact(tasks.jar.get(), closureOf<CurseArtifact> {
+            displayName = publishVersionName
             relations(closureOf<CurseRelation> {
                 optionalDependency("cyclic")
                 optionalDependency("comforts")
@@ -163,17 +140,18 @@ curseforge {
     })
 }
 
-fun getVersionDisplayName(): String {
-    val name = "Somnia Awoken"
-    val classifier: String
-    val parts: List<String> = versionClassifier.split(".")
-    val classifierName = parts[0]
-    if (classifierName.isNotEmpty()) {
-        var firstLetter = classifierName.substring(0, 1)
-        val remainingLetters = classifierName.substring(1, classifierName.length)
-        firstLetter = firstLetter.toUpperCase()
-        classifier = firstLetter + remainingLetters + if (parts.size > 1) " ${parts[1]}" else ""
-    } else classifier = ""
+publishing {
+    publications { 
+        register<MavenPublication>("mavenJava") {
+            from(components["java"])
+        }
+    }
+}
 
-    return "$name $versionRaw $classifier"
+fun getGitVersion(): String {
+    val jgitver = GitVersionCalculator.location(rootDir)
+        .setNonQualifierBranches("mc-1.18")
+        .setStrategy(Strategies.SCRIPT)
+        .setScript("print \"\${metadata.CURRENT_VERSION_MAJOR};\${metadata.CURRENT_VERSION_MINOR};\${metadata.CURRENT_VERSION_PATCH + metadata.COMMIT_DISTANCE}\"")
+    return jgitver.version
 }

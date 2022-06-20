@@ -1,10 +1,10 @@
 modLoader="javafml"
-loaderVersion="[33,)"
+loaderVersion="[41,)"
 license="GNU Lesser General Public License v3.0"
 issueTrackerURL="https://github.com/Su5eD/Somnia/issues/"
 [[mods]]
 modId="somnia"
-version="${version}"
+version="${file.jarVersion}"
 displayName="Somnia Awoken"
 displayURL="https://github.com/Su5eD/Somnia"
 logoFile="logo.png"
@@ -16,12 +16,12 @@ Simulating the world while you sleep
 [[dependencies.somnia]]
     modId="forge"
     mandatory=true
-    versionRange="[33,)"
+    versionRange="[41,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.somnia]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.4, 1.16.5]"
+    versionRange="[1.18.2]"
     ordering="NONE"
     side="BOTH"
