@@ -1,11 +1,12 @@
 package dev.su5ed.somnia.object;
 
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectType;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class InsomniaEffect extends Effect {
+public class InsomniaEffect extends MobEffect {
+    public static final int COLOR = 0x23009a;
 
     public InsomniaEffect() {
-        super(EffectType.HARMFUL, 0x23009a);
+        super(MobEffectCategory.HARMFUL, COLOR);
     }
 }

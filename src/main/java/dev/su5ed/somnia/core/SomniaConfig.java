@@ -1,36 +1,40 @@
-package dev.su5ed.somnia.config;
+package dev.su5ed.somnia.core;
 
+import dev.su5ed.somnia.api.ReplenishingItem;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Arrays;
 import java.util.List;
 
-public class ConfigHolder {
-    
+public final class SomniaConfig {
     public static final ForgeConfigSpec COMMON_SPEC;
     public static final ForgeConfigSpec CLIENT_SPEC;
 
-    protected static CommonConfig COMMON;
-    protected static ClientConfig CLIENT;
+    public static final CommonConfig COMMON;
+    public static final ClientConfig CLIENT;
 
     static {
-        Pair<CommonConfig, ForgeConfigSpec> CommonSpecPair = new ForgeConfigSpec.Builder().configure(CommonConfig::new);
-        COMMON = CommonSpecPair.getLeft();
-        COMMON_SPEC = CommonSpecPair.getRight();
+        Pair<CommonConfig, ForgeConfigSpec> commonPair = new ForgeConfigSpec.Builder().configure(CommonConfig::new);
+        COMMON = commonPair.getLeft();
+        COMMON_SPEC = commonPair.getRight();
 
-        Pair<ClientConfig, ForgeConfigSpec> clientSpecPair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
-        CLIENT = clientSpecPair.getLeft();
-        CLIENT_SPEC = clientSpecPair.getRight();
+        Pair<ClientConfig, ForgeConfigSpec> clientPair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
+        CLIENT = clientPair.getLeft();
+        CLIENT_SPEC = clientPair.getRight();
     }
+    
+    private SomniaConfig() {}
 
-    protected static final class ClientConfig {
-        protected final ForgeConfigSpec.ConfigValue<String> displayFatigue;
-        protected final ForgeConfigSpec.BooleanValue simpleFatigueDisplay;
-        protected final ForgeConfigSpec.ConfigValue<String> displayETASleep;
-        protected final ForgeConfigSpec.BooleanValue somniaGui;
-        protected final ForgeConfigSpec.ConfigValue<String> somniaGuiClockPosition;
-        protected final ForgeConfigSpec.BooleanValue disableRendering;
+    public static final class ClientConfig {
+        public final ForgeConfigSpec.ConfigValue<String> displayFatigue;
+        public final ForgeConfigSpec.BooleanValue simpleFatigueDisplay;
+        public final ForgeConfigSpec.ConfigValue<String> displayETASleep;
+        public final ForgeConfigSpec.BooleanValue somniaGui;
+        public final ForgeConfigSpec.ConfigValue<String> somniaGuiClockPosition;
+        public final ForgeConfigSpec.BooleanValue disableRendering;
 
         public ClientConfig(ForgeConfigSpec.Builder builder) {
             builder.push("fatigue");
@@ -62,31 +66,31 @@ public class ConfigHolder {
         }
     }
 
-    protected static final class CommonConfig {
-        protected final ForgeConfigSpec.ConfigValue<Double> fatigueRate;
-        protected final ForgeConfigSpec.ConfigValue<Double> fatigueReplenishRate;
-        protected final ForgeConfigSpec.BooleanValue fatigueSideEffects;
-        protected final ForgeConfigSpec.ConfigValue<Integer> minimumFatigueToSleep;
-        protected final ForgeConfigSpec.ConfigValue<List<? extends List<Integer>>> sideEffectStages;
-        protected final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> replenishingItems;
+    public static final class CommonConfig {
+        public final ForgeConfigSpec.ConfigValue<Double> fatigueRate;
+        public final ForgeConfigSpec.ConfigValue<Double> fatigueReplenishRate;
+        public final ForgeConfigSpec.BooleanValue fatigueSideEffects;
+        public final ForgeConfigSpec.ConfigValue<Integer> minimumFatigueToSleep;
+        public final ForgeConfigSpec.ConfigValue<List<? extends List<Integer>>> sideEffectStages;
+        public final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> replenishingItems;
 
-        protected final ForgeConfigSpec.ConfigValue<Double> delta;
-        protected final ForgeConfigSpec.ConfigValue<Double> baseMultiplier;
-        protected final ForgeConfigSpec.ConfigValue<Double> multiplierCap;
+        public final ForgeConfigSpec.ConfigValue<Double> delta;
+        public final ForgeConfigSpec.ConfigValue<Double> baseMultiplier;
+        public final ForgeConfigSpec.ConfigValue<Double> multiplierCap;
 
-        protected final ForgeConfigSpec.BooleanValue fading;
-        protected final ForgeConfigSpec.BooleanValue ignoreMonsters;
-        protected final ForgeConfigSpec.BooleanValue muteSoundWhenSleeping;
-        protected final ForgeConfigSpec.BooleanValue sleepWithArmor;
-        protected final ForgeConfigSpec.ConfigValue<String> wakeTimeSelectItem;
+        public final ForgeConfigSpec.BooleanValue fading;
+        public final ForgeConfigSpec.BooleanValue ignoreMonsters;
+        public final ForgeConfigSpec.BooleanValue muteSoundWhenSleeping;
+        public final ForgeConfigSpec.BooleanValue sleepWithArmor;
+        public final ForgeConfigSpec.ConfigValue<String> wakeTimeSelectItem;
 
-        protected final ForgeConfigSpec.BooleanValue disableCreatureSpawning;
+        public final ForgeConfigSpec.BooleanValue disableCreatureSpawning;
 
-        protected final ForgeConfigSpec.ConfigValue<Integer> enterSleepStart;
-        protected final ForgeConfigSpec.ConfigValue<Integer> enterSleepEnd;
+        public final ForgeConfigSpec.ConfigValue<Integer> enterSleepStart;
+        public final ForgeConfigSpec.ConfigValue<Integer> enterSleepEnd;
 
-        protected final ForgeConfigSpec.ConfigValue<Integer> validSleepStart;
-        protected final ForgeConfigSpec.ConfigValue<Integer> validSleepEnd;
+        public final ForgeConfigSpec.ConfigValue<Integer> validSleepStart;
+        public final ForgeConfigSpec.ConfigValue<Integer> validSleepEnd;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
             builder.push("fatigue");
@@ -104,25 +108,25 @@ public class ConfigHolder {
                     .define("minimumFatigueToSleep", 20);
             sideEffectStages = builder
                     .comment("Definitions of each side effect stage in order: min fatigue, max fatigue, potion ID, duration, amplifier. For a permanent effect, set the duration to -1.")
-                    .defineList("sideEffectStages", Arrays.asList(
-                            Arrays.asList(70, 80, 9, 150, 0),
-                            Arrays.asList(80, 90, 2, 300, 2),
-                            Arrays.asList(90, 95, 19, 200, 1),
-                            Arrays.asList(95, 100, 2, -1, 3)
+                    .defineList("sideEffectStages", List.of(
+                            List.of(70, 80, 9, 150, 0),
+                            List.of(80, 90, 2, 300, 2),
+                            List.of(90, 95, 19, 200, 1),
+                            List.of(95, 100, 2, -1, 3)
                     ), obj -> obj instanceof List);
             replenishingItems = builder
                     .comment("Definitions of fatigue replenishing items. Each list consist of an item registry name, the amount of fatigue it replenishes, and optionally a fatigue rate modifier")
-                    .defineList("replenishingItems", Arrays.asList(
-                       Arrays.asList("coffeespawner:coffee", 10),
-                       Arrays.asList("coffeespawner:coffee_milk", 10),
-                       Arrays.asList("coffeespawner:coffee_sugar", 15),
-                       Arrays.asList("coffeespawner:coffee_milk_sugar", 15),
-                       Arrays.asList("coffeemod:coffee", 15),
-                       Arrays.asList("coffeemod:espresso", 15),
-                       Arrays.asList("coffeemod:latte", 15),
-                       Arrays.asList("coffeemod:caramel_macchiato", 10),
-                       Arrays.asList("coffeemod:mocha", 10),
-                       Arrays.asList("coffeemod:frappe", 10)
+                    .defineList("replenishingItems", List.of(
+                       List.of("coffeespawner:coffee", 10),
+                       List.of("coffeespawner:coffee_milk", 10),
+                       List.of("coffeespawner:coffee_sugar", 15),
+                       List.of("coffeespawner:coffee_milk_sugar", 15),
+                       List.of("coffeemod:coffee", 15),
+                       List.of("coffeemod:espresso", 15),
+                       List.of("coffeemod:latte", 15),
+                       List.of("coffeemod:caramel_macchiato", 10),
+                       List.of("coffeemod:mocha", 10),
+                       List.of("coffeemod:frappe", 10)
                     ), obj -> obj instanceof List);
             builder.pop();
 
@@ -177,6 +181,22 @@ public class ConfigHolder {
                     .comment("Specifies the end of the valid sleep period")
                     .defineInRange("validSleepEnd", 24000, 0, 24000);
             builder.pop();
+        }
+        
+        public List<ReplenishingItem> getReplenishingItems() {
+            return replenishingItems.get().stream()
+                .map(list -> {
+                    Item item = getModItem((String) list.get(0));
+                    double replenishedFatigue = Double.parseDouble(list.get(1).toString());
+                    double fatigueRateModifier = list.size() > 2 ? Double.parseDouble(list.get(2).toString()) : fatigueRate.get();
+                    return new ReplenishingItem(item, replenishedFatigue, fatigueRateModifier);
+                })
+                .filter(replenishingItem -> replenishingItem.item() != null)
+                .toList();
+        }
+        
+        private static Item getModItem(String registryName) {
+            return ForgeRegistries.ITEMS.getValue(new ResourceLocation(registryName));
         }
     }
 }

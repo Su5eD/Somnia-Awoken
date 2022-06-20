@@ -5,25 +5,25 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import dev.su5ed.somnia.network.NetworkHandler;
-import dev.su5ed.somnia.network.packet.PacketUpdateFatigue;
 import dev.su5ed.somnia.api.capability.CapabilityFatigue;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.arguments.EntityArgument;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import dev.su5ed.somnia.network.SomniaNetwork;
+import dev.su5ed.somnia.network.FatigueUpdatePacket;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class SomniaCommand {
+public final class SomniaCommand {
 	public static final Set<UUID> OVERRIDES = new HashSet<>();
-
-	public static void register(CommandDispatcher<CommandSource> dispatcher) {
+	public static final int PERMISSION_LEVEL = 3;
+	
+	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(Commands.literal("somnia")
-				.requires(src -> src.hasPermission(3))
+				.requires(src -> src.hasPermission(PERMISSION_LEVEL))
 				.then(Commands.literal("fatigue")
                     .then(Commands.literal("set")
 						.then(Commands.argument("amount", DoubleArgumentType.doubleArg())
@@ -42,35 +42,37 @@ public class SomniaCommand {
 
 	}
 
-	private static int setFatigue(double amount, ServerPlayerEntity player) {
-		player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY).ifPresent(props -> {
+	private static int setFatigue(double amount, ServerPlayer player) {
+		player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
 			props.setFatigue(amount);
-			NetworkHandler.sendToClient(new PacketUpdateFatigue(props.getFatigue()), player);
+			SomniaNetwork.sendToClient(new FatigueUpdatePacket(props.getFatigue()), player);
 		});
 		return Command.SINGLE_SUCCESS;
 	}
 
-	private static int addOverride(ServerPlayerEntity player) {
-		if (!OVERRIDES.add(player.getUUID())) player.displayClientMessage(new StringTextComponent("Override already exists"), true);
+	private static int addOverride(ServerPlayer player) {
+		if (!OVERRIDES.add(player.getUUID())) player.displayClientMessage(new TextComponent("Override already exists"), true);
 
 		return Command.SINGLE_SUCCESS;
 	}
 
-	private static int removeOverride(ServerPlayerEntity target) {
+	private static int removeOverride(ServerPlayer target) {
 		OVERRIDES.remove(target.getUUID());
 		return Command.SINGLE_SUCCESS;
 	}
 
-	private static int listOverrides(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
-		ServerPlayerEntity sender = ctx.getSource().getPlayerOrException();
+	private static int listOverrides(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+		ServerPlayer sender = ctx.getSource().getPlayerOrException();
 		List<String> overrides = OVERRIDES.stream()
 				.map(sender.level::getPlayerByUUID)
 				.filter(Objects::nonNull)
 				.map(player -> player.getName().getContents())
-				.collect(Collectors.toList());
+				.toList();
 
-		ITextComponent chatComponent = new StringTextComponent(!overrides.isEmpty() ? String.join(", ", overrides) : "Nothing to see here...");
+		Component chatComponent = new TextComponent(!overrides.isEmpty() ? String.join(", ", overrides) : "Nothing to see here...");
 		sender.displayClientMessage(chatComponent, false);
 		return Command.SINGLE_SUCCESS;
 	}
+	
+	private SomniaCommand() {}
 }

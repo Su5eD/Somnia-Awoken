@@ -1,13 +1,13 @@
 package dev.su5ed.somnia.util;
 
-import dev.su5ed.somnia.config.SomniaConfig;
 import dev.su5ed.somnia.api.capability.CapabilityFatigue;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.server.ServerWorld;
+import dev.su5ed.somnia.core.SomniaConfig;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
 
-public class SomniaUtil {
-    public static boolean doesPlayerWearArmor(PlayerEntity player) {
-        return player.inventory.armor.stream()
+public final class SomniaUtil {
+    public static boolean doesPlayerWearArmor(Player player) {
+        return player.getInventory().armor.stream()
                 .anyMatch(stack -> !stack.isEmpty());
     }
 
@@ -17,9 +17,9 @@ public class SomniaUtil {
         return timeInDay > target ? wakeTime + 24000 : wakeTime;
     }
 
-    public static boolean checkFatigue(PlayerEntity player) {
-        return player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
-                .map(props -> player.isCreative() || props.getFatigue() >= SomniaConfig.minimumFatigueToSleep)
+    public static boolean checkFatigue(Player player) {
+        return player.getCapability(CapabilityFatigue.INSTANCE)
+                .map(props -> player.isCreative() || props.getFatigue() >= SomniaConfig.COMMON.minimumFatigueToSleep.get())
                 .orElse(false);
     }
 
@@ -36,18 +36,20 @@ public class SomniaUtil {
         return hours + ":" + minutes;
     }
 
-    public static double getFatigueToReplenish(PlayerEntity player) {
+    public static double getFatigueToReplenish(Player player) {
         long worldTime = player.level.getGameTime();
         long wakeTime = SomniaUtil.calculateWakeTime(worldTime, player.level.isNight() ? 0 : 12000);
-        return SomniaConfig.fatigueReplenishRate * (wakeTime - worldTime);
+        return SomniaConfig.COMMON.fatigueReplenishRate.get() * (wakeTime - worldTime);
     }
 
     public static boolean isEnterSleepTime() {
-        return 24000 >= SomniaConfig.enterSleepStart && 24000 <= SomniaConfig.enterSleepEnd;
+        return 24000 >= SomniaConfig.COMMON.enterSleepStart.get() && 24000 <= SomniaConfig.COMMON.enterSleepEnd.get();
     }
 
-    public static boolean isValidSleepTime(ServerWorld world) {
+    public static boolean isValidSleepTime(ServerLevel world) {
         long time = world.getGameTime() % 24000;
-        return time >= SomniaConfig.validSleepStart && time <= SomniaConfig.validSleepEnd;
+        return time >= SomniaConfig.COMMON.validSleepStart.get() && time <= SomniaConfig.COMMON.validSleepEnd.get();
     }
+    
+    private SomniaUtil() {}
 }

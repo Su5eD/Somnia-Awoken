@@ -1,7 +1,7 @@
 package dev.su5ed.somnia.util;
 
-import dev.su5ed.somnia.config.SomniaConfig;
-import net.minecraft.client.resources.I18n;
+import dev.su5ed.somnia.core.SomniaConfig;
+import net.minecraft.client.resources.language.I18n;
 
 import java.util.List;
 
@@ -24,9 +24,10 @@ public class SideEffectStage {
 
     public static SideEffectStage[] getSideEffectStages() {
         if (stages == null) {
-            stages = new SideEffectStage[SomniaConfig.sideEffectStages.size()];
+            List<? extends List<Integer>> sideEffectStages = SomniaConfig.COMMON.sideEffectStages.get();
+            stages = new SideEffectStage[sideEffectStages.size()];
             for (int i = 0; i < stages.length; i++) {
-                stages[i] = parseStage(SomniaConfig.sideEffectStages.get(i));
+                stages[i] = parseStage(sideEffectStages.get(i));
             }
         }
 
@@ -39,15 +40,16 @@ public class SideEffectStage {
 
     public static String getSideEffectStageDescription(double fatigue) {
         int stage = getForFatigue(fatigue);
-        float ratio = SomniaConfig.sideEffectStages.size() / 4F;
+        float ratio = SomniaConfig.COMMON.sideEffectStages.get().size() / 4F;
         int desc = Math.round(stage / ratio);
-        return I18n.get("somnia.side_effect."+desc);
+        return I18n.get("somnia.side_effect." + desc);
     }
 
     public static int getForFatigue(double fatigue) {
-        for (int i = 0; i < SomniaConfig.sideEffectStages.size(); i++) {
+        List<? extends List<Integer>> sideEffectStages = SomniaConfig.COMMON.sideEffectStages.get();
+        for (int i = 0; i < sideEffectStages.size(); i++) {
             SideEffectStage stage = SideEffectStage.getSideEffectStages()[i];
-            if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue && (!(stage.duration < 0) || i == SomniaConfig.sideEffectStages.size() - 1)) return i + 1;
+            if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue && (stage.duration >= 0 || i == sideEffectStages.size() - 1)) return i + 1;
         }
 
         return 0;

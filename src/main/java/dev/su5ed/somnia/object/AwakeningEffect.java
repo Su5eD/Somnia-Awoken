@@ -1,11 +1,12 @@
 package dev.su5ed.somnia.object;
 
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectType;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class AwakeningEffect extends Effect {
+public class AwakeningEffect extends MobEffect {
+    public static final int COLOR = 0x00ffee;
 
     public AwakeningEffect() {
-        super(EffectType.BENEFICIAL, 0x00ffee);
+        super(MobEffectCategory.BENEFICIAL, COLOR);
     }
 }

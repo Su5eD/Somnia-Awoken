@@ -1,26 +1,27 @@
 package dev.su5ed.somnia.compat;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.ModList;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
-public class DarkUtilsPlugin {
-    public static final ResourceLocation SLEEP_CHARM = new ResourceLocation("darkutils", "charm_sleep");
+import java.util.Arrays;
 
-    public static boolean hasSleepCharm(PlayerEntity player) {
-        if (ModList.get().isLoaded("curios") && CuriosPlugin.hasCurio(player, SLEEP_CHARM)) return true;
+public final class DarkUtilsPlugin {
+    public static final ResourceLocation SLEEP_CHARM = new ResourceLocation(Compat.DARK_UTILS_MODID, "charm_sleep");
 
-        for (EquipmentSlotType slot : EquipmentSlotType.values()) {
-            ItemStack stack = player.getItemBySlot(slot);
-            if (!stack.isEmpty() && stack.getItem().getRegistryName().equals(SLEEP_CHARM)) return true;
-        }
-
-        for(ItemStack stack : player.inventory.items) {
-            if (!stack.isEmpty() && stack.getItem().getRegistryName().equals(SLEEP_CHARM)) return true;
-        }
-
-        return false;
+    public static boolean hasSleepCharm(Player player) {
+        return Compat.curiosLoaded && CuriosPlugin.hasCurio(player, SLEEP_CHARM)
+            || Arrays.stream(EquipmentSlot.values())
+                .map(player::getItemBySlot)
+                .anyMatch(DarkUtilsPlugin::isSleepCharm)
+            || player.getInventory().items.stream()
+                .anyMatch(DarkUtilsPlugin::isSleepCharm);
     }
+    
+    private static boolean isSleepCharm(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem().getRegistryName().equals(SLEEP_CHARM);
+    }
+    
+    private DarkUtilsPlugin() {}
 }

@@ -1,0 +1,66 @@
+package dev.su5ed.somnia.network;
+
+import dev.su5ed.somnia.core.Somnia;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.simple.SimpleChannel;
+
+public final class SomniaNetwork {
+    private static final String PROTOCOL_VERSION = "1";
+    public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(new ResourceLocation(Somnia.MODID, "main"), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
+
+    public static void registerMessages() {
+        int id = 0;
+        
+        INSTANCE.messageBuilder(OpenGUIPacket.class, id++)
+                .encoder((msg, buf) -> {})
+                .decoder(buf -> new OpenGUIPacket())
+                .consumer(OpenGUIPacket::handle)
+                .add();
+        INSTANCE.messageBuilder(PlayerWakeUpPacket.class, id++)
+                .encoder((msg, buf) -> {})
+                .decoder(buf -> new PlayerWakeUpPacket())
+                .consumer(PlayerWakeUpPacket::handle)
+                .add();
+        INSTANCE.messageBuilder(SpeedUpdatePacket.class, id++)
+                .encoder(SpeedUpdatePacket::encode)
+                .decoder(SpeedUpdatePacket::decode)
+                .consumer(SpeedUpdatePacket::handle)
+                .add();
+        INSTANCE.messageBuilder(ResetSpawnPacket.class, id++)
+                .encoder(ResetSpawnPacket::encode)
+                .decoder(ResetSpawnPacket::decode)
+                .consumer(ResetSpawnPacket::handle)
+                .add();
+        INSTANCE.messageBuilder(FatigueUpdatePacket.class, id++)
+                .encoder(FatigueUpdatePacket::encode)
+                .decoder(FatigueUpdatePacket::decode)
+                .consumer(FatigueUpdatePacket::handle)
+                .add();
+        INSTANCE.messageBuilder(ActivateBlockPacket.class, id++)
+                .encoder(ActivateBlockPacket::encode)
+                .decoder(ActivateBlockPacket::decode)
+                .consumer(ActivateBlockPacket::handle)
+                .add();
+        INSTANCE.messageBuilder(WakeTimeUpdatePacket.class, id++)
+                .encoder(WakeTimeUpdatePacket::encode)
+                .decoder(WakeTimeUpdatePacket::decode)
+                .consumer(WakeTimeUpdatePacket::handle)
+                .add();
+    }
+
+    public static void sendToClient(Object packet, ServerPlayer player) {
+        INSTANCE.sendTo(packet, player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+    }
+
+    public static void sendToDimension(Object packet, ResourceKey<Level> dimension) {
+        INSTANCE.send(PacketDistributor.DIMENSION.with(() -> dimension), packet);
+    }
+    
+    private SomniaNetwork() {}
+}

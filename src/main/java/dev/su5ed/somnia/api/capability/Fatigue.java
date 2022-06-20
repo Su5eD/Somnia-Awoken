@@ -1,48 +1,45 @@
 package dev.su5ed.somnia.api.capability;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 
-//Thanks @TheSilkMiner for a custom capability example
 public class Fatigue implements IFatigue {
-
-    private double fatigue, extraFatigueRate, replenishedFatigue;
-    private int fatigueUpdateCounter = 0, sideEffectStage = -1;
-    private boolean resetSpawn = true, sleepOverride = false, sleepNormally = false;
+    private double fatigue;
+    private double extraFatigueRate;
+    private double replenishedFatigue;
+    private int fatigueUpdateCounter;
+    private int sideEffectStage = -1;
+    private boolean resetSpawn = true;
+    private boolean sleepOverride;
+    private boolean sleepNormally;
     private long wakeTime = -1;
 
     @Override
-    public double getFatigue()
-    {
+    public double getFatigue() {
         return this.fatigue;
     }
 
     @Override
-    public void setFatigue(double fatigue)
-    {
+    public void setFatigue(double fatigue) {
         this.fatigue = fatigue;
     }
 
     @Override
-    public int getSideEffectStage()
-    {
+    public int getSideEffectStage() {
         return this.sideEffectStage;
     }
 
     @Override
-    public void setSideEffectStage(int stage)
-    {
+    public void setSideEffectStage(int stage) {
         this.sideEffectStage = stage;
     }
 
     @Override
-    public int updateFatigueCounter()
-    {
+    public int updateFatigueCounter() {
         return ++fatigueUpdateCounter;
     }
 
     @Override
-    public void resetFatigueCounter()
-    {
+    public void resetFatigueCounter() {
         this.fatigueUpdateCounter = 0;
     }
 
@@ -112,9 +109,8 @@ public class Fatigue implements IFatigue {
     }
 
     @Override
-    public CompoundNBT serializeNBT()
-    {
-        CompoundNBT tag = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
         tag.putDouble("fatigue", this.fatigue);
         tag.putDouble("extraFatigueRate", this.extraFatigueRate);
         tag.putDouble("replenishedFatigue", this.replenishedFatigue);
@@ -124,8 +120,7 @@ public class Fatigue implements IFatigue {
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt)
-    {
+    public void deserializeNBT(CompoundTag nbt) {
         this.fatigue = nbt.getDouble("fatigue");
         this.extraFatigueRate = nbt.getDouble("extraFatigueRate");
         this.replenishedFatigue = nbt.getDouble("replenishedFatigue");

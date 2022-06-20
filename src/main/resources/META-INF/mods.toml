@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[41,)"
+loaderVersion="[40,)"
 license="GNU Lesser General Public License v3.0"
 issueTrackerURL="https://github.com/Su5eD/Somnia/issues/"
 [[mods]]
@@ -16,7 +16,7 @@ Simulating the world while you sleep
 [[dependencies.somnia]]
     modId="forge"
     mandatory=true
-    versionRange="[41,)"
+    versionRange="[40,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.somnia]]

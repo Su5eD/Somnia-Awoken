@@ -17,6 +17,7 @@ plugins {
     java
     `maven-publish`
     id("net.minecraftforge.gradle") version "5.1.+"
+    id("org.parchmentmc.librarian.forgegradle") version "1.+"
     id("wtf.gofancy.fancygradle") version "1.1.+"
     id("com.matthewprenger.cursegradle") version "1.4.+"
     id("com.modrinth.minotaur") version "2.+"
@@ -48,7 +49,7 @@ java {
 }
 
 minecraft {
-    mappings("official", versionMc)
+    mappings("parchment", "2022.06.19-$versionMc")
 
     accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
 
