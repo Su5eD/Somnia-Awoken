@@ -36,7 +36,7 @@ val versionRunelic: String by project
 
 val baseVersion = getGitVersion()
 version = "$versionMc-$baseVersion"
-group = "mods.su5ed"
+group = "dev.su5ed"
 
 val publishVersionName = "Somnia Awoken ${project.version}"
 val publishReleaseType = System.getenv("PUBLISH_RELEASE_TYPE") ?: "release"
