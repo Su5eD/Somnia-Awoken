@@ -1,4 +1,4 @@
-package dev.su5ed.somnia.api.capability;
+package dev.su5ed.somnia.capability;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -18,9 +18,9 @@ public interface IFatigue extends INBTSerializable<CompoundTag> {
 
     void maxFatigueCounter();
 
-    void shouldResetSpawn(boolean resetSpawn);
+    void setResetSpawn(boolean resetSpawn);
 
-    boolean resetSpawn();
+    boolean getResetSpawn();
 
     boolean sleepOverride();
 

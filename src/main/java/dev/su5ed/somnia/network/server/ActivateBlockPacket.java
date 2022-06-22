@@ -1,4 +1,4 @@
-package dev.su5ed.somnia.network;
+package dev.su5ed.somnia.network.server;
 
 import com.google.common.base.MoreObjects;
 import net.minecraft.core.BlockPos;

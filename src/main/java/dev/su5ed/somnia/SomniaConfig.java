@@ -1,6 +1,7 @@
-package dev.su5ed.somnia.core;
+package dev.su5ed.somnia;
 
 import dev.su5ed.somnia.api.ReplenishingItem;
+import dev.su5ed.somnia.util.FatigueDisplayPosition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -8,6 +9,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.Locale;
 
 public final class SomniaConfig {
     public static final ForgeConfigSpec COMMON_SPEC;
@@ -25,11 +27,11 @@ public final class SomniaConfig {
         CLIENT = clientPair.getLeft();
         CLIENT_SPEC = clientPair.getRight();
     }
-    
+
     private SomniaConfig() {}
 
     public static final class ClientConfig {
-        public final ForgeConfigSpec.ConfigValue<String> displayFatigue;
+        public final ForgeConfigSpec.ConfigValue<String> fatigueDisplayPos;
         public final ForgeConfigSpec.BooleanValue simpleFatigueDisplay;
         public final ForgeConfigSpec.ConfigValue<String> displayETASleep;
         public final ForgeConfigSpec.BooleanValue somniaGui;
@@ -38,31 +40,35 @@ public final class SomniaConfig {
 
         public ClientConfig(ForgeConfigSpec.Builder builder) {
             builder.push("fatigue");
-            displayFatigue = builder
-                    .comment("The fatigue counter's position. Accepted values: TOP_CENTER, TOP_LEFT, TOP_RIGHT, BOTTOM_CENTER, BOTTOM_LEFT, BOTTOM_RIGHT")
-                    .define("displayFatigue", "BOTTOM_RIGHT");
+            fatigueDisplayPos = builder
+                .comment("The fatigue counter's position. Accepted values: top_center, top_left, top_right, bottom_center, bottom_left, bottom_right")
+                .define("fatigueDisplayPos", "bottom_right");
             simpleFatigueDisplay = builder
-                    .comment("Simplifies the numerical fatigue counter to words")
-                    .define("simpleFatigueDisplay", false);
+                .comment("Simplifies the numerical fatigue counter to words")
+                .define("simpleFatigueDisplay", false);
             displayETASleep = builder
-                    .comment("The ETA and multiplier display position in Somnia's sleep gui. Accepted values: right, center, left")
-                    .define("displayETASleep", "left");
+                .comment("The ETA and multiplier display position in Somnia's sleep gui. Accepted values: right, center, left")
+                .define("displayETASleep", "left");
             builder.pop();
 
             builder.push("options");
             somniaGui = builder
-                    .comment("Provides an enhanced sleeping gui")
-                    .define("somniaGui", true);
+                .comment("Provides an enhanced sleeping gui")
+                .define("somniaGui", true);
             somniaGuiClockPosition = builder
-                    .comment("The display position of the clock in somnia's enhanced sleeping gui. Accepted values: right, center, left")
-                    .define("somniaGuiClockPosition", "right");
+                .comment("The display position of the clock in somnia's enhanced sleeping gui. Accepted values: right, center, left")
+                .define("somniaGuiClockPosition", "right");
             builder.pop();
 
             builder.push("performance");
             disableRendering = builder
-                    .comment("Disable rendering while you're asleep")
-                    .define("disableRendering", false);
+                .comment("Disable rendering while you're asleep")
+                .define("disableRendering", false);
             builder.pop();
+        }
+
+        public FatigueDisplayPosition getFatigueDisplayPos() {
+            return FatigueDisplayPosition.valueOf(fatigueDisplayPos.get().toUpperCase(Locale.ROOT));
         }
     }
 
@@ -95,94 +101,96 @@ public final class SomniaConfig {
         public CommonConfig(ForgeConfigSpec.Builder builder) {
             builder.push("fatigue");
             fatigueRate = builder
-                    .comment("Fatigue is incremented by this number every tick")
-                    .define("fatigueRate", 0.00208);
+                .comment("Fatigue is incremented by this number every tick")
+                .define("fatigueRate", 0.00208);
             fatigueReplenishRate = builder
-                    .comment("Fatigue is decreased by this number while you sleep (every tick)")
-                    .define("fatigueReplenishRate", 0.00833);
+                .comment("Fatigue is decreased by this number while you sleep (every tick)")
+                .define("fatigueReplenishRate", 0.00833);
             fatigueSideEffects = builder
-                    .comment("Enables fatigue side effects")
-                    .define("fatigueSideEffects", true);
+                .comment("Enables fatigue side effects")
+                .define("fatigueSideEffects", true);
             minimumFatigueToSleep = builder
-                    .comment("The required amount of fatigue to sleep")
-                    .define("minimumFatigueToSleep", 20);
+                .comment("The required amount of fatigue to sleep")
+                .define("minimumFatigueToSleep", 20);
             sideEffectStages = builder
-                    .comment("Definitions of each side effect stage in order: min fatigue, max fatigue, potion ID, duration, amplifier. For a permanent effect, set the duration to -1.")
-                    .defineList("sideEffectStages", List.of(
-                            List.of(70, 80, 9, 150, 0),
-                            List.of(80, 90, 2, 300, 2),
-                            List.of(90, 95, 19, 200, 1),
-                            List.of(95, 100, 2, -1, 3)
-                    ), obj -> obj instanceof List);
+                .comment("Definitions of each side effect stage in order: min fatigue, max fatigue, potion ID, duration, amplifier. For a permanent effect, set the duration to -1.")
+                .defineList("sideEffectStages", List.of(
+                    List.of(70, 80, 9, 150, 0),
+                    List.of(80, 90, 2, 300, 2),
+                    List.of(90, 95, 19, 200, 1),
+                    List.of(95, 100, 2, -1, 3)
+                ), obj -> obj instanceof List);
             replenishingItems = builder
-                    .comment("Definitions of fatigue replenishing items. Each list consist of an item registry name, the amount of fatigue it replenishes, and optionally a fatigue rate modifier")
-                    .defineList("replenishingItems", List.of(
-                       List.of("coffeespawner:coffee", 10),
-                       List.of("coffeespawner:coffee_milk", 10),
-                       List.of("coffeespawner:coffee_sugar", 15),
-                       List.of("coffeespawner:coffee_milk_sugar", 15),
-                       List.of("coffeemod:coffee", 15),
-                       List.of("coffeemod:espresso", 15),
-                       List.of("coffeemod:latte", 15),
-                       List.of("coffeemod:caramel_macchiato", 10),
-                       List.of("coffeemod:mocha", 10),
-                       List.of("coffeemod:frappe", 10)
-                    ), obj -> obj instanceof List);
+                .comment("Definitions of fatigue replenishing items. Each list consist of an item registry name, the amount of fatigue it replenishes, and optionally a fatigue rate modifier")
+                .defineList("replenishingItems", List.of(
+                    List.of("coffeespawner:coffee", 10),
+                    List.of("coffeespawner:coffee_milk", 10),
+                    List.of("coffeespawner:coffee_sugar", 15),
+                    List.of("coffeespawner:coffee_milk_sugar", 15),
+                    List.of("coffeemod:coffee", 15),
+                    List.of("coffeemod:espresso", 15),
+                    List.of("coffeemod:latte", 15),
+                    List.of("coffeemod:caramel_macchiato", 10),
+                    List.of("coffeemod:mocha", 10),
+                    List.of("coffeemod:frappe", 10)
+                ), obj -> obj instanceof List);
             builder.pop();
 
             builder.push("logic");
             delta = builder
-                    .comment("If the time difference (mc) between multiplied ticking is greater than this, the simulation multiplier is lowered. Otherwise, it's increased. Lowering this number might slow down simulation and improve performance. Don't mess around with it if you don't know what you're doing.")
-                    .defineInRange("delta", 50D, 1D, 50D);
+                .comment("If the time difference (mc) between multiplied ticking is greater than this, the simulation multiplier is lowered. Otherwise, it's increased. Lowering this number might slow down simulation and improve performance. Don't mess around with it if you don't know what you're doing.")
+                .defineInRange("delta", 50D, 1D, 50D);
             baseMultiplier = builder
-                    .comment("Minimum tick speed multiplier, activated during sleep")
-                    .define("baseMultiplier", 1D);
+                .worldRestart()
+                .comment("Minimum tick speed multiplier, activated during sleep")
+                .define("baseMultiplier", 1D);
             multiplierCap = builder
-                    .comment("Maximum tick speed multiplier, activated during sleep")
-                    .define("multiplierCap", 100D);
+                .worldRestart()
+                .comment("Maximum tick speed multiplier, activated during sleep")
+                .define("multiplierCap", 100D);
             builder.pop();
 
             builder.push("options");
             fading = builder
-                    .comment("Slightly slower sleep start/end")
-                    .define("fading", true);
+                .comment("Slightly slower sleep start/end")
+                .define("fading", true);
             ignoreMonsters = builder
-                    .comment("Let the player sleep even when there are monsters nearby")
-                    .define("ignoreMonsters", false);
+                .comment("Let the player sleep even when there are monsters nearby")
+                .define("ignoreMonsters", false);
             muteSoundWhenSleeping = builder
-                    .comment("Deafens you while you're asleep. Mob sounds are confusing with the world sped up")
-                    .define("muteSoundWhenSleeping", false);
+                .comment("Deafens you while you're asleep. Mob sounds are confusing with the world sped up")
+                .define("muteSoundWhenSleeping", false);
             sleepWithArmor = builder
-                    .comment("Allows you to sleep with armor equipped")
-                    .define("sleepWithArmor", false);
+                .comment("Allows you to sleep with armor equipped")
+                .define("sleepWithArmor", false);
             wakeTimeSelectItem = builder
-                    .comment("the item used to select wake time")
-                    .define("wakeTimeSelectItem","minecraft:clock");
+                .comment("the item used to select wake time")
+                .define("wakeTimeSelectItem", "minecraft:clock");
             builder.pop();
 
             builder.push("performance");
             disableCreatureSpawning = builder
-                    .comment("Disables mob spawning while you sleep")
-                    .define("disableCreatureSpawning", false);
+                .comment("Disables mob spawning while you sleep")
+                .define("disableCreatureSpawning", false);
             builder.pop();
 
             builder.push("timings");
             enterSleepStart = builder
-                    .comment("Specifies the start of the period in which the player can enter sleep")
-                    .defineInRange("enterSleepStart", 0, 0, 24000);
+                .comment("Specifies the start of the period in which the player can enter sleep")
+                .defineInRange("enterSleepStart", 0, 0, 24000);
             enterSleepEnd = builder
-                    .comment("Specifies the end of the period in which the player can enter sleep")
-                    .defineInRange("enterSleepEnd", 24000, 0, 24000);
+                .comment("Specifies the end of the period in which the player can enter sleep")
+                .defineInRange("enterSleepEnd", 24000, 0, 24000);
 
             validSleepStart = builder
-                    .comment("Specifies the start of the valid sleep period")
-                    .defineInRange("validSleepStart", 0, 0, 24000);
+                .comment("Specifies the start of the valid sleep period")
+                .defineInRange("validSleepStart", 0, 0, 24000);
             validSleepEnd = builder
-                    .comment("Specifies the end of the valid sleep period")
-                    .defineInRange("validSleepEnd", 24000, 0, 24000);
+                .comment("Specifies the end of the valid sleep period")
+                .defineInRange("validSleepEnd", 24000, 0, 24000);
             builder.pop();
         }
-        
+
         public List<ReplenishingItem> getReplenishingItems() {
             return replenishingItems.get().stream()
                 .map(list -> {
@@ -194,7 +202,7 @@ public final class SomniaConfig {
                 .filter(replenishingItem -> replenishingItem.item() != null)
                 .toList();
         }
-        
+
         private static Item getModItem(String registryName) {
             return ForgeRegistries.ITEMS.getValue(new ResourceLocation(registryName));
         }

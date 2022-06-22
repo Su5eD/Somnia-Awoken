@@ -1,24 +1,23 @@
 package dev.su5ed.somnia.handler;
 
+import dev.su5ed.somnia.Somnia;
+import dev.su5ed.somnia.SomniaConfig;
+import dev.su5ed.somnia.SomniaObjects;
 import dev.su5ed.somnia.api.SomniaAPI;
-import dev.su5ed.somnia.api.capability.CapabilityFatigue;
-import dev.su5ed.somnia.api.capability.IFatigue;
+import dev.su5ed.somnia.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.IFatigue;
 import dev.su5ed.somnia.compat.Compat;
 import dev.su5ed.somnia.compat.DarkUtilsPlugin;
-import dev.su5ed.somnia.core.Somnia;
-import dev.su5ed.somnia.core.SomniaConfig;
-import dev.su5ed.somnia.core.SomniaObjects;
-import dev.su5ed.somnia.network.FatigueUpdatePacket;
-import dev.su5ed.somnia.network.OpenGUIPacket;
-import dev.su5ed.somnia.network.PlayerWakeUpPacket;
 import dev.su5ed.somnia.network.SomniaNetwork;
-import dev.su5ed.somnia.util.ASMHooks;
+import dev.su5ed.somnia.network.client.FatigueUpdatePacket;
+import dev.su5ed.somnia.network.client.OpenGUIPacket;
+import dev.su5ed.somnia.network.client.PlayerWakeUpPacket;
+import dev.su5ed.somnia.util.InjectHooks;
 import dev.su5ed.somnia.util.SideEffectStage;
 import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
@@ -37,16 +36,11 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.*;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(modid = Somnia.MODID)
@@ -123,20 +117,16 @@ public final class ForgeEventHandler {
     }
 
     @SubscribeEvent
-    public static void onTickEnd(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) ServerTickHandler.HANDLERS.forEach(ServerTickHandler::tickEnd);
-    }
-
-    @SubscribeEvent
     public static void onWakeUp(PlayerWakeUpEvent event) {
         Player player = event.getPlayer();
         player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
-            if (props.shouldSleepNormally() || (ModList.get().isLoaded("darkutils") && DarkUtilsPlugin.hasSleepCharm(player))) {
+            if (props.shouldSleepNormally() || (Compat.darkUtilsLoaded && DarkUtilsPlugin.hasSleepCharm(player))) {
                 props.setFatigue(props.getFatigue() - SomniaUtil.getFatigueToReplenish(player));
             }
             props.maxFatigueCounter();
-            props.shouldResetSpawn(true);
+            props.setResetSpawn(true);
             props.setSleepNormally(false);
+            props.setSleepOverride(false);
             props.setWakeTime(-1);
         });
     }
@@ -144,14 +134,9 @@ public final class ForgeEventHandler {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
         Player player = event.getPlayer();
-        if (ModList.get().isLoaded("darkutils") && DarkUtilsPlugin.hasSleepCharm(player)) return;
+        if (Compat.darkUtilsLoaded && DarkUtilsPlugin.hasSleepCharm(player)
+            || player.getCapability(CapabilityFatigue.INSTANCE).map(IFatigue::shouldSleepNormally).orElse(false)) return;
 
-        Optional<IFatigue> props = player.getCapability(CapabilityFatigue.INSTANCE).resolve();
-        if (props.isPresent()) {
-            if (props.get().shouldSleepNormally()) {
-                return;
-            }
-        }
         if (!SomniaUtil.isEnterSleepTime()) event.setResult(Event.Result.DENY);
         else event.setResult(Event.Result.ALLOW);
     }
@@ -162,20 +147,21 @@ public final class ForgeEventHandler {
         if (!SomniaUtil.checkFatigue(player)) {
             player.displayClientMessage(new TranslatableComponent("somnia.status.cooldown"), true);
             event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
-        } else if (!SomniaConfig.COMMON.sleepWithArmor.get() && !player.isCreative() && SomniaUtil.doesPlayerWearArmor(player)) {
+        } else if (!SomniaConfig.COMMON.sleepWithArmor.get() && !player.isCreative() && SomniaUtil.hasArmor(player)) {
             player.displayClientMessage(new TranslatableComponent("somnia.status.armor"), true);
             event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
         }
 
-        player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> props.setSleepNormally(player.isShiftKeyDown()));
+        player.getCapability(CapabilityFatigue.INSTANCE)
+            .ifPresent(props -> props.setSleepNormally(player.isShiftKeyDown()));
 
-        if (Compat.isSleepingInBag(player)) ASMHooks.updateWakeTime(player);
+        if (Compat.isSleepingInBag(player)) InjectHooks.updateWakeTime(player);
     }
 
     @SubscribeEvent
     public static void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
         event.getPlayer().getCapability(CapabilityFatigue.INSTANCE)
-            .map(IFatigue::resetSpawn)
+            .map(IFatigue::getResetSpawn)
             .ifPresent(resetSpawn -> {
                 if (!resetSpawn) event.setCanceled(true);
             });
@@ -188,9 +174,9 @@ public final class ForgeEventHandler {
             BlockPos pos = event.getPos();
             BlockState state = level.getBlockState(pos);
             if (!state.hasProperty(HorizontalDirectionalBlock.FACING)) return;
+
             Direction direction = state.getValue(HorizontalDirectionalBlock.FACING);
             Player player = event.getPlayer();
-
             if (!Compat.isBed(state, pos, level, player) || !((ServerPlayer) player).bedInRange(pos, direction)) return;
 
             ItemStack stack = player.getInventory().getSelected();
@@ -200,22 +186,21 @@ public final class ForgeEventHandler {
                 event.setCanceled(true);
             }
         }
-
     }
 
     @SubscribeEvent
     public static void onLivingEntityUseItem(LivingEntityUseItemEvent.Finish event) {
         ItemStack stack = event.getItem();
-        Item item = stack.getItem();
         UseAnim action = stack.getUseAnimation();
         if (action == UseAnim.EAT || action == UseAnim.DRINK) {
-            Stream.of(SomniaConfig.COMMON.getReplenishingItems(), SomniaAPI.getReplenishingItems())
-                .flatMap(Collection::stream)
+            Item item = stack.getItem();
+            Stream.concat(SomniaConfig.COMMON.getReplenishingItems().stream(), SomniaAPI.getReplenishingItems().stream())
                 .filter(replenishingItem -> replenishingItem.item() == item)
                 .findFirst()
                 .ifPresent(replenishingItem -> event.getEntityLiving().getCapability(CapabilityFatigue.INSTANCE)
                     .ifPresent(props -> {
                         double fatigue = props.getFatigue();
+
                         double replenishedFatigue = props.getReplenishedFatigue();
                         double fatigueToReplenish = Math.min(fatigue, replenishingItem.replenishedFatigue());
                         double newFatigue = replenishedFatigue + fatigueToReplenish;
@@ -230,30 +215,6 @@ public final class ForgeEventHandler {
         }
     }
 
-    @SubscribeEvent
-    public static void worldLoadHook(WorldEvent.Load event) {
-        if (event.getWorld() instanceof ServerLevel serverLevel) {
-            ServerTickHandler.HANDLERS.add(new ServerTickHandler(serverLevel));
-            Somnia.LOGGER.info("Registering tick handler for loading world!");
-        }
-    }
-
-    @SubscribeEvent
-    public static void worldUnloadHook(WorldEvent.Unload event) {
-        if (event.getWorld() instanceof ServerLevel serverLevel) {
-            Iterator<ServerTickHandler> iter = ServerTickHandler.HANDLERS.iterator();
-            ServerTickHandler serverTickHandler;
-            while (iter.hasNext()) {
-                serverTickHandler = iter.next();
-                if (serverTickHandler.serverLevel == serverLevel) {
-                    Somnia.LOGGER.info("Removing tick handler for unloading world!");
-                    iter.remove();
-                    break;
-                }
-            }
-        }
-    }
-
     // we need the earliest PlayerEntity#hurt listener
     // because we have to set the sleep override to false before the mc stopSleeping call
     // otherwise PlayerSleepTickHandler#tickEnd will make the player to start sleeping again
@@ -262,13 +223,16 @@ public final class ForgeEventHandler {
         LivingEntity entity = event.getEntityLiving();
 
         if (entity instanceof ServerPlayer player && entity.isSleeping()) {
-            if (player.isInvulnerableTo(event.getSource())) return;
-            if (player.isInvulnerable() && !event.getSource().isBypassInvul()) return;
-            if (player.isOnFire() && player.hasEffect(MobEffects.FIRE_RESISTANCE)) return;
+            if (player.isInvulnerableTo(event.getSource())
+                || (player.isInvulnerable() && !event.getSource().isBypassInvul())
+                || player.isOnFire() && player.hasEffect(MobEffects.FIRE_RESISTANCE)
+            ) {
+                return;
+            }
 
             entity.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> props.setSleepOverride(false));
             entity.stopSleeping();
-            SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), (ServerPlayer) entity);
+            SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
         }
     }
 
@@ -281,6 +245,6 @@ public final class ForgeEventHandler {
                 props.setExtraFatigueRate(0);
             });
     }
-    
+
     private ForgeEventHandler() {}
 }

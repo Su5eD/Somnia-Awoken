@@ -1,6 +1,6 @@
 package dev.su5ed.somnia.api;
 
-import dev.su5ed.somnia.core.SomniaConfig;
+import dev.su5ed.somnia.SomniaConfig;
 import net.minecraft.world.item.Item;
 
 import java.util.ArrayList;

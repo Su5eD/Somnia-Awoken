@@ -1,8 +1,7 @@
-package dev.su5ed.somnia.network;
+package dev.su5ed.somnia.network.server;
 
-import dev.su5ed.somnia.api.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.CapabilityFatigue;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -24,12 +23,8 @@ public class ResetSpawnPacket {
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
-            if (player != null) {
-                player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> props.shouldResetSpawn(this.resetSpawn));
-            }
-        });
+        ctx.get().enqueueWork(() -> ctx.get().getSender().getCapability(CapabilityFatigue.INSTANCE)
+            .ifPresent(props -> props.setResetSpawn(this.resetSpawn)));
         return true;
     }
 }

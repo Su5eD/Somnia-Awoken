@@ -1,6 +1,6 @@
-package dev.su5ed.somnia.api.capability;
+package dev.su5ed.somnia.capability;
 
-import dev.su5ed.somnia.core.Somnia;
+import dev.su5ed.somnia.Somnia;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;

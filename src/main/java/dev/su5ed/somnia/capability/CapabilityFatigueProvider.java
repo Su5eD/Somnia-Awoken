@@ -1,4 +1,4 @@
-package dev.su5ed.somnia.api.capability;
+package dev.su5ed.somnia.capability;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;

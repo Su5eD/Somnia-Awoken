@@ -1,6 +1,7 @@
-package dev.su5ed.somnia.network;
+package dev.su5ed.somnia.network.server;
 
-import dev.su5ed.somnia.api.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.CapabilityFatigue;
+import dev.su5ed.somnia.network.ClientPacketHandler;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;

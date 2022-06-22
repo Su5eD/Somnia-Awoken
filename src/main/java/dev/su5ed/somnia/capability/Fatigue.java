@@ -1,12 +1,12 @@
-package dev.su5ed.somnia.api.capability;
+package dev.su5ed.somnia.capability;
 
 import net.minecraft.nbt.CompoundTag;
 
-public class Fatigue implements IFatigue {
+public class Fatigue implements IFatigue { // TODO Move out from api
     private double fatigue;
     private double extraFatigueRate;
     private double replenishedFatigue;
-    private int fatigueUpdateCounter;
+    private int fatigueUpdateCounter; // TODO Do we need this?
     private int sideEffectStage = -1;
     private boolean resetSpawn = true;
     private boolean sleepOverride;
@@ -49,12 +49,12 @@ public class Fatigue implements IFatigue {
     }
 
     @Override
-    public void shouldResetSpawn(boolean resetSpawn) {
+    public void setResetSpawn(boolean resetSpawn) {
         this.resetSpawn = resetSpawn;
     }
 
     @Override
-    public boolean resetSpawn() {
+    public boolean getResetSpawn() {
         return this.resetSpawn;
     }
 

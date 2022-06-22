@@ -1,6 +1,6 @@
 package dev.su5ed.somnia.util;
 
-import dev.su5ed.somnia.core.SomniaConfig;
+import dev.su5ed.somnia.SomniaConfig;
 import net.minecraft.client.resources.language.I18n;
 
 import java.util.List;

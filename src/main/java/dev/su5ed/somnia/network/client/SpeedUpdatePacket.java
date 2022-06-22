@@ -1,4 +1,4 @@
-package dev.su5ed.somnia.network;
+package dev.su5ed.somnia.network.client;
 
 import dev.su5ed.somnia.handler.ClientTickHandler;
 import net.minecraft.network.FriendlyByteBuf;

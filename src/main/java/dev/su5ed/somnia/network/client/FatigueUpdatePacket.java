@@ -1,7 +1,6 @@
-package dev.su5ed.somnia.network;
+package dev.su5ed.somnia.network.client;
 
-import dev.su5ed.somnia.api.capability.CapabilityFatigue;
-import net.minecraft.client.Minecraft;
+import dev.su5ed.somnia.network.ClientPacketHandler;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
@@ -26,8 +25,7 @@ public class FatigueUpdatePacket {
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> Minecraft.getInstance().player.getCapability(CapabilityFatigue.INSTANCE)
-            .ifPresent(props -> props.setFatigue(this.fatigue))));
+        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.updateFatigue(this.fatigue)));
         return true;
     }
 }

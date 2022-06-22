@@ -1,10 +1,10 @@
 package dev.su5ed.somnia.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.su5ed.somnia.api.capability.CapabilityFatigue;
-import dev.su5ed.somnia.network.ActivateBlockPacket;
+import dev.su5ed.somnia.capability.CapabilityFatigue;
+import dev.su5ed.somnia.network.server.ActivateBlockPacket;
 import dev.su5ed.somnia.network.SomniaNetwork;
-import dev.su5ed.somnia.network.WakeTimeUpdatePacket;
+import dev.su5ed.somnia.network.server.WakeTimeUpdatePacket;
 import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -17,12 +17,13 @@ public class WakeTimeButton extends Button {
     private final String hoverText;
     private final String buttonText;
 
-    public WakeTimeButton(int x, int y, int widthIn, int heightIn, String buttonText, long wakeTime) {
+    public WakeTimeButton(int x, int y, int widthIn, int heightIn, String buttonText, int wakeTime) {
         super(x, y, widthIn, heightIn, new TextComponent(buttonText), button -> {
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null) return;
 
-            long targetWakeTime = SomniaUtil.calculateWakeTime(mc.level.getGameTime(), (int) wakeTime);
+            // TODO Move calculation to server
+            long targetWakeTime = SomniaUtil.calculateWakeTime(mc.level, wakeTime);
             SomniaNetwork.INSTANCE.sendToServer(new WakeTimeUpdatePacket(targetWakeTime));
             mc.player.getCapability(CapabilityFatigue.INSTANCE)
                 .ifPresent(props -> props.setWakeTime(targetWakeTime));
@@ -36,8 +37,9 @@ public class WakeTimeButton extends Button {
 
             mc.setScreen(null);
         });
+        
         this.buttonText = buttonText;
-        this.hoverText = SomniaUtil.timeStringForWorldTime(wakeTime);
+        this.hoverText = SomniaUtil.timeStringForGameTime(wakeTime);
     }
 
     @Override

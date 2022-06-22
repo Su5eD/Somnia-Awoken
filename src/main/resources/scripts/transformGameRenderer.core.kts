@@ -18,7 +18,7 @@ fun transformRenderLevel(method: MethodNode) {
         lload_2
         aload(4)
         invokestatic(
-            "dev/su5ed/somnia/util/ASMHooks",
+            "dev/su5ed/somnia/util/ClientInjectHooks",
             "skipRenderWorld",
             constructMethodDescriptor(boolean, float, long, "com/mojang/blaze3d/vertex/PoseStack")
         )

@@ -1,13 +1,13 @@
-package dev.su5ed.somnia.core;
+package dev.su5ed.somnia;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import dev.su5ed.somnia.api.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.CapabilityFatigue;
 import dev.su5ed.somnia.network.SomniaNetwork;
-import dev.su5ed.somnia.network.FatigueUpdatePacket;
+import dev.su5ed.somnia.network.client.FatigueUpdatePacket;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
