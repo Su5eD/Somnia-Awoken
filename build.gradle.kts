@@ -19,6 +19,7 @@ plugins {
     id("net.minecraftforge.gradle") version "5.1.+"
     id("org.parchmentmc.librarian.forgegradle") version "1.+"
     id("wtf.gofancy.fancygradle") version "1.1.+"
+    id("wtf.gofancy.koremods.gradle") version "0.1.19"
     id("com.matthewprenger.cursegradle") version "1.4.+"
     id("com.modrinth.minotaur") version "2.+"
 }
@@ -60,6 +61,7 @@ minecraft {
             ))
             workingDirectory = project.file("run").canonicalPath
             source(sourceSets["main"])
+            forceExit = false
         }
 
         create("client", config)
@@ -80,10 +82,16 @@ repositories {
         name = "Progwml6 maven"
         url = uri("https://dvs1.progwml6.com/files/maven/")
     }
+    maven {
+        name = "Garden of Fancy Releases"
+        url = uri("https://maven.gofancy.wtf/releases")
+    }
 }
 
 dependencies {
     minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
+    
+    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.5")
 
     implementation(fg.deobf(group = "mezz.jei", name = "jei-1.18.2-forge-api", version = versionJEI))
     compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.18.2", version = versionDarkUtils))

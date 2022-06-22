@@ -1,6 +1,6 @@
 package dev.su5ed.somnia.util;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.su5ed.somnia.api.capability.CapabilityFatigue;
 import dev.su5ed.somnia.core.SomniaConfig;
@@ -41,10 +41,10 @@ public class ASMHooks {
     }
 
     public static boolean skipRenderWorld(float partialTicks, long finishTimeNano, PoseStack stack) {
-        return DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> {
+        return DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> { // TODO Is this needed?
             Minecraft mc = Minecraft.getInstance();
             if (mc.player.isSleeping() && SomniaConfig.CLIENT.disableRendering.get()) {
-                GlStateManager._clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, false);
+                RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
                 return true;
             }
             return false;

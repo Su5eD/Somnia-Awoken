@@ -8,6 +8,7 @@ import dev.su5ed.somnia.core.SomniaConfig;
 import dev.su5ed.somnia.network.PlayerWakeUpPacket;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.WakeTimeUpdatePacket;
+import dev.su5ed.somnia.util.RenderHelper;
 import dev.su5ed.somnia.util.SideEffectStage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
@@ -119,7 +120,7 @@ public class ClientTickHandler {
             .filter(wakeTime -> wakeTime > -1)
             .ifPresent(wakeTime -> {
                 if (sleepStart != -1) {
-                    mc.getTextureManager().getTexture(GuiComponent.GUI_ICONS_LOCATION).bind();
+                    RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
 
                     double sleepDuration = mc.level.getGameTime() - sleepStart,
                         remaining = wakeTime - sleepStart,
@@ -127,12 +128,7 @@ public class ClientTickHandler {
 
                     int width = screen.width - 40;
 
-                    RenderSystem.enableBlend();
-//                    glColor4f(1, 1, 1, 0.2F); TODO
-                    renderProgressBar(poseStack, width, 1);
-
-                    RenderSystem.disableBlend();
-                    renderProgressBar(poseStack, width, progress);
+                    renderProgressBar(screen, poseStack, width, progress);
 
                     String displayETASleep = SomniaConfig.CLIENT.displayETASleep.get();
                     int offsetX = displayETASleep.equals("center") ? screen.width / 2 - 80 : displayETASleep.equals("right") ? width - 160 : 0;
@@ -157,10 +153,20 @@ public class ClientTickHandler {
         return String.format(SpeedColor.WHITE.code + "(%s:%s)", (etaMinutes < 10 ? "0" : "") + etaMinutes, (etaSeconds < 10 ? "0" : "") + etaSeconds);
     }
 
-    private void renderProgressBar(PoseStack poseStack, int width, double progress) {
+    private void renderProgressBar(Screen screen, PoseStack poseStack, int width, double progress) {
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1, 1, 1, 0.2F);
+        doRenderProgressBar(screen, poseStack, width, 1);
+        
+        RenderSystem.disableBlend();
+        RenderSystem.setShaderColor(1, 1, 1, 1);
+        doRenderProgressBar(screen, poseStack, width, progress);
+    }
+    
+    private void doRenderProgressBar(Screen screen, PoseStack poseStack, int width, double progress) {
         int x = 20;
         for (int amount = (int) (progress * width); amount > 0; amount -= 180, x += 180) {
-            if (mc.screen != null) this.mc.screen.blit(poseStack, x, 10, 0, 69, Math.min(amount, 180), 5);
+            screen.blit(poseStack, x, 10, 0, 69, Math.min(amount, 180), 5);
         }
     }
 
@@ -183,7 +189,7 @@ public class ClientTickHandler {
         poseStack.pushPose();
         poseStack.translate(x, 35, 0);
         poseStack.scale(4, 4, 1);
-        mc.getItemRenderer().renderAndDecorateItem(CLOCK, 0, 0);
+        RenderHelper.renderItemStackInGui(poseStack, CLOCK, 0, 0);
         poseStack.popPose();
     }
 

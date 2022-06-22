@@ -13,6 +13,10 @@ pluginManagement {
             name = "Parchment"
             url = uri("https://maven.parchmentmc.org")
         }
+        maven {
+            name = "Garden of Fancy"
+            url = uri("https://maven.gofancy.wtf/releases")
+        }
     }
 }
 
