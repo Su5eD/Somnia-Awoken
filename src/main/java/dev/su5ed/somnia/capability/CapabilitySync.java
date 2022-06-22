@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -44,6 +45,16 @@ public final class CapabilitySync {
                         .ifPresent(fatigue -> fatigue.deserializeNBT(old));
                 });
         }
+    }
+
+    @SubscribeEvent
+    public static void onLivingDeath(LivingDeathEvent event) {
+        event.getEntityLiving().getCapability(CapabilityFatigue.INSTANCE)
+            .ifPresent(props -> {
+                props.setFatigue(0);
+                props.setReplenishedFatigue(0);
+                props.setExtraFatigueRate(0);
+            });
     }
 
     private static void sync(ServerPlayer player) {

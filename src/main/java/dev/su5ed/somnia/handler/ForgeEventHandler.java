@@ -5,19 +5,14 @@ import dev.su5ed.somnia.SomniaConfig;
 import dev.su5ed.somnia.SomniaObjects;
 import dev.su5ed.somnia.api.SomniaAPI;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
-import dev.su5ed.somnia.capability.IFatigue;
 import dev.su5ed.somnia.compat.Compat;
-import dev.su5ed.somnia.compat.DarkUtilsPlugin;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.client.FatigueUpdatePacket;
 import dev.su5ed.somnia.network.client.OpenGUIPacket;
 import dev.su5ed.somnia.network.client.PlayerWakeUpPacket;
-import dev.su5ed.somnia.util.InjectHooks;
 import dev.su5ed.somnia.util.SideEffectStage;
-import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
@@ -33,11 +28,8 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.player.*;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -117,57 +109,6 @@ public final class ForgeEventHandler {
     }
 
     @SubscribeEvent
-    public static void onWakeUp(PlayerWakeUpEvent event) {
-        Player player = event.getPlayer();
-        player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
-            if (props.shouldSleepNormally() || (Compat.darkUtilsLoaded && DarkUtilsPlugin.hasSleepCharm(player))) {
-                props.setFatigue(props.getFatigue() - SomniaUtil.getFatigueToReplenish(player));
-            }
-            props.maxFatigueCounter();
-            props.setResetSpawn(true);
-            props.setSleepNormally(false);
-            props.setSleepOverride(false);
-            props.setWakeTime(-1);
-        });
-    }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
-        Player player = event.getPlayer();
-        if (Compat.darkUtilsLoaded && DarkUtilsPlugin.hasSleepCharm(player)
-            || player.getCapability(CapabilityFatigue.INSTANCE).map(IFatigue::shouldSleepNormally).orElse(false)) return;
-
-        if (!SomniaUtil.isEnterSleepTime()) event.setResult(Event.Result.DENY);
-        else event.setResult(Event.Result.ALLOW);
-    }
-
-    @SubscribeEvent
-    public static void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
-        Player player = event.getPlayer();
-        if (!SomniaUtil.checkFatigue(player)) {
-            player.displayClientMessage(new TranslatableComponent("somnia.status.cooldown"), true);
-            event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
-        } else if (!SomniaConfig.COMMON.sleepWithArmor.get() && !player.isCreative() && SomniaUtil.hasArmor(player)) {
-            player.displayClientMessage(new TranslatableComponent("somnia.status.armor"), true);
-            event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
-        }
-
-        player.getCapability(CapabilityFatigue.INSTANCE)
-            .ifPresent(props -> props.setSleepNormally(player.isShiftKeyDown()));
-
-        if (Compat.isSleepingInBag(player)) InjectHooks.updateWakeTime(player);
-    }
-
-    @SubscribeEvent
-    public static void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
-        event.getPlayer().getCapability(CapabilityFatigue.INSTANCE)
-            .map(IFatigue::getResetSpawn)
-            .ifPresent(resetSpawn -> {
-                if (!resetSpawn) event.setCanceled(true);
-            });
-    }
-
-    @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getWorld();
         if (!level.isClientSide) {
@@ -234,16 +175,6 @@ public final class ForgeEventHandler {
             entity.stopSleeping();
             SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
         }
-    }
-
-    @SubscribeEvent
-    public static void onLivingDeath(LivingDeathEvent event) {
-        event.getEntityLiving().getCapability(CapabilityFatigue.INSTANCE)
-            .ifPresent(props -> {
-                props.setFatigue(0);
-                props.setReplenishedFatigue(0);
-                props.setExtraFatigueRate(0);
-            });
     }
 
     private ForgeEventHandler() {}

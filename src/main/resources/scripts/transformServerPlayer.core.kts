@@ -45,6 +45,6 @@ fun transformStartSleepInBed(method: MethodNode) {
         logger.info("Injecting wake time update")
         
         aload_0
-        invokestatic("dev/su5ed/somnia/util/InjectHooks", "updateWakeTime", void, "net/minecraft/world/entity/player/Player")
+        invokestatic("dev/su5ed/somnia/util/InjectHooks", "updateWakeTime", void, "net/minecraft/server/level/ServerPlayer")
     }
 }

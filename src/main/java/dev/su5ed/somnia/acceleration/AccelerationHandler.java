@@ -20,8 +20,8 @@ import java.util.UUID;
 
 public class AccelerationHandler {
     public final ServerLevel level;
-    private final double minMultiplier = SomniaConfig.COMMON.baseMultiplier.get(); // TODO rename config
-    private final double maxMultiplier = SomniaConfig.COMMON.multiplierCap.get();
+    private final double minMultiplier = SomniaConfig.COMMON.minMultiplier.get();
+    private final double maxMultiplier = SomniaConfig.COMMON.maxMultiplier.get();
     
     private AccelerationState state;
     private int timer;

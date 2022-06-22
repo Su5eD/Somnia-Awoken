@@ -19,6 +19,7 @@ transformers {
     )
 }
 
+// TODO Map member names
 fun transformTickChunk(method: MethodNode) {
     val target = method.findTarget {
         invokevirtual("net/minecraft/server/level/ServerLevel", "getGameRules", returnType = "net/minecraft/world/level/GameRules")

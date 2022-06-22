@@ -2,11 +2,11 @@ package dev.su5ed.somnia.capability;
 
 import net.minecraft.nbt.CompoundTag;
 
-public class Fatigue implements IFatigue { // TODO Move out from api
+public class Fatigue implements IFatigue {
     private double fatigue;
     private double extraFatigueRate;
     private double replenishedFatigue;
-    private int fatigueUpdateCounter; // TODO Do we need this?
+    private int fatigueUpdateCounter;
     private int sideEffectStage = -1;
     private boolean resetSpawn = true;
     private boolean sleepOverride;

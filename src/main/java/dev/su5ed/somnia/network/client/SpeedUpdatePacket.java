@@ -1,6 +1,6 @@
 package dev.su5ed.somnia.network.client;
 
-import dev.su5ed.somnia.handler.ClientTickHandler;
+import dev.su5ed.somnia.ClientSleepHandler;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
@@ -25,7 +25,7 @@ public class SpeedUpdatePacket {
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientTickHandler.INSTANCE.addSpeedValue(this.speed)));
+        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientSleepHandler.INSTANCE.addSpeedValue(this.speed)));
         return true;
     }
 }

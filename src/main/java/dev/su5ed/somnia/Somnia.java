@@ -2,7 +2,6 @@ package dev.su5ed.somnia;
 
 import dev.su5ed.somnia.capability.IFatigue;
 import dev.su5ed.somnia.compat.Compat;
-import dev.su5ed.somnia.handler.ClientTickHandler;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -30,7 +29,7 @@ public class Somnia {
         
         MinecraftForge.EVENT_BUS.addListener(this::registerCapabilities);
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(ClientTickHandler.INSTANCE));
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(ClientSleepHandler.INSTANCE));
 
         SomniaObjects.register(bus);
         SomniaNetwork.registerMessages();

@@ -81,8 +81,8 @@ public final class SomniaConfig {
         public final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> replenishingItems;
 
         public final ForgeConfigSpec.ConfigValue<Double> delta;
-        public final ForgeConfigSpec.ConfigValue<Double> baseMultiplier;
-        public final ForgeConfigSpec.ConfigValue<Double> multiplierCap;
+        public final ForgeConfigSpec.ConfigValue<Double> minMultiplier;
+        public final ForgeConfigSpec.ConfigValue<Double> maxMultiplier;
 
         public final ForgeConfigSpec.BooleanValue fading;
         public final ForgeConfigSpec.BooleanValue ignoreMonsters;
@@ -140,14 +140,14 @@ public final class SomniaConfig {
             delta = builder
                 .comment("If the time difference (mc) between multiplied ticking is greater than this, the simulation multiplier is lowered. Otherwise, it's increased. Lowering this number might slow down simulation and improve performance. Don't mess around with it if you don't know what you're doing.")
                 .defineInRange("delta", 50D, 1D, 50D);
-            baseMultiplier = builder
+            minMultiplier = builder
                 .worldRestart()
                 .comment("Minimum tick speed multiplier, activated during sleep")
-                .define("baseMultiplier", 1D);
-            multiplierCap = builder
+                .define("minMultiplier", 1D);
+            maxMultiplier = builder
                 .worldRestart()
                 .comment("Maximum tick speed multiplier, activated during sleep")
-                .define("multiplierCap", 100D);
+                .define("maxMultiplier", 100D);
             builder.pop();
 
             builder.push("options");
