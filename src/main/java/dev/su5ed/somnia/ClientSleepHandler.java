@@ -42,7 +42,7 @@ public class ClientSleepHandler {
     
     public void addSpeedValue(double speed) {
         this.speedValues.add(speed);
-        if (this.speedValues.size() > 5) this.speedValues.removeLast();
+        if (this.speedValues.size() > 5) this.speedValues.removeFirst();
     }
 
     @SubscribeEvent
@@ -95,7 +95,7 @@ public class ClientSleepHandler {
             long wakeTime = fatigue.getWakeTime();
             double sleepDuration = mc.level.getGameTime() - this.sleepStartTime;
             double remaining = wakeTime - this.sleepStartTime;
-            double progress = sleepDuration / remaining;
+            double progress = wakeTime == -1 ? 0 : sleepDuration / remaining;
             int width = screen.width - 40;
 
             RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
@@ -106,13 +106,15 @@ public class ClientSleepHandler {
             double currentSpeed = this.speedValues.isEmpty() ? 0 : this.speedValues.getLast();
             renderScaledString(poseStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(currentSpeed).color, MULTIPLIER_FORMAT.format(currentSpeed)));
 
-            double average = this.speedValues.stream()
-                .filter(Objects::nonNull)
-                .mapToDouble(Double::doubleValue)
-                .summaryStatistics()
-                .getAverage();
-            long eta = Math.round((remaining - sleepDuration) / (average * 20));
-            renderScaledString(poseStack, offsetX + 80, getETAString(eta));
+            if (wakeTime != -1) {
+                double average = this.speedValues.stream()
+                    .filter(Objects::nonNull)
+                    .mapToDouble(Double::doubleValue)
+                    .summaryStatistics()
+                    .getAverage();
+                long eta = Math.round((remaining - sleepDuration) / (average * 20));
+                renderScaledString(poseStack, offsetX + 80, getETAString(eta));
+            }
 
             renderClock(poseStack, width);
         }

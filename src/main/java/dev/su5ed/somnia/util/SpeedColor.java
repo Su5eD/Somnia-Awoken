@@ -26,7 +26,7 @@ public enum SpeedColor {
 
     public static SpeedColor getColorForSpeed(double speed) {
         return VALUES.stream()
-            .filter(color -> speed < color.range)
+            .filter(color -> speed <= color.range)
             .findFirst()
             .orElse(SpeedColor.WHITE);
     }
