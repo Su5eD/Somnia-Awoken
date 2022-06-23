@@ -47,10 +47,10 @@ public class AccelerationHandler {
     }
 
     private AccelerationState getNewState() {
-        AccelerationState state = AccelerationState.forLevel(level);
+        AccelerationState state = AccelerationState.forLevel(this.level);
 
         if (this.state == AccelerationState.SIMULATING && state == AccelerationState.UNAVAILABLE) {
-            wakeUpPlayer();
+            wakeUpPlayers();
         }
         else if (state == AccelerationState.SIMULATING || state == AccelerationState.WAITING) {
             SomniaNetwork.sendToDimension(new SpeedUpdatePacket(state == AccelerationState.SIMULATING ? this.multiplier : 0), this.level.dimension());
@@ -67,9 +67,10 @@ public class AccelerationHandler {
         }
         long deltaMillis = System.currentTimeMillis() - startMillis;
         
+        double tickLength = deltaMillis / (double) count;
         double accelerationRatio = SomniaConfig.COMMON.delta.get() / AccelerationManager.getActiveHandlers();
-        double mod = (deltaMillis <= accelerationRatio) ? 0.1 : -0.1;
-        this.multiplier = Mth.clamp(this.multiplier + mod, minMultiplier, maxMultiplier);
+        double available = (accelerationRatio - deltaMillis) / tickLength / 5.0;
+        this.multiplier = Mth.clamp(this.multiplier + available, this.minMultiplier, this.maxMultiplier);
     }
 
     private void tickLevel() {
@@ -85,7 +86,7 @@ public class AccelerationHandler {
         ForgeEventFactory.onPostWorldTick(this.level, server::haveTime);
     }
     
-    private void wakeUpPlayer() {
+    private void wakeUpPlayers() {
         this.level.players().stream()
             .filter(LivingEntity::isSleeping)
             .forEach(player -> {

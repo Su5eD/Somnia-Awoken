@@ -106,7 +106,7 @@ public class ClientSleepHandler {
             double currentSpeed = this.speedValues.isEmpty() ? 0 : this.speedValues.getLast();
             renderScaledString(poseStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(currentSpeed).color, MULTIPLIER_FORMAT.format(currentSpeed)));
 
-            if (wakeTime != -1) {
+            if (wakeTime != -1 && !this.speedValues.isEmpty()) {
                 double average = this.speedValues.stream()
                     .filter(Objects::nonNull)
                     .mapToDouble(Double::doubleValue)
