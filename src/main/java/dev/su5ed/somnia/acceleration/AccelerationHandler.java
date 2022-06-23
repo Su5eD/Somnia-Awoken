@@ -52,7 +52,7 @@ public class AccelerationHandler {
         if (this.state == AccelerationState.SIMULATING && state == AccelerationState.UNAVAILABLE) {
             wakeUpPlayers();
         }
-        else if (state == AccelerationState.SIMULATING || state == AccelerationState.WAITING) {
+        else if (state.enableOverlay()) {
             SomniaNetwork.sendToDimension(new SpeedUpdatePacket(state == AccelerationState.SIMULATING ? this.multiplier : 0), this.level.dimension());
         }
 
@@ -91,7 +91,7 @@ public class AccelerationHandler {
             .filter(LivingEntity::isSleeping)
             .forEach(player -> {
                 SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
-                String key = "somnia.status." + this.state.toString().toLowerCase(Locale.ROOT);
+                String key = "somnia.status." + this.state.name().toLowerCase(Locale.ROOT);
                 player.sendMessage(new TranslatableComponent(key), UUID.randomUUID());
             });
     }

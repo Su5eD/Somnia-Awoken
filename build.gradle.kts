@@ -91,7 +91,7 @@ repositories {
 dependencies {
     minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
     
-    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.5")
+    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.6")
 
     implementation(fg.deobf(group = "mezz.jei", name = "jei-1.18.2-forge-api", version = versionJEI))
     compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.18.2", version = versionDarkUtils))

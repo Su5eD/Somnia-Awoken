@@ -19,12 +19,11 @@ transformers {
     )
 }
 
-// TODO Map member names
 fun transformTickChunk(method: MethodNode) {
     val target = method.findTarget {
-        invokevirtual("net/minecraft/server/level/ServerLevel", "getGameRules", returnType = "net/minecraft/world/level/GameRules")
-        getstatic("net/minecraft/world/level/GameRules", "RULE_DOMOBSPAWNING", "net/minecraft/world/level/GameRules\$Key")
-        invokevirtual("net/minecraft/world/level/GameRules", "getBoolean", boolean, "net/minecraft/world/level/GameRules\$Key")
+        invokevirtual("net/minecraft/server/level/ServerLevel", mapMethodName("m_46469_"), returnType = "net/minecraft/world/level/GameRules") // getGameRules
+        getstatic("net/minecraft/world/level/GameRules", mapFieldName("f_46134_"), "net/minecraft/world/level/GameRules\$Key") // RULE_DOMOBSPAWNING
+        invokevirtual("net/minecraft/world/level/GameRules", mapMethodName("m_46207_"), boolean, "net/minecraft/world/level/GameRules\$Key") // getBoolean
     }
     
     target.insertBefore {
@@ -39,10 +38,10 @@ fun transformTickChunk(method: MethodNode) {
 fun transformTickChunks(method: MethodNode) {
     val target = method.findTarget {
         aload_0
-        getfield("net/minecraft/server/level/ServerChunkCache", "level", "net/minecraft/server/level/ServerLevel")
-        invokevirtual("net/minecraft/server/level/ServerLevel", "getGameRules", returnType = "net/minecraft/world/level/GameRules")
-        getstatic("net/minecraft/world/level/GameRules", "RULE_DOMOBSPAWNING", "net/minecraft/world/level/GameRules\$Key")
-        invokevirtual("net/minecraft/world/level/GameRules", "getBoolean", boolean, "net/minecraft/world/level/GameRules\$Key")
+        getfield("net/minecraft/server/level/ServerChunkCache", mapFieldName("f_8329_"), "net/minecraft/server/level/ServerLevel") // level
+        invokevirtual("net/minecraft/server/level/ServerLevel", mapMethodName("m_46469_"), returnType = "net/minecraft/world/level/GameRules") // getGameRules
+        getstatic("net/minecraft/world/level/GameRules", mapFieldName("f_46134_"), "net/minecraft/world/level/GameRules\$Key") // RULE_DOMOBSPAWNING
+        invokevirtual("net/minecraft/world/level/GameRules", mapMethodName("m_46207_"), boolean, "net/minecraft/world/level/GameRules\$Key") // getBoolean
     }
     
     target.insert {
@@ -50,7 +49,7 @@ fun transformTickChunks(method: MethodNode) {
     }
     target.insertAfter { 
         +L["skip"]
-        getfield("net/minecraft/server/level/ServerChunkCache", "level", "net/minecraft/server/level/ServerLevel")
+        getfield("net/minecraft/server/level/ServerChunkCache", mapFieldName("f_8329_"), "net/minecraft/server/level/ServerLevel") // level
         invokestatic("dev/su5ed/somnia/util/InjectHooks", "doMobSpawning", boolean, "net/minecraft/server/level/ServerLevel")
     }
 }

@@ -1,15 +1,11 @@
-package dev.su5ed.somnia.handler;
+package dev.su5ed.somnia;
 
-import dev.su5ed.somnia.Somnia;
-import dev.su5ed.somnia.SomniaConfig;
-import dev.su5ed.somnia.SomniaObjects;
 import dev.su5ed.somnia.api.SomniaAPI;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
 import dev.su5ed.somnia.compat.Compat;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.client.FatigueUpdatePacket;
 import dev.su5ed.somnia.network.client.OpenGUIPacket;
-import dev.su5ed.somnia.network.client.PlayerWakeUpPacket;
 import dev.su5ed.somnia.util.SideEffectStage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,8 +13,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +21,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -36,7 +29,7 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(modid = Somnia.MODID)
-public final class ForgeEventHandler {
+public final class FatigueEventHandler {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -156,26 +149,5 @@ public final class ForgeEventHandler {
         }
     }
 
-    // we need the earliest PlayerEntity#hurt listener
-    // because we have to set the sleep override to false before the mc stopSleeping call
-    // otherwise PlayerSleepTickHandler#tickEnd will make the player to start sleeping again
-    @SubscribeEvent
-    public static void onPlayerDamage(LivingAttackEvent event) {
-        LivingEntity entity = event.getEntityLiving();
-
-        if (entity instanceof ServerPlayer player && entity.isSleeping()) {
-            if (player.isInvulnerableTo(event.getSource())
-                || (player.isInvulnerable() && !event.getSource().isBypassInvul())
-                || player.isOnFire() && player.hasEffect(MobEffects.FIRE_RESISTANCE)
-            ) {
-                return;
-            }
-
-            entity.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> props.setSleepOverride(false));
-            entity.stopSleeping();
-            SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
-        }
-    }
-
-    private ForgeEventHandler() {}
+    private FatigueEventHandler() {}
 }

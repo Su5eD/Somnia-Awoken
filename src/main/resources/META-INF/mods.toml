@@ -8,7 +8,7 @@ version="${file.jarVersion}"
 displayName="Somnia Awoken"
 displayURL="https://github.com/Su5eD/Somnia"
 logoFile="logo.png"
-credits="MALfunction84 and Kingrunes, authors of the previous versions"
+credits="MALfunction84 and Kingrunes, authors of previous versions"
 authors="Su5eD"
 description='''
 Simulating the world while you sleep

@@ -12,8 +12,11 @@ import dev.su5ed.somnia.util.InjectHooks;
 import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
@@ -50,7 +53,7 @@ public final class PlayerSleepController {
         player.getCapability(CapabilityFatigue.INSTANCE)
             .ifPresent(props -> props.setSleepNormally(player.isShiftKeyDown()));
 
-        if (Compat.isSleepingInBag(player)) InjectHooks.updateWakeTime((ServerPlayer) player); // TODO
+        if (Compat.isSleepingInBag(player)) InjectHooks.updateWakeTime((ServerPlayer) player);
     }
 
     @SubscribeEvent
@@ -75,6 +78,27 @@ public final class PlayerSleepController {
             .ifPresent(resetSpawn -> {
                 if (!resetSpawn) event.setCanceled(true);
             });
+    }
+    
+    // we need the earliest PlayerEntity#hurt listener
+    // because we have to set the sleep override to false before the mc stopSleeping call
+    // otherwise PlayerSleepTickHandler#tickEnd will make the player to start sleeping again
+    @SubscribeEvent
+    public static void onPlayerDamage(LivingAttackEvent event) {
+        LivingEntity entity = event.getEntityLiving();
+
+        if (entity instanceof ServerPlayer player && entity.isSleeping()) {
+            if (player.isInvulnerableTo(event.getSource())
+                || (player.isInvulnerable() && !event.getSource().isBypassInvul())
+                || player.isOnFire() && player.hasEffect(MobEffects.FIRE_RESISTANCE)
+            ) {
+                return;
+            }
+
+            entity.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> props.setSleepOverride(false));
+            entity.stopSleeping();
+            SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
+        }
     }
 
     @SubscribeEvent

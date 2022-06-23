@@ -16,10 +16,13 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Objects;
 
 public class ClientSleepHandler {
     public static final ClientSleepHandler INSTANCE = new ClientSleepHandler();
@@ -47,77 +50,86 @@ public class ClientSleepHandler {
 
     @SubscribeEvent
     public void clientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && mc.player != null) {
-            if (mc.player.isSleeping() && SomniaConfig.COMMON.muteSoundWhenSleeping.get() && !this.muted) {
+        if (event.phase == TickEvent.Phase.END && this.mc.player != null) {
+            if (this.mc.player.isSleeping() && SomniaConfig.COMMON.muteSoundWhenSleeping.get() && !this.muted) {
                 this.muted = true;
-                this.previousVolume = mc.options.getSoundSourceVolume(SoundSource.MASTER);
-                mc.options.setSoundCategoryVolume(SoundSource.MASTER, 0);
+                this.previousVolume = this.mc.options.getSoundSourceVolume(SoundSource.MASTER);
+                this.mc.options.setSoundCategoryVolume(SoundSource.MASTER, 0);
             } else if (muted) {
                 this.muted = false;
-                mc.options.setSoundCategoryVolume(SoundSource.MASTER, previousVolume);
+                this.mc.options.setSoundCategoryVolume(SoundSource.MASTER, this.previousVolume);
             }
         }
     }
-
+    
+    @SubscribeEvent
+    public void onWakeUp(PlayerWakeUpEvent event) {
+        this.speedValues.clear();
+    }
+    
     @SubscribeEvent
     public void renderTick(TickEvent.RenderTickEvent event) {
-        if (mc.screen != null && !(mc.screen instanceof PauseScreen) && (mc.player == null || !mc.player.isSleeping())) return;
+        if (this.mc.screen != null && !(this.mc.screen instanceof PauseScreen) && (this.mc.player == null || !this.mc.player.isSleeping())) return;
         
-        mc.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(fatigue -> {
+        this.mc.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(fatigue -> {
             PoseStack poseStack = new PoseStack();
             double fatigueAmount = fatigue.getFatigue();
-            if (event.phase == TickEvent.Phase.END && !mc.player.isCreative() && !mc.player.isSpectator() && !mc.options.hideGui) {
-                if (!mc.player.isSleeping() && !SomniaConfig.COMMON.fatigueSideEffects.get() && fatigueAmount > SomniaConfig.COMMON.minimumFatigueToSleep.get()) return;
-
-                String str = SomniaConfig.CLIENT.simpleFatigueDisplay.get() ? SpeedColor.WHITE.color + SideEffectStage.getSideEffectStageDescription(fatigueAmount)
-                    : String.format("%sFatigue: %.2f", SpeedColor.WHITE.color, fatigueAmount);
-                int width = mc.font.width(str);
-                int scaledWidth = mc.getWindow().getGuiScaledWidth();
-                int scaledHeight = mc.getWindow().getGuiScaledHeight();
-                FatigueDisplayPosition pos = mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : SomniaConfig.CLIENT.getFatigueDisplayPos();
-                mc.font.draw(poseStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, mc.font.lineHeight), Integer.MIN_VALUE);
+            if (event.phase == TickEvent.Phase.END && !this.mc.player.isCreative() && !this.mc.player.isSpectator() && !this.mc.options.hideGui) {
+                if (!this.mc.player.isSleeping() && !SomniaConfig.COMMON.fatigueSideEffects.get() && fatigueAmount > SomniaConfig.COMMON.minimumFatigueToSleep.get()) return;
+                
+                renderFatigueDisplay(poseStack, fatigueAmount);
             }
 
-            if (mc.player.isSleeping() && SomniaConfig.CLIENT.somniaGui.get()) {
-                if (mc.screen != null) renderSleepOverlay(poseStack, mc.screen, fatigue);
+            if (this.mc.player.isSleeping() && SomniaConfig.CLIENT.somniaGui.get()) {
+                if (this.sleepStartTime == -1) {
+                    this.sleepStartTime = this.mc.level.getGameTime();
+                }
+                if (this.mc.screen != null && !this.speedValues.isEmpty()) {
+                    renderSleepOverlay(poseStack, this.mc.screen, fatigue);
+                }
             } else {
                 this.sleepStartTime = -1;
             } 
         });
     }
+    
+    private void renderFatigueDisplay(PoseStack poseStack, double fatigue) {
+        String str = SomniaConfig.CLIENT.simpleFatigueDisplay.get()
+            ? SpeedColor.WHITE.color + SideEffectStage.getSideEffectStageDescription(fatigue)
+            : String.format("%sFatigue: %.2f", SpeedColor.WHITE.color, fatigue);
+        int width = this.mc.font.width(str);
+        int scaledWidth = this.mc.getWindow().getGuiScaledWidth();
+        int scaledHeight = this.mc.getWindow().getGuiScaledHeight();
+        FatigueDisplayPosition pos = this.mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : SomniaConfig.CLIENT.getFatigueDisplayPos();
+        this.mc.font.draw(poseStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE);
+    }
 
     private void renderSleepOverlay(PoseStack poseStack, Screen screen, IFatigue fatigue) {
-        if (this.sleepStartTime == -1) {
-            this.sleepStartTime = this.mc.level.getGameTime();
+        long wakeTime = fatigue.getWakeTime();
+        double sleepDuration = this.mc.level.getGameTime() - this.sleepStartTime;
+        double remaining = wakeTime - this.sleepStartTime;
+        double progress = wakeTime == -1 ? 0 : sleepDuration / remaining;
+        int width = screen.width - 40;
+
+        RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
+        renderProgressBar(screen, poseStack, width, progress);
+
+        String displayETASleep = SomniaConfig.CLIENT.displayETASleep.get();
+        int offsetX = displayETASleep.equals("center") ? screen.width / 2 - 80 : displayETASleep.equals("right") ? width - 160 : 0;
+        double currentSpeed = this.speedValues.isEmpty() ? 0 : this.speedValues.getLast();
+        renderScaledString(poseStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(currentSpeed).color, MULTIPLIER_FORMAT.format(currentSpeed)));
+
+        if (wakeTime != -1 && !this.speedValues.isEmpty()) {
+            double average = this.speedValues.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(Double::doubleValue)
+                .summaryStatistics()
+                .getAverage();
+            long eta = Math.round((remaining - sleepDuration) / (average * 20));
+            renderScaledString(poseStack, offsetX + 80, getETAString(eta));
         }
 
-        if (this.sleepStartTime != -1) {
-            long wakeTime = fatigue.getWakeTime();
-            double sleepDuration = mc.level.getGameTime() - this.sleepStartTime;
-            double remaining = wakeTime - this.sleepStartTime;
-            double progress = wakeTime == -1 ? 0 : sleepDuration / remaining;
-            int width = screen.width - 40;
-
-            RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
-            renderProgressBar(screen, poseStack, width, progress);
-
-            String displayETASleep = SomniaConfig.CLIENT.displayETASleep.get();
-            int offsetX = displayETASleep.equals("center") ? screen.width / 2 - 80 : displayETASleep.equals("right") ? width - 160 : 0;
-            double currentSpeed = this.speedValues.isEmpty() ? 0 : this.speedValues.getLast();
-            renderScaledString(poseStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(currentSpeed).color, MULTIPLIER_FORMAT.format(currentSpeed)));
-
-            if (wakeTime != -1 && !this.speedValues.isEmpty()) {
-                double average = this.speedValues.stream()
-                    .filter(Objects::nonNull)
-                    .mapToDouble(Double::doubleValue)
-                    .summaryStatistics()
-                    .getAverage();
-                long eta = Math.round((remaining - sleepDuration) / (average * 20));
-                renderScaledString(poseStack, offsetX + 80, getETAString(eta));
-            }
-
-            renderClock(poseStack, width);
-        }
+        renderClock(poseStack, width);
     }
 
     private String getETAString(long totalSeconds) {
@@ -146,7 +158,7 @@ public class ClientSleepHandler {
         poseStack.pushPose();
         poseStack.translate(x, 20, 0);
         poseStack.scale(1.5F, 1.5F, 1);
-        mc.font.drawShadow(poseStack, str, 0, 0, Integer.MIN_VALUE);
+        this.mc.font.drawShadow(poseStack, str, 0, 0, Integer.MIN_VALUE);
         poseStack.popPose();
     }
 
