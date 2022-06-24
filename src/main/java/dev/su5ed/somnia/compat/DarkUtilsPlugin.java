@@ -8,15 +8,15 @@ import net.minecraft.world.item.ItemStack;
 import java.util.Arrays;
 
 public final class DarkUtilsPlugin {
-    public static final ResourceLocation SLEEP_CHARM = new ResourceLocation(Compat.DARK_UTILS_MODID, "charm_sleep");
+    private static final ResourceLocation SLEEP_CHARM = new ResourceLocation(Compat.DARK_UTILS_MODID, "charm_sleep");
 
     public static boolean hasSleepCharm(Player player) {
         return Compat.curiosLoaded && CuriosPlugin.hasCurio(player, SLEEP_CHARM)
-            || Arrays.stream(EquipmentSlot.values())
-                .map(player::getItemBySlot)
-                .anyMatch(DarkUtilsPlugin::isSleepCharm)
-            || player.getInventory().items.stream()
-                .anyMatch(DarkUtilsPlugin::isSleepCharm);
+            || Compat.darkUtilsLoaded && Arrays.stream(EquipmentSlot.values())
+                    .map(player::getItemBySlot)
+                    .anyMatch(DarkUtilsPlugin::isSleepCharm)
+                || player.getInventory().items.stream()
+                    .anyMatch(DarkUtilsPlugin::isSleepCharm);
     }
     
     private static boolean isSleepCharm(ItemStack stack) {

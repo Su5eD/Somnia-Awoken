@@ -84,7 +84,7 @@ public class ClientSleepHandler {
                 if (this.sleepStartTime == -1) {
                     this.sleepStartTime = this.mc.level.getGameTime();
                 }
-                if (this.mc.screen != null && !this.speedValues.isEmpty()) {
+                if (this.mc.screen != null && fatigue.getWakeTime() != -1 && !this.speedValues.isEmpty()) {
                     renderSleepOverlay(poseStack, this.mc.screen, fatigue);
                 }
             } else {
@@ -108,7 +108,7 @@ public class ClientSleepHandler {
         long wakeTime = fatigue.getWakeTime();
         double sleepDuration = this.mc.level.getGameTime() - this.sleepStartTime;
         double remaining = wakeTime - this.sleepStartTime;
-        double progress = wakeTime == -1 ? 0 : sleepDuration / remaining;
+        double progress = sleepDuration / remaining;
         int width = screen.width - 40;
 
         RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
@@ -119,15 +119,13 @@ public class ClientSleepHandler {
         double currentSpeed = this.speedValues.isEmpty() ? 0 : this.speedValues.getLast();
         renderScaledString(poseStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(currentSpeed).color, MULTIPLIER_FORMAT.format(currentSpeed)));
 
-        if (wakeTime != -1 && !this.speedValues.isEmpty()) {
-            double average = this.speedValues.stream()
-                .filter(Objects::nonNull)
-                .mapToDouble(Double::doubleValue)
-                .summaryStatistics()
-                .getAverage();
-            long eta = Math.round((remaining - sleepDuration) / (average * 20));
-            renderScaledString(poseStack, offsetX + 80, getETAString(eta));
-        }
+        double average = this.speedValues.stream()
+            .filter(Objects::nonNull)
+            .mapToDouble(Double::doubleValue)
+            .summaryStatistics()
+            .getAverage();
+        long eta = Math.round((remaining - sleepDuration) / (average * 20));
+        renderScaledString(poseStack, offsetX + 80, getETAString(eta));
 
         renderClock(poseStack, width);
     }

@@ -32,8 +32,7 @@ public final class PlayerSleepController {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
         Player player = event.getPlayer();
-        if (Compat.darkUtilsLoaded && DarkUtilsPlugin.hasSleepCharm(player)
-            || player.getCapability(CapabilityFatigue.INSTANCE).map(IFatigue::shouldSleepNormally).orElse(false)) return;
+        if (DarkUtilsPlugin.hasSleepCharm(player) || player.getCapability(CapabilityFatigue.INSTANCE).map(IFatigue::shouldSleepNormally).orElse(false)) return;
 
         if (!SomniaUtil.isEnterSleepTime()) event.setResult(Event.Result.DENY);
         else event.setResult(Event.Result.ALLOW);
@@ -60,7 +59,7 @@ public final class PlayerSleepController {
     public static void onWakeUp(PlayerWakeUpEvent event) {
         Player player = event.getPlayer();
         player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
-            if (props.shouldSleepNormally() || (Compat.darkUtilsLoaded && DarkUtilsPlugin.hasSleepCharm(player))) {
+            if (props.shouldSleepNormally() || DarkUtilsPlugin.hasSleepCharm(player)) {
                 props.setFatigue(props.getFatigue() - SomniaUtil.getFatigueToReplenish(player));
             }
             props.maxFatigueCounter();
@@ -114,7 +113,7 @@ public final class PlayerSleepController {
 
     private static void playerTickStart(IFatigue fatigue, Player player) {
         if (player.isSleeping()) {
-            if (fatigue.shouldSleepNormally() || (player.getSleepTimer() > 99 && Compat.darkUtilsLoaded && DarkUtilsPlugin.hasSleepCharm(player)) || Compat.isSleepingInHammock(player)) {
+            if (fatigue.shouldSleepNormally() || (player.getSleepTimer() >= 90 && DarkUtilsPlugin.hasSleepCharm(player)) || Compat.isSleepingInHammock(player)) {
                 fatigue.setSleepOverride(false);
             } else {
                 fatigue.setSleepOverride(true);
