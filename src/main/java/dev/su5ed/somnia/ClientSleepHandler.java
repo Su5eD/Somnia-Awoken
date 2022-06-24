@@ -3,7 +3,7 @@ package dev.su5ed.somnia;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
-import dev.su5ed.somnia.capability.IFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.util.FatigueDisplayPosition;
 import dev.su5ed.somnia.util.RenderHelper;
 import dev.su5ed.somnia.util.SideEffectStage;
@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,6 +28,7 @@ import java.util.Objects;
 public class ClientSleepHandler {
     public static final ClientSleepHandler INSTANCE = new ClientSleepHandler();
     
+    private static final DecimalFormat FATIGUE_FORMAT = new DecimalFormat("0.00");
     private static final DecimalFormat MULTIPLIER_FORMAT = new DecimalFormat("0.0");
     private static final ItemStack CLOCK = new ItemStack(Items.CLOCK);
     
@@ -94,9 +96,9 @@ public class ClientSleepHandler {
     }
     
     private void renderFatigueDisplay(PoseStack poseStack, double fatigue) {
-        String str = SomniaConfig.CLIENT.simpleFatigueDisplay.get()
-            ? SpeedColor.WHITE.color + SideEffectStage.getSideEffectStageDescription(fatigue)
-            : String.format("%sFatigue: %.2f", SpeedColor.WHITE.color, fatigue);
+        String str = SpeedColor.WHITE.color + (SomniaConfig.CLIENT.simpleFatigueDisplay.get()
+            ? SideEffectStage.getSideEffectStageDescription(fatigue)
+            : I18n.get("somnia.gui.fatigue", FATIGUE_FORMAT.format(fatigue)));
         int width = this.mc.font.width(str);
         int scaledWidth = this.mc.getWindow().getGuiScaledWidth();
         int scaledHeight = this.mc.getWindow().getGuiScaledHeight();
@@ -104,7 +106,7 @@ public class ClientSleepHandler {
         this.mc.font.draw(poseStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE);
     }
 
-    private void renderSleepOverlay(PoseStack poseStack, Screen screen, IFatigue fatigue) {
+    private void renderSleepOverlay(PoseStack poseStack, Screen screen, Fatigue fatigue) {
         long wakeTime = fatigue.getWakeTime();
         double sleepDuration = this.mc.level.getGameTime() - this.sleepStartTime;
         double remaining = wakeTime - this.sleepStartTime;

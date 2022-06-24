@@ -1,125 +1,42 @@
 package dev.su5ed.somnia.capability;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraftforge.common.util.INBTSerializable;
 
-public class Fatigue implements IFatigue {
-    private double fatigue;
-    private double extraFatigueRate;
-    private double replenishedFatigue;
-    private int fatigueUpdateCounter;
-    private int sideEffectStage = -1;
-    private boolean resetSpawn = true;
-    private boolean sleepOverride;
-    private boolean sleepNormally;
-    private long wakeTime = -1;
+public interface Fatigue extends INBTSerializable<CompoundTag> {
+    double getFatigue();
 
-    @Override
-    public double getFatigue() {
-        return this.fatigue;
-    }
+    void setFatigue(double fatigue);
 
-    @Override
-    public void setFatigue(double fatigue) {
-        this.fatigue = fatigue;
-    }
+    int getSideEffectStage();
 
-    @Override
-    public int getSideEffectStage() {
-        return this.sideEffectStage;
-    }
+    void setSideEffectStage(int stage);
 
-    @Override
-    public void setSideEffectStage(int stage) {
-        this.sideEffectStage = stage;
-    }
+    boolean updateFatigueCounter();
 
-    @Override
-    public boolean updateFatigueCounter() {
-        return fatigueUpdateCounter++ % 100 == 0;
-    }
+    void maxFatigueCounter();
 
-    @Override
-    public void maxFatigueCounter() {
-        this.fatigueUpdateCounter = 100;
-    }
+    void setResetSpawn(boolean resetSpawn);
 
-    @Override
-    public void setResetSpawn(boolean resetSpawn) {
-        this.resetSpawn = resetSpawn;
-    }
+    boolean getResetSpawn();
 
-    @Override
-    public boolean getResetSpawn() {
-        return this.resetSpawn;
-    }
+    boolean sleepOverride();
 
-    @Override
-    public boolean sleepOverride() {
-        return this.sleepOverride;
-    }
+    void setSleepOverride(boolean override);
 
-    @Override
-    public void setSleepOverride(boolean override) {
-        this.sleepOverride = override;
-    }
+    void setSleepNormally(boolean sleepNormally);
 
-    @Override
-    public void setSleepNormally(boolean sleepNormally) {
-        this.sleepNormally = sleepNormally;
-    }
+    boolean shouldSleepNormally();
 
-    @Override
-    public boolean shouldSleepNormally() {
-        return this.sleepNormally;
-    }
+    long getWakeTime();
 
-    @Override
-    public long getWakeTime() {
-        return this.wakeTime;
-    }
+    void setWakeTime(long wakeTime);
 
-    @Override
-    public void setWakeTime(long wakeTime) {
-        this.wakeTime = wakeTime;
-    }
+    double getExtraFatigueRate();
 
-    @Override
-    public double getExtraFatigueRate() {
-        return this.extraFatigueRate;
-    }
+    void setExtraFatigueRate(double rate);
 
-    @Override
-    public void setExtraFatigueRate(double rate) {
-        this.extraFatigueRate = rate;
-    }
+    double getReplenishedFatigue();
 
-    @Override
-    public double getReplenishedFatigue() {
-        return this.replenishedFatigue;
-    }
-
-    @Override
-    public void setReplenishedFatigue(double replenishedFatigue) {
-        this.replenishedFatigue = replenishedFatigue;
-    }
-
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = new CompoundTag();
-        tag.putDouble("fatigue", this.fatigue);
-        tag.putDouble("extraFatigueRate", this.extraFatigueRate);
-        tag.putDouble("replenishedFatigue", this.replenishedFatigue);
-        tag.putInt("sideEffectStage", this.sideEffectStage);
-        tag.putBoolean("resetSpawn", this.resetSpawn);
-        return tag;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        this.fatigue = nbt.getDouble("fatigue");
-        this.extraFatigueRate = nbt.getDouble("extraFatigueRate");
-        this.replenishedFatigue = nbt.getDouble("replenishedFatigue");
-        this.sideEffectStage = nbt.getInt("sideEffectStage");
-        this.resetSpawn = nbt.getBoolean("resetSpawn");
-    }
+    void setReplenishedFatigue(double replenishedFatigue);
 }

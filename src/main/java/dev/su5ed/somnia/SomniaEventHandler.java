@@ -82,14 +82,14 @@ public final class SomniaEventHandler {
                     int lastSideEffectStage = props.getSideEffectStage();
                     SideEffectStage[] stages = SideEffectStage.getSideEffectStages();
                     SideEffectStage firstStage = stages[0];
-                    if (fatigue < firstStage.minFatigue) props.setSideEffectStage(-1);
+                    if (fatigue < firstStage.minFatigue()) props.setSideEffectStage(-1);
 
                     for (SideEffectStage stage : stages) {
-                        boolean permanent = stage.duration < 0;
-                        if (fatigue >= stage.minFatigue && fatigue <= stage.maxFatigue) {
-                            props.setSideEffectStage(stage.minFatigue);
-                            if (permanent || lastSideEffectStage < stage.minFatigue) {
-                                event.player.addEffect(new MobEffectInstance(MobEffect.byId(stage.potionID), permanent ? 150 : stage.duration, stage.amplifier));
+                        boolean permanent = stage.duration() < 0;
+                        if (fatigue >= stage.minFatigue() && fatigue <= stage.maxFatigue()) {
+                            props.setSideEffectStage(stage.minFatigue());
+                            if (permanent || lastSideEffectStage < stage.minFatigue()) {
+                                event.player.addEffect(new MobEffectInstance(MobEffect.byId(stage.potionID()), permanent ? 150 : stage.duration(), stage.amplifier()));
                             }
                         }
                     }

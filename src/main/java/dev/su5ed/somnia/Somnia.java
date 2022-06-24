@@ -1,6 +1,6 @@
 package dev.su5ed.somnia;
 
-import dev.su5ed.somnia.capability.IFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.compat.Compat;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import net.minecraftforge.api.distmarker.Dist;
@@ -49,7 +49,7 @@ public class Somnia {
     }
     
     private void registerCapabilities(final RegisterCapabilitiesEvent event) {
-        event.register(IFatigue.class);
+        event.register(Fatigue.class);
     }
     
     public void registerCommands(final RegisterCommandsEvent event) {

@@ -43,18 +43,13 @@ public final class SomniaUtil {
         return hours + ":" + minutes;
     }
 
-    public static double getFatigueToReplenish(Player player) {
-        long gameTime = player.level.getGameTime();
-        long wakeTime = SomniaUtil.calculateWakeTime(player.level, player.level.isNight() ? 0 : 12000); // TODO
-        return SomniaConfig.COMMON.fatigueReplenishRate.get() * (wakeTime - gameTime);
-    }
-
-    public static boolean isEnterSleepTime() {
-        return 24000 >= SomniaConfig.COMMON.enterSleepStart.get() && 24000 <= SomniaConfig.COMMON.enterSleepEnd.get();
+    public static boolean isEnterSleepTime(Level level) {
+        long time = getLevelDayTime(level);
+        return time >= SomniaConfig.COMMON.enterSleepStart.get() && time <= SomniaConfig.COMMON.enterSleepEnd.get();
     }
 
     public static boolean isValidSleepTime(ServerLevel level) {
-        long time = level.getGameTime() % 24000;
+        long time = getLevelDayTime(level);
         return time >= SomniaConfig.COMMON.validSleepStart.get() && time <= SomniaConfig.COMMON.validSleepEnd.get();
     }
 

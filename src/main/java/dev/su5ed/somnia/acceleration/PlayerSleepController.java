@@ -3,7 +3,7 @@ package dev.su5ed.somnia.acceleration;
 import dev.su5ed.somnia.Somnia;
 import dev.su5ed.somnia.SomniaConfig;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
-import dev.su5ed.somnia.capability.IFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.compat.Compat;
 import dev.su5ed.somnia.compat.DarkUtilsCompat;
 import dev.su5ed.somnia.network.SomniaNetwork;
@@ -34,9 +34,9 @@ public final class PlayerSleepController {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
         Player player = event.getPlayer();
-        if (DarkUtilsCompat.hasSleepCharm(player) || player.getCapability(CapabilityFatigue.INSTANCE).map(IFatigue::shouldSleepNormally).orElse(false)) return;
+        if (DarkUtilsCompat.hasSleepCharm(player) || player.getCapability(CapabilityFatigue.INSTANCE).map(Fatigue::shouldSleepNormally).orElse(false)) return;
 
-        if (!SomniaUtil.isEnterSleepTime()) event.setResult(Event.Result.DENY);
+        if (!SomniaUtil.isEnterSleepTime(player.level)) event.setResult(Event.Result.DENY);
         else event.setResult(Event.Result.ALLOW);
     }
 
@@ -87,7 +87,7 @@ public final class PlayerSleepController {
     @SubscribeEvent
     public static void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
         event.getPlayer().getCapability(CapabilityFatigue.INSTANCE)
-            .map(IFatigue::getResetSpawn)
+            .map(Fatigue::getResetSpawn)
             .ifPresent(resetSpawn -> {
                 if (!resetSpawn) event.setCanceled(true);
             });
@@ -102,7 +102,7 @@ public final class PlayerSleepController {
 
         if (entity instanceof ServerPlayer player && entity.isSleeping()) {
             if (player.isInvulnerableTo(event.getSource())
-                || (player.isInvulnerable() && !event.getSource().isBypassInvul())
+                || player.isInvulnerable() && !event.getSource().isBypassInvul()
                 || player.isOnFire() && player.hasEffect(MobEffects.FIRE_RESISTANCE)
             ) {
                 return;
@@ -125,9 +125,9 @@ public final class PlayerSleepController {
         }
     }
 
-    private static void playerTickStart(IFatigue fatigue, Player player) {
+    private static void playerTickStart(Fatigue fatigue, Player player) {
         if (player.isSleeping()) {
-            if (fatigue.shouldSleepNormally() || (player.getSleepTimer() >= 90 && DarkUtilsCompat.hasSleepCharm(player)) || Compat.isSleepingInHammock(player)) {
+            if (fatigue.shouldSleepNormally() || player.getSleepTimer() >= 90 && DarkUtilsCompat.hasSleepCharm(player) || Compat.isSleepingInHammock(player)) {
                 fatigue.setSleepOverride(false);
             } else {
                 fatigue.setSleepOverride(true);
@@ -141,7 +141,7 @@ public final class PlayerSleepController {
         }
     }
 
-    private static void playerTickEnd(IFatigue fatigue, ServerPlayer player) {
+    private static void playerTickEnd(Fatigue fatigue, ServerPlayer player) {
         long wakeTime = fatigue.getWakeTime();
         if (wakeTime != -1 && player.level.getGameTime() >= wakeTime) {
             player.stopSleepInBed(true, true);

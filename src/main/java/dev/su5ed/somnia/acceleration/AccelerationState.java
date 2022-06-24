@@ -1,7 +1,7 @@
 package dev.su5ed.somnia.acceleration;
 
 import dev.su5ed.somnia.capability.CapabilityFatigue;
-import dev.su5ed.somnia.capability.IFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.SomniaCommand;
 import dev.su5ed.somnia.compat.DarkUtilsCompat;
 import dev.su5ed.somnia.util.SomniaUtil;
@@ -61,7 +61,7 @@ public enum AccelerationState {
 	
 	private static boolean shouldSleepNormally(Player player) {
 		boolean sleepNormally = player.getCapability(CapabilityFatigue.INSTANCE)
-			.map(IFatigue::shouldSleepNormally)
+			.map(Fatigue::shouldSleepNormally)
 			.orElse(false);
 		return sleepNormally || DarkUtilsCompat.hasSleepCharm(player);
 	}

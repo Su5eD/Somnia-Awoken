@@ -126,13 +126,7 @@ public final class SomniaConfig {
                     List.of("coffeespawner:coffee", 10),
                     List.of("coffeespawner:coffee_milk", 10),
                     List.of("coffeespawner:coffee_sugar", 15),
-                    List.of("coffeespawner:coffee_milk_sugar", 15),
-                    List.of("coffeemod:coffee", 15),
-                    List.of("coffeemod:espresso", 15),
-                    List.of("coffeemod:latte", 15),
-                    List.of("coffeemod:caramel_macchiato", 10),
-                    List.of("coffeemod:mocha", 10),
-                    List.of("coffeemod:frappe", 10)
+                    List.of("coffeespawner:coffee_milk_sugar", 15)
                 ), obj -> obj instanceof List);
             builder.pop();
 

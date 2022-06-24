@@ -11,8 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class CapabilityFatigueProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
-    private final IFatigue instance = new Fatigue();
-    private final LazyOptional<IFatigue> optionalData = LazyOptional.of(() -> instance);
+    private final Fatigue instance = new FatigueStore();
+    private final LazyOptional<Fatigue> optionalData = LazyOptional.of(() -> instance);
 
     @Override
     public CompoundTag serializeNBT() {

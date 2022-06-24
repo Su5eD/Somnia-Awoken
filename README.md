@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://i.imgur.com/lSH3rqg.png" alt="Somnia Logo" width="70%"/>
+    <img src="https://i.imgur.com/KnnOhNi.png" alt="Somnia Logo" width="70%"/>
     <br></br>
     <a href="https://github.com/Su5eD/Somnia/actions">
         <img src="https://github.com/Su5eD/Somnia/workflows/Main/badge.svg" alt="Build Status">

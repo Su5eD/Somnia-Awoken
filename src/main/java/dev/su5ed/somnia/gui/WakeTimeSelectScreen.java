@@ -3,12 +3,12 @@ package dev.su5ed.somnia.gui;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public class WakeTimeSelectScreen extends Screen {
 
     public WakeTimeSelectScreen() {
-        super(new TextComponent("Select Wake Time"));
+        super(new TranslatableComponent("somnia.gui.select_wake_time"));
     }
 
     @Override
@@ -20,22 +20,23 @@ public class WakeTimeSelectScreen extends Screen {
 
         addRenderableWidget(new ResetSpawnButton(buttonCenterX, buttonCenterY - 22, buttonWidth, buttonHeight));
         addRenderableWidget(new CancelButton(buttonCenterX, buttonCenterY + 22, buttonWidth, buttonHeight));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX, buttonCenterY + 88, buttonWidth, buttonHeight, "Midnight", 18000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX - 80, buttonCenterY + 66, buttonWidth, buttonHeight, "After Midnight", 20000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX - 110, buttonCenterY + 44, buttonWidth, buttonHeight, "Before Sunrise", 22000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX - 130, buttonCenterY + 22, buttonWidth, buttonHeight, "Mid Sunrise", 23000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX - 140, buttonCenterY, buttonWidth, buttonHeight, "After Sunrise", 0));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX - 130, buttonCenterY - 22, buttonWidth, buttonHeight, "Early Morning", 1500));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX - 110, buttonCenterY - 44, buttonWidth, buttonHeight, "Mid Morning", 3000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX - 80, buttonCenterY - 66, buttonWidth, buttonHeight, "Late Morning", 4500));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX, buttonCenterY - 88, buttonWidth, buttonHeight, "Noon", 6000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX + 80, buttonCenterY - 66, buttonWidth, buttonHeight, "Early Afternoon", 7500));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX + 110, buttonCenterY - 44, buttonWidth, buttonHeight, "Mid Afternoon", 9000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX + 130, buttonCenterY - 22, buttonWidth, buttonHeight, "Late Afternoon", 10500));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX + 140, buttonCenterY, buttonWidth, buttonHeight, "Before Sunset", 12000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX + 130, buttonCenterY + 22, buttonWidth, buttonHeight, "Mid Sunset", 13000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX + 100, buttonCenterY + 44, buttonWidth, buttonHeight, "After Sunset", 14000));
-        addRenderableWidget(new WakeTimeButton(buttonCenterX + 88, buttonCenterY + 66, buttonWidth, buttonHeight, "Before Midnight", 16000));
+        
+        addWakeTimeButton(buttonCenterX, buttonCenterY + 88, buttonWidth, buttonHeight, "midnight", 18000);
+        addWakeTimeButton(buttonCenterX - 80, buttonCenterY + 66, buttonWidth, buttonHeight, "after_midnight", 20000);
+        addWakeTimeButton(buttonCenterX - 110, buttonCenterY + 44, buttonWidth, buttonHeight, "before_sunrise", 22000);
+        addWakeTimeButton(buttonCenterX - 130, buttonCenterY + 22, buttonWidth, buttonHeight, "mid_sunrise", 23000);
+        addWakeTimeButton(buttonCenterX - 140, buttonCenterY, buttonWidth, buttonHeight, "after_sunrise", 0);
+        addWakeTimeButton(buttonCenterX - 130, buttonCenterY - 22, buttonWidth, buttonHeight, "early_morning", 1500);
+        addWakeTimeButton(buttonCenterX - 110, buttonCenterY - 44, buttonWidth, buttonHeight, "mid_morning", 3000);
+        addWakeTimeButton(buttonCenterX - 80, buttonCenterY - 66, buttonWidth, buttonHeight, "late_morning", 4500);
+        addWakeTimeButton(buttonCenterX, buttonCenterY - 88, buttonWidth, buttonHeight, "noon", 6000);
+        addWakeTimeButton(buttonCenterX + 80, buttonCenterY - 66, buttonWidth, buttonHeight, "early_afternoon", 7500);
+        addWakeTimeButton(buttonCenterX + 110, buttonCenterY - 44, buttonWidth, buttonHeight, "mid_afternoon", 9000);
+        addWakeTimeButton(buttonCenterX + 130, buttonCenterY - 22, buttonWidth, buttonHeight, "late_afternoon", 1050);
+        addWakeTimeButton(buttonCenterX + 140, buttonCenterY, buttonWidth, buttonHeight, "before_sunset", 12000);
+        addWakeTimeButton(buttonCenterX + 130, buttonCenterY + 22, buttonWidth, buttonHeight, "mid_sunset", 13000);
+        addWakeTimeButton(buttonCenterX + 100, buttonCenterY + 44, buttonWidth, buttonHeight, "after_sunset", 14000);
+        addWakeTimeButton(buttonCenterX + 88, buttonCenterY + 66, buttonWidth, buttonHeight, "before_midnight", 16000);
     }
 
     @Override
@@ -43,9 +44,9 @@ public class WakeTimeSelectScreen extends Screen {
         renderBackground(poseStack);
         super.render(poseStack, mouseX, mouseY, partialTicks);
         
-        drawCenteredString(poseStack, this.font, "Sleep until...?", this.width / 2, this.height / 2 - 5, 16777215);
+        drawCenteredString(poseStack, this.font, new TranslatableComponent("somnia.gui.wts_title"), this.width / 2, this.height / 2 - 5, 16777215);
         if (this.minecraft != null && this.minecraft.player != null) {
-            String time = SomniaUtil.timeStringForGameTime(this.minecraft.player.level.getDayTime());
+            String time = SomniaUtil.timeStringForGameTime(SomniaUtil.getLevelDayTime(this.minecraft.level));
             drawCenteredString(poseStack, this.font, time, this.width / 2, this.height / 2 - 66, 16777215);
         }
     }
@@ -53,5 +54,9 @@ public class WakeTimeSelectScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+    
+    private void addWakeTimeButton(int x, int y, int width, int height, String translationKey, int wakeTime) {
+        addRenderableWidget(new WakeTimeButton(x, y, width, height, new TranslatableComponent("somnia.gui.time_" + translationKey), wakeTime));
     }
 }
