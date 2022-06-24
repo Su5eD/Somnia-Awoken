@@ -3,9 +3,11 @@ package dev.su5ed.somnia.acceleration;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
 import dev.su5ed.somnia.capability.IFatigue;
 import dev.su5ed.somnia.SomniaCommand;
+import dev.su5ed.somnia.compat.DarkUtilsCompat;
 import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
 
@@ -40,10 +42,7 @@ public enum AccelerationState {
 				anySleeping |= sleeping;
 				allSleeping &= sleeping;
 
-				boolean shouldSleepNormally = player.getCapability(CapabilityFatigue.INSTANCE)
-					.map(IFatigue::shouldSleepNormally)
-					.orElse(false);
-				if (shouldSleepNormally) normalSleep++;
+				if (shouldSleepNormally(player)) normalSleep++;
 				else acceleratedSleep++;
 			}
 
@@ -58,5 +57,12 @@ public enum AccelerationState {
 		}
 
 		return INACTIVE;
+	}
+	
+	private static boolean shouldSleepNormally(Player player) {
+		boolean sleepNormally = player.getCapability(CapabilityFatigue.INSTANCE)
+			.map(IFatigue::shouldSleepNormally)
+			.orElse(false);
+		return sleepNormally || DarkUtilsCompat.hasSleepCharm(player);
 	}
 }
