@@ -12,9 +12,7 @@ public interface IFatigue extends INBTSerializable<CompoundTag> {
 
     void setSideEffectStage(int stage);
 
-    int updateFatigueCounter();
-
-    void resetFatigueCounter();
+    boolean updateFatigueCounter();
 
     void maxFatigueCounter();
 

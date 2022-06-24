@@ -10,6 +10,7 @@ import dev.su5ed.somnia.util.SideEffectStage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -29,56 +30,52 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(modid = Somnia.MODID)
-public final class FatigueEventHandler {
+public final class SomniaEventHandler {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.START || event.player.level.isClientSide || (!event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping())) return;
+        if (event.phase != TickEvent.Phase.START || event.player.level.isClientSide || !event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping()) return;
 
         event.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
+            boolean isSleeping = props.sleepOverride() || event.player.isSleeping();
+            double fatigueRate = SomniaConfig.COMMON.fatigueRate.get();
+            double fatigueReplenishRate = SomniaConfig.COMMON.fatigueReplenishRate.get();
+            
             double fatigue = props.getFatigue();
             double extraFatigueRate = props.getExtraFatigueRate();
             double replenishedFatigue = props.getReplenishedFatigue();
-            boolean isSleeping = props.sleepOverride() || event.player.isSleeping();
-
-            double fatigueRate = SomniaConfig.COMMON.fatigueRate.get();
-            double fatigueReplenishRate = SomniaConfig.COMMON.fatigueReplenishRate.get();
 
             if (isSleeping) {
-                fatigue -= fatigueReplenishRate;
                 double share = fatigueReplenishRate / fatigueRate;
                 double replenish = fatigueReplenishRate * share;
-                extraFatigueRate -= fatigueReplenishRate / share / replenishedFatigue / 10;
+                
+                fatigue -= fatigueReplenishRate;
+                extraFatigueRate -= fatigueRate / replenishedFatigue / 10;
                 replenishedFatigue -= replenish;
             } else {
-                double rate = fatigueRate;
+                double adjustedRate = fatigueRate;
 
                 MobEffectInstance wakefulness = event.player.getEffect(SomniaObjects.AWAKENING_EFFECT.get());
                 if (wakefulness != null) {
-                    rate -= wakefulness.getAmplifier() == 0 ? rate / 4 : rate / 3;
+                    adjustedRate -= wakefulness.getAmplifier() == 0 ? adjustedRate / 4 : adjustedRate / 3;
                 }
 
                 MobEffectInstance insomnia = event.player.getEffect(SomniaObjects.INSOMNIA_EFFECT.get());
                 if (insomnia != null) {
-                    rate += insomnia.getAmplifier() == 0 ? rate / 2 : rate;
+                    adjustedRate += insomnia.getAmplifier() == 0 ? adjustedRate / 2 : adjustedRate;
                 }
-                fatigue += rate + props.getExtraFatigueRate();
+                fatigue += adjustedRate + props.getExtraFatigueRate();
             }
 
-            if (fatigue > 100) fatigue = 100;
-            else if (fatigue < 0) fatigue = 0;
-
-            if (replenishedFatigue > 100) replenishedFatigue = 100;
-            else if (replenishedFatigue < 0) replenishedFatigue = 0;
-
+            fatigue = Mth.clamp(fatigue, 0, 100);
+            replenishedFatigue = Mth.clamp(replenishedFatigue, 0, 100);
             if (extraFatigueRate < 0) extraFatigueRate = 0;
 
             props.setFatigue(fatigue);
             props.setReplenishedFatigue(replenishedFatigue);
             props.setExtraFatigueRate(extraFatigueRate);
 
-            if (props.updateFatigueCounter() >= 100) {
-                props.resetFatigueCounter();
+            if (props.updateFatigueCounter()) {
                 SomniaNetwork.sendToClient(new FatigueUpdatePacket(fatigue), (ServerPlayer) event.player);
 
                 if (SomniaConfig.COMMON.fatigueSideEffects.get()) {
@@ -149,5 +146,5 @@ public final class FatigueEventHandler {
         }
     }
 
-    private FatigueEventHandler() {}
+    private SomniaEventHandler() {}
 }

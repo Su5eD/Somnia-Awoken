@@ -80,7 +80,7 @@ public class AccelerationHandler {
         
         ForgeEventFactory.onPreWorldTick(this.level, server::haveTime);
 
-        this.level.players().forEach(ServerPlayer::tick);
+        this.level.players().forEach(ServerPlayer::doTick);
         this.level.tick(server::haveTime);
 
         ForgeEventFactory.onPostWorldTick(this.level, server::haveTime);

@@ -104,7 +104,7 @@ public final class SomniaConfig {
                 .comment("Fatigue is incremented by this number every tick")
                 .define("fatigueRate", 0.00208);
             fatigueReplenishRate = builder
-                .comment("Fatigue is decreased by this number while you sleep (every tick)")
+                .comment("Fatigue is decreased by this number every tick while you sleep")
                 .define("fatigueReplenishRate", 0.00833);
             fatigueSideEffects = builder
                 .comment("Enables fatigue side effects")

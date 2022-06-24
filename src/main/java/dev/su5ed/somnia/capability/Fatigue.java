@@ -34,13 +34,8 @@ public class Fatigue implements IFatigue {
     }
 
     @Override
-    public int updateFatigueCounter() {
-        return ++fatigueUpdateCounter;
-    }
-
-    @Override
-    public void resetFatigueCounter() {
-        this.fatigueUpdateCounter = 0;
+    public boolean updateFatigueCounter() {
+        return fatigueUpdateCounter++ % 100 == 0;
     }
 
     @Override

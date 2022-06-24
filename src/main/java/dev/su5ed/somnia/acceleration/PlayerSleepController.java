@@ -15,12 +15,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
+import net.minecraftforge.event.world.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -54,14 +56,26 @@ public final class PlayerSleepController {
 
         if (Compat.isSleepingInBag(player)) InjectHooks.updateWakeTime((ServerPlayer) player);
     }
+    
+    @SubscribeEvent
+    public static void onSleepFinished(SleepFinishedTimeEvent event) {
+        LevelAccessor level = event.getWorld();
+        
+        level.players().stream()
+            .filter(Player::isSleepingLongEnough)
+            .forEach(player -> player.getCapability(CapabilityFatigue.INSTANCE)
+                .filter(props -> props.shouldSleepNormally() || DarkUtilsCompat.hasSleepCharm(player))
+                .ifPresent(props -> {
+                    long timeSlept = event.getNewTime() - level.dayTime();
+                    double replenish = SomniaConfig.COMMON.fatigueReplenishRate.get() * timeSlept;
+                    props.setFatigue(props.getFatigue() - replenish);
+                }));
+    }
 
     @SubscribeEvent
     public static void onWakeUp(PlayerWakeUpEvent event) {
         Player player = event.getPlayer();
         player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
-            if (props.shouldSleepNormally() || DarkUtilsCompat.hasSleepCharm(player)) {
-                props.setFatigue(props.getFatigue() - SomniaUtil.getFatigueToReplenish(player));
-            }
             props.maxFatigueCounter();
             props.setResetSpawn(true);
             props.setSleepNormally(false);
