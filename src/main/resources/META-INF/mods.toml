@@ -25,3 +25,9 @@ Simulating the world while you sleep
     versionRange="[1.18.2]"
     ordering="NONE"
     side="BOTH"
+[[dependencies.somnia]]
+    modId="koremods"
+    mandatory=true
+    versionRange="[0.4.7,)"
+    ordering="NONE"
+    side="BOTH"

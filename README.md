@@ -24,6 +24,7 @@ Instead of skipping the night, the world is accelerated while you sleep.
 You can now sleep at any time as long as you have enough fatigue, which you gain passively over time.
 Don't let it build up too high though - getting too tired comes with debuffs.
 
+Requires [Koremods](https://www.curseforge.com/minecraft/mc-mods/koremods), a Kotlin Script bytecode manipulation framework.  
 Downloads are available on [CurseForge](https://www.curseforge.com/minecraft/mc-mods/somnia) and
 [Modrinth](https://modrinth.com/mod/somnia).
 
@@ -34,6 +35,10 @@ Downloads are available on [CurseForge](https://www.curseforge.com/minecraft/mc-
 |    mc-1.18     | 1.18.2  | ![Active] |
 |    mc-1.16     | 1.16.5  |  ![LTS]   |
 |   mc-1.12.2    | 1.12.2  |  ![EOL]   |
+
+### Credits
+
+Credit goes to MALfunction84 and Kingrunes, authors of the original Somnia.
 
 ## Getting started
 All information is available on our [wiki](https://github.com/Su5eD/Somnia/wiki).

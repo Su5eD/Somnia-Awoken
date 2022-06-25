@@ -1,6 +1,8 @@
 import com.matthewprenger.cursegradle.CurseArtifact
 import com.matthewprenger.cursegradle.CurseProject
 import com.matthewprenger.cursegradle.CurseRelation
+import com.modrinth.minotaur.dependencies.DependencyType
+import com.modrinth.minotaur.dependencies.ModDependency
 import fr.brouillard.oss.jgitver.GitVersionCalculator
 import fr.brouillard.oss.jgitver.Strategies
 import net.minecraftforge.gradle.common.util.RunConfig
@@ -91,7 +93,7 @@ repositories {
 dependencies {
     minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
     
-    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.6")
+    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.7")
 
     implementation(fg.deobf(group = "mezz.jei", name = "jei-1.18.2-forge-api", version = versionJEI))
     compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.18.2", version = versionDarkUtils))
@@ -123,6 +125,7 @@ modrinth {
     versionType.set(publishReleaseType)
     uploadFile.set(tasks.jar.get())
     gameVersions.addAll(versionMc)
+    dependencies.add(ModDependency("EWmBPx3X", DependencyType.REQUIRED))
     // TODO changelog
 }
 
@@ -136,6 +139,8 @@ curseforge {
         mainArtifact(tasks.jar.get(), closureOf<CurseArtifact> {
             displayName = publishVersionName
             relations(closureOf<CurseRelation> {
+                requiredDependency("koremods")
+                
                 optionalDependency("cyclic")
                 optionalDependency("comforts")
                 optionalDependency("coffee-mod")
