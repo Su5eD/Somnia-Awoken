@@ -34,7 +34,7 @@ Downloads are available on [CurseForge](https://www.curseforge.com/minecraft/mc-
 |:--------------:|:-------:|:---------:|
 |    mc-1.18     | 1.18.2  | ![Active] |
 |    mc-1.16     | 1.16.5  |  ![LTS]   |
-|   mc-1.12.2    | 1.12.2  |  ![EOL]   |
+|       -        | 1.12.2  |  ![EOL]   |
 
 ### Credits
 
