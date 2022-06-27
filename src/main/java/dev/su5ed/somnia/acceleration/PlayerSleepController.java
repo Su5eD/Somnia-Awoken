@@ -8,7 +8,6 @@ import dev.su5ed.somnia.compat.Compat;
 import dev.su5ed.somnia.compat.DarkUtilsCompat;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.client.PlayerWakeUpPacket;
-import dev.su5ed.somnia.util.InjectHooks;
 import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
@@ -54,7 +53,7 @@ public final class PlayerSleepController {
         player.getCapability(CapabilityFatigue.INSTANCE)
             .ifPresent(props -> props.setSleepNormally(player.isShiftKeyDown()));
 
-        if (Compat.isSleepingInBag(player)) InjectHooks.updateWakeTime((ServerPlayer) player);
+        SomniaUtil.updateWakeTime((ServerPlayer) player);
     }
     
     @SubscribeEvent

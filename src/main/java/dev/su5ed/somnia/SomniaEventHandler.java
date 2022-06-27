@@ -8,7 +8,6 @@ import dev.su5ed.somnia.network.client.FatigueUpdatePacket;
 import dev.su5ed.somnia.network.client.OpenGUIPacket;
 import dev.su5ed.somnia.util.SideEffectStage;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
@@ -104,14 +103,13 @@ public final class SomniaEventHandler {
         if (!level.isClientSide) {
             BlockPos pos = event.getPos();
             BlockState state = level.getBlockState(pos);
-            if (!state.hasProperty(HorizontalDirectionalBlock.FACING)) return;
-
-            Direction direction = state.getValue(HorizontalDirectionalBlock.FACING);
             Player player = event.getPlayer();
-            if (!Compat.isBed(state, pos, level, player) || !((ServerPlayer) player).bedInRange(pos, direction)) return;
-
             ItemStack stack = player.getInventory().getSelected();
-            if (!stack.isEmpty() && stack.getItem().getRegistryName().toString().equals(SomniaConfig.COMMON.wakeTimeSelectItem.get())) {
+            
+            if (state.hasProperty(HorizontalDirectionalBlock.FACING) && Compat.isBed(state, pos, level, player)
+                && ((ServerPlayer) player).bedInRange(pos, state.getValue(HorizontalDirectionalBlock.FACING))
+                && !stack.isEmpty() && stack.getItem().getRegistryName().toString().equals(SomniaConfig.COMMON.wakeTimeSelectItem.get())
+            ) {
                 SomniaNetwork.sendToClient(new OpenGUIPacket(), (ServerPlayer) player);
                 event.setCancellationResult(InteractionResult.SUCCESS);
                 event.setCanceled(true);

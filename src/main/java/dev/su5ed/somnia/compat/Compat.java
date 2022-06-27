@@ -37,8 +37,8 @@ public final class Compat {
         String path = name.getPath();
 
         return modid.equals(SLEEPING_BAGS_MODID) && path.endsWith(SLEEPING_BAG)
-            || modid.equals(COMFORTS_MODID) && path.startsWith(SLEEPING_BAG)
-            || modid.equals(CYCLIC_MODID) && path.equals(CYCLIC_SLEEPING_MAT);
+            || modid.equals(CYCLIC_MODID) && path.equals(CYCLIC_SLEEPING_MAT)
+            || isComfortsSleepingBag(name);
     }
 
     public static boolean isBed(BlockState state, BlockPos pos, LevelAccessor world, LivingEntity sleeper) {
@@ -48,6 +48,10 @@ public final class Compat {
         }
 
         return state.isBed(world, pos, sleeper);
+    }
+    
+    public static boolean isComfortsSleepingBag(ResourceLocation location) {
+        return location.getNamespace().equals(COMFORTS_MODID) && location.getPath().startsWith(SLEEPING_BAG);
     }
     
     private Compat() {}
