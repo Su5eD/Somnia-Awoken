@@ -126,7 +126,7 @@ public final class PlayerSleepController {
     }
 
     private static void playerTickStart(Fatigue fatigue, Player player) {
-        if (player.isSleeping()) {
+        if (player.isSleeping() && player.checkBedExists()) {
             if (fatigue.shouldSleepNormally() || player.getSleepTimer() >= 90 && DarkUtilsCompat.hasSleepCharm(player) || Compat.isSleepingInHammock(player)) {
                 fatigue.setSleepOverride(false);
             } else {
