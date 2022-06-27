@@ -33,8 +33,8 @@ public class ASMHooks {
         player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
                 .filter(props -> props.getWakeTime() < 0)
                 .ifPresent(props -> {
-                    long totalWorldTime = player.level.getGameTime();
-                    long wakeTime = SomniaUtil.calculateWakeTime(totalWorldTime, totalWorldTime % 24000 > 12000 ? 0 : 12000);
+                    long dayTime = SomniaUtil.getLevelDayTime(player.level);
+                    long wakeTime = SomniaUtil.calculateWakeTime(player.level.getGameTime(), dayTime, dayTime > 12000 ? 0 : 12000);
                     props.setWakeTime(wakeTime);
                     NetworkHandler.sendToClient(new PacketUpdateWakeTime(wakeTime), (ServerPlayerEntity) player);
                 });

@@ -3,6 +3,7 @@ package mods.su5ed.somnia.util;
 import mods.su5ed.somnia.api.capability.CapabilityFatigue;
 import mods.su5ed.somnia.config.SomniaConfig;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 public class SomniaUtil {
@@ -11,10 +12,17 @@ public class SomniaUtil {
                 .anyMatch(stack -> !stack.isEmpty());
     }
 
-    public static long calculateWakeTime(long totalWorldTime, int target) {
-        long timeInDay = totalWorldTime % 24000;
-        long wakeTime = totalWorldTime - timeInDay + target;
-        return timeInDay > target ? wakeTime + 24000 : wakeTime;
+    public static int getLevelDayTime(World world) {
+        return (int) (world.getDayTime() % 24000L);
+    }
+
+    public static long calculateWakeTime(World world, int target) {
+        return calculateWakeTime(world.getGameTime(), getLevelDayTime(world), target);
+    }
+
+    public static long calculateWakeTime(long gameTime, long dayTime, int target) {
+        long wakeTime = gameTime - dayTime + target;
+        return dayTime > target ? wakeTime + 24000L : wakeTime;
     }
 
     public static boolean checkFatigue(PlayerEntity player) {
@@ -38,16 +46,17 @@ public class SomniaUtil {
 
     public static double getFatigueToReplenish(PlayerEntity player) {
         long worldTime = player.level.getGameTime();
-        long wakeTime = SomniaUtil.calculateWakeTime(worldTime, player.level.isNight() ? 0 : 12000);
+        long wakeTime = SomniaUtil.calculateWakeTime(worldTime, player.level.getDayTime(), player.level.isNight() ? 0 : 12000);
         return SomniaConfig.fatigueReplenishRate * (wakeTime - worldTime);
     }
 
-    public static boolean isEnterSleepTime() {
-        return 24000 >= SomniaConfig.enterSleepStart && 24000 <= SomniaConfig.enterSleepEnd;
+    public static boolean isEnterSleepTime(World world) {
+        long time = getLevelDayTime(world);
+        return time >= SomniaConfig.enterSleepStart && time <= SomniaConfig.enterSleepEnd;
     }
 
     public static boolean isValidSleepTime(ServerWorld world) {
-        long time = world.getGameTime() % 24000;
+        long time = getLevelDayTime(world);
         return time >= SomniaConfig.validSleepStart && time <= SomniaConfig.validSleepEnd;
     }
 }

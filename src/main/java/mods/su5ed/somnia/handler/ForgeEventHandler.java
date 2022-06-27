@@ -150,7 +150,7 @@ public class ForgeEventHandler {
 				return;
 			}
 		}
-		if (!SomniaUtil.isEnterSleepTime()) event.setResult(Event.Result.DENY);
+		if (!SomniaUtil.isEnterSleepTime(player.level)) event.setResult(Event.Result.DENY);
 		else event.setResult(Event.Result.ALLOW);
 	}
 

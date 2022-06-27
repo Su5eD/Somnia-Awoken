@@ -22,7 +22,7 @@ public class WakeTimeButton extends Button {
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null) return;
 
-            long targetWakeTime = SomniaUtil.calculateWakeTime(mc.level.getGameTime(), (int) wakeTime);
+            long targetWakeTime = SomniaUtil.calculateWakeTime(mc.level, (int) wakeTime);
             NetworkHandler.INSTANCE.sendToServer(new PacketUpdateWakeTime(targetWakeTime));
             mc.player.getCapability(CapabilityFatigue.FATIGUE_CAPABILITY)
                     .ifPresent(props -> props.setWakeTime(targetWakeTime));
