@@ -24,8 +24,7 @@ public class PlayerSleepTickHandler {
 	}
 
 	public static void tickStart(IFatigue props, PlayerEntity player) {
-		if (player.isSleeping()) {
-
+		if (player.isSleeping() && player.checkBedExists()) {
 			if (props.shouldSleepNormally() || (player.getSleepTimer() > 99 && ModList.get().isLoaded("darkutils") && DarkUtilsPlugin.hasSleepCharm(player)) || Compat.isSleepingInHammock(player)) {
 				props.setSleepOverride(false);
 				return;
