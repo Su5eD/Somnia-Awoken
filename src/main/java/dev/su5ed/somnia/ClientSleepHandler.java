@@ -66,6 +66,7 @@ public class ClientSleepHandler {
     
     @SubscribeEvent
     public void onWakeUp(PlayerWakeUpEvent event) {
+        this.sleepStartTime = -1;
         this.speedValues.clear();
     }
     
@@ -82,16 +83,18 @@ public class ClientSleepHandler {
                 renderFatigueDisplay(poseStack, fatigueAmount);
             }
 
-            if (this.mc.player.isSleeping() && SomniaConfig.CLIENT.somniaGui.get()) {
-                if (this.sleepStartTime == -1) {
-                    this.sleepStartTime = this.mc.level.getGameTime();
+            if (this.mc.player.isSleeping() && SomniaConfig.CLIENT.somniaGui.get() && !this.speedValues.isEmpty()) {
+                double currentSpeed = this.speedValues.getLast();
+                if (currentSpeed != 0) {
+                    if (this.sleepStartTime == -1) this.sleepStartTime = this.mc.player.level.getGameTime();
+                } else {
+                    this.sleepStartTime = -1;
                 }
-                if (this.mc.screen != null && fatigue.getWakeTime() != -1 && !this.speedValues.isEmpty()) {
-                    renderSleepOverlay(poseStack, this.mc.screen, fatigue);
+                
+                if (this.mc.screen != null && fatigue.getWakeTime() != -1 && currentSpeed != 0) {
+                    renderSleepOverlay(poseStack, this.mc.screen, fatigue, currentSpeed);
                 }
-            } else {
-                this.sleepStartTime = -1;
-            } 
+            }
         });
     }
     
@@ -106,7 +109,7 @@ public class ClientSleepHandler {
         this.mc.font.draw(poseStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE);
     }
 
-    private void renderSleepOverlay(PoseStack poseStack, Screen screen, Fatigue fatigue) {
+    private void renderSleepOverlay(PoseStack poseStack, Screen screen, Fatigue fatigue, double currentSpeed) {
         long wakeTime = fatigue.getWakeTime();
         double sleepDuration = this.mc.level.getGameTime() - this.sleepStartTime;
         double remaining = wakeTime - this.sleepStartTime;
@@ -118,7 +121,6 @@ public class ClientSleepHandler {
 
         String displayETASleep = SomniaConfig.CLIENT.displayETASleep.get();
         int offsetX = displayETASleep.equals("center") ? screen.width / 2 - 80 : displayETASleep.equals("right") ? width - 160 : 0;
-        double currentSpeed = this.speedValues.isEmpty() ? 0 : this.speedValues.getLast();
         renderScaledString(poseStack, offsetX + 20, String.format("%sx%s", SpeedColor.getColorForSpeed(currentSpeed).color, MULTIPLIER_FORMAT.format(currentSpeed)));
 
         double average = this.speedValues.stream()

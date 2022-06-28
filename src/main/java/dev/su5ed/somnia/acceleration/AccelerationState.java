@@ -12,21 +12,11 @@ import net.minecraft.world.entity.player.Player;
 import java.util.List;
 
 public enum AccelerationState {
-	UNAVAILABLE(false),
-	INACTIVE(false),
-	WAITING(true),
-	SIMULATING(true);
+	UNAVAILABLE,
+	INACTIVE,
+	WAITING,
+	SIMULATING;
 	
-	private final boolean enableOverlay;
-
-	AccelerationState(boolean enableOverlay) {
-		this.enableOverlay = enableOverlay;
-	}
-	
-	public boolean enableOverlay() {
-		return this.enableOverlay;
-	}
-
 	public static AccelerationState forLevel(ServerLevel level) {
 		if (!SomniaUtil.isValidSleepTime(level)) return UNAVAILABLE;
 		

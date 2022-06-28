@@ -52,7 +52,7 @@ public class AccelerationHandler {
         if (this.state == AccelerationState.SIMULATING && state == AccelerationState.UNAVAILABLE) {
             wakeUpPlayers();
         }
-        else if (state.enableOverlay()) {
+        else if (state == AccelerationState.SIMULATING || state == AccelerationState.WAITING) {
             SomniaNetwork.sendToDimension(new SpeedUpdatePacket(state == AccelerationState.SIMULATING ? this.multiplier : 0), this.level.dimension());
         }
 
