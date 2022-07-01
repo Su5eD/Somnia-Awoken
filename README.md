@@ -38,7 +38,7 @@ Downloads are available on [CurseForge](https://www.curseforge.com/minecraft/mc-
 
 ### Credits
 
-Credit goes to MALfunction84 and Kingrunes, authors of the original Somnia.
+Credit goes to MALfunction84 and Kingrunes, authors of the original Somnia mod.
 
 ## Getting started
 All information is available on our [wiki](https://github.com/Su5eD/Somnia/wiki).
@@ -51,7 +51,7 @@ All information is available on our [wiki](https://github.com/Su5eD/Somnia/wiki)
 - 🍷 Adds potions that modify fatigue gain rate
 - ...and more!
 
-![Simulation](https://i.imgur.com/Jxd013f.gif)
+![Simulation](https://i.imgur.com/Ov1guPz.gif)
 
 [Active]:https://img.shields.io/badge/Support-Active-brightgreen
 [LTS]:https://img.shields.io/badge/Support-LTS-yellow
