@@ -9,7 +9,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
-import java.util.Locale;
 
 public final class SomniaConfig {
     public static final ForgeConfigSpec COMMON_SPEC;
@@ -31,7 +30,7 @@ public final class SomniaConfig {
     private SomniaConfig() {}
 
     public static final class ClientConfig {
-        public final ForgeConfigSpec.ConfigValue<String> fatigueDisplayPos;
+        public final ForgeConfigSpec.EnumValue<FatigueDisplayPosition> fatigueDisplayPos;
         public final ForgeConfigSpec.BooleanValue simpleFatigueDisplay;
         public final ForgeConfigSpec.ConfigValue<String> displayETASleep;
         public final ForgeConfigSpec.BooleanValue somniaGui;
@@ -41,8 +40,8 @@ public final class SomniaConfig {
         public ClientConfig(ForgeConfigSpec.Builder builder) {
             builder.push("fatigue");
             fatigueDisplayPos = builder
-                .comment("The fatigue counter's position. Accepted values: top_center, top_left, top_right, bottom_center, bottom_left, bottom_right")
-                .define("fatigueDisplayPos", "bottom_right");
+                .comment("The fatigue counter's position")
+                .defineEnum("fatigueDisplayPos", FatigueDisplayPosition.BOTTOM_RIGHT);
             simpleFatigueDisplay = builder
                 .comment("Simplifies the numerical fatigue counter to words")
                 .define("simpleFatigueDisplay", false);
@@ -66,10 +65,6 @@ public final class SomniaConfig {
                 .define("disableRendering", false);
             builder.pop();
         }
-
-        public FatigueDisplayPosition getFatigueDisplayPos() {
-            return FatigueDisplayPosition.valueOf(fatigueDisplayPos.get().toUpperCase(Locale.ROOT));
-        }
     }
 
     public static final class CommonConfig {
@@ -89,6 +84,7 @@ public final class SomniaConfig {
         public final ForgeConfigSpec.BooleanValue muteSoundWhenSleeping;
         public final ForgeConfigSpec.BooleanValue sleepWithArmor;
         public final ForgeConfigSpec.ConfigValue<String> wakeTimeSelectItem;
+        public final ForgeConfigSpec.BooleanValue forceWakeUp;
 
         public final ForgeConfigSpec.BooleanValue disableCreatureSpawning;
 
@@ -158,8 +154,11 @@ public final class SomniaConfig {
                 .comment("Allows you to sleep with armor equipped")
                 .define("sleepWithArmor", false);
             wakeTimeSelectItem = builder
-                .comment("the item used to select wake time")
+                .comment("The item used to select wake time")
                 .define("wakeTimeSelectItem", "minecraft:clock");
+            forceWakeUp = builder
+                .comment("Force the player to wake up when fatigue reaches 0")
+                .define("forceWakeUp", false);
             builder.pop();
 
             builder.push("performance");

@@ -105,7 +105,7 @@ public class ClientSleepHandler {
         int width = this.mc.font.width(str);
         int scaledWidth = this.mc.getWindow().getGuiScaledWidth();
         int scaledHeight = this.mc.getWindow().getGuiScaledHeight();
-        FatigueDisplayPosition pos = this.mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : SomniaConfig.CLIENT.getFatigueDisplayPos();
+        FatigueDisplayPosition pos = this.mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : SomniaConfig.CLIENT.fatigueDisplayPos.get();
         this.mc.font.draw(poseStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE);
     }
 
