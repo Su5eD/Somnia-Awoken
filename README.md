@@ -32,9 +32,8 @@ Downloads are available on [CurseForge](https://www.curseforge.com/minecraft/mc-
 
 | Release Branch | Version |  Status   |
 |:--------------:|:-------:|:---------:|
-|    mc-1.18     | 1.18.2  | ![Active] |
-|    mc-1.16     | 1.16.5  |  ![LTS]   |
-|       -        | 1.12.2  |  ![EOL]   |
+|     1.19.x     | 1.19.2  | ![Active] |
+|    mc-1.18     | 1.18.2  |  ![LTS]   |
 
 ### Credits
 
@@ -55,4 +54,3 @@ All information is available on our [wiki](https://github.com/Su5eD/Somnia/wiki)
 
 [Active]:https://img.shields.io/badge/Support-Active-brightgreen
 [LTS]:https://img.shields.io/badge/Support-LTS-yellow
-[EOL]:https://img.shields.io/badge/Support-EOL-red
