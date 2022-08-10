@@ -3,12 +3,12 @@ package dev.su5ed.somnia.gui;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 public class WakeTimeSelectScreen extends Screen {
 
     public WakeTimeSelectScreen() {
-        super(new TranslatableComponent("somnia.gui.select_wake_time"));
+        super(Component.translatable("somnia.gui.select_wake_time"));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class WakeTimeSelectScreen extends Screen {
         renderBackground(poseStack);
         super.render(poseStack, mouseX, mouseY, partialTicks);
         
-        drawCenteredString(poseStack, this.font, new TranslatableComponent("somnia.gui.wts_title"), this.width / 2, this.height / 2 - 5, 16777215);
+        drawCenteredString(poseStack, this.font, Component.translatable("somnia.gui.wts_title"), this.width / 2, this.height / 2 - 5, 16777215);
         if (this.minecraft != null && this.minecraft.player != null) {
             String time = SomniaUtil.timeStringForGameTime(SomniaUtil.getLevelDayTime(this.minecraft.level));
             drawCenteredString(poseStack, this.font, time, this.width / 2, this.height / 2 - 66, 16777215);
@@ -57,6 +57,6 @@ public class WakeTimeSelectScreen extends Screen {
     }
     
     private void addWakeTimeButton(int x, int y, int width, int height, String translationKey, int wakeTime) {
-        addRenderableWidget(new WakeTimeButton(x, y, width, height, new TranslatableComponent("somnia.gui.time_" + translationKey), wakeTime));
+        addRenderableWidget(new WakeTimeButton(x, y, width, height, Component.translatable("somnia.gui.time_" + translationKey), wakeTime));
     }
 }

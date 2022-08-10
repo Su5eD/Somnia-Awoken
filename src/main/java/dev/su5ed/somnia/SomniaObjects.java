@@ -20,8 +20,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public final class SomniaObjects {
-    private static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, Somnia.MODID);
-    private static final DeferredRegister<Potion> POTIONS = DeferredRegister.create(ForgeRegistries.POTIONS, Somnia.MODID);
+    private static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, SomniaAwoken.MODID);
+    private static final DeferredRegister<Potion> POTIONS = DeferredRegister.create(ForgeRegistries.POTIONS, SomniaAwoken.MODID);
 
     public static final RegistryObject<MobEffect> AWAKENING_EFFECT = MOB_EFFECTS.register("awakening", AwakeningEffect::new);
     public static final RegistryObject<MobEffect> INSOMNIA_EFFECT = MOB_EFFECTS.register("insomnia", InsomniaEffect::new);
@@ -57,7 +57,7 @@ public final class SomniaObjects {
 
     private static Ingredient createPotionIngredient(Potion potion) {
         CompoundTag tag = new CompoundTag();
-        tag.putString("Potion", potion.getRegistryName().toString());
+        tag.putString("Potion", ForgeRegistries.POTIONS.getKey(potion).toString());
         return PartialNBTIngredient.of(Items.POTION, tag);
     }
     

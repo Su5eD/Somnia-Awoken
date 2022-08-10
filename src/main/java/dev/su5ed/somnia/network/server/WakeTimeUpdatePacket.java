@@ -22,8 +22,7 @@ public class WakeTimeUpdatePacket {
         return new WakeTimeUpdatePacket(wakeTime);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> ctx.get().getSender().getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> props.setWakeTime(this.wakeTime)));
-        return true;
+    public void handle(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().getSender().getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> props.setWakeTime(this.wakeTime));
     }
 }

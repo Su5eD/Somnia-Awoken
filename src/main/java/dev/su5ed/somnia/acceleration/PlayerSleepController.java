@@ -1,6 +1,6 @@
 package dev.su5ed.somnia.acceleration;
 
-import dev.su5ed.somnia.Somnia;
+import dev.su5ed.somnia.SomniaAwoken;
 import dev.su5ed.somnia.SomniaConfig;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
 import dev.su5ed.somnia.capability.Fatigue;
@@ -9,7 +9,7 @@ import dev.su5ed.somnia.compat.DarkUtilsCompat;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.client.PlayerWakeUpPacket;
 import dev.su5ed.somnia.util.SomniaUtil;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,18 +21,18 @@ import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
-import net.minecraftforge.event.world.SleepFinishedTimeEvent;
+import net.minecraftforge.event.level.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = Somnia.MODID)
+@Mod.EventBusSubscriber(modid = SomniaAwoken.MODID)
 public final class PlayerSleepController {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
         if (DarkUtilsCompat.hasSleepCharm(player) || player.getCapability(CapabilityFatigue.INSTANCE).map(Fatigue::shouldSleepNormally).orElse(false)) return;
 
         if (!SomniaUtil.isEnterSleepTime(player.level)) event.setResult(Event.Result.DENY);
@@ -41,12 +41,12 @@ public final class PlayerSleepController {
 
     @SubscribeEvent
     public static void onPlayerSleepInBed(PlayerSleepInBedEvent event) {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
         if (!SomniaUtil.checkFatigue(player)) {
-            player.displayClientMessage(new TranslatableComponent("somnia.status.cooldown"), true);
+            player.displayClientMessage(Component.translatable("somnia.status.cooldown"), true);
             event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
         } else if (!SomniaConfig.COMMON.sleepWithArmor.get() && !player.isCreative() && SomniaUtil.hasArmor(player)) {
-            player.displayClientMessage(new TranslatableComponent("somnia.status.armor"), true);
+            player.displayClientMessage(Component.translatable("somnia.status.armor"), true);
             event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
         }
 
@@ -58,7 +58,7 @@ public final class PlayerSleepController {
     
     @SubscribeEvent
     public static void onSleepFinished(SleepFinishedTimeEvent event) {
-        LevelAccessor level = event.getWorld();
+        LevelAccessor level = event.getLevel();
         
         level.players().stream()
             .filter(Player::isSleepingLongEnough)
@@ -73,7 +73,7 @@ public final class PlayerSleepController {
 
     @SubscribeEvent
     public static void onWakeUp(PlayerWakeUpEvent event) {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
         player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
             props.maxFatigueCounter();
             props.setResetSpawn(true);
@@ -85,7 +85,7 @@ public final class PlayerSleepController {
 
     @SubscribeEvent
     public static void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
-        event.getPlayer().getCapability(CapabilityFatigue.INSTANCE)
+        event.getEntity().getCapability(CapabilityFatigue.INSTANCE)
             .map(Fatigue::getResetSpawn)
             .ifPresent(resetSpawn -> {
                 if (!resetSpawn) event.setCanceled(true);
@@ -97,7 +97,7 @@ public final class PlayerSleepController {
     // otherwise PlayerSleepTickHandler#tickEnd will make the player to start sleeping again
     @SubscribeEvent
     public static void onPlayerDamage(LivingAttackEvent event) {
-        LivingEntity entity = event.getEntityLiving();
+        LivingEntity entity = event.getEntity();
 
         if (entity instanceof ServerPlayer player && entity.isSleeping()) {
             if (player.isInvulnerableTo(event.getSource())

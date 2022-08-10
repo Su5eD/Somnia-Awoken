@@ -1,6 +1,6 @@
 package dev.su5ed.somnia.capability;
 
-import dev.su5ed.somnia.Somnia;
+import dev.su5ed.somnia.SomniaAwoken;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.client.FatigueUpdatePacket;
 import net.minecraft.nbt.CompoundTag;
@@ -12,7 +12,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = Somnia.MODID)
+@Mod.EventBusSubscriber(modid = SomniaAwoken.MODID)
 public final class CapabilitySync {
 
     @SubscribeEvent
@@ -22,17 +22,17 @@ public final class CapabilitySync {
 
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        sync((ServerPlayer) event.getPlayer());
+        sync((ServerPlayer) event.getEntity());
     }
 
     @SubscribeEvent
     public static void onPlayerDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
-        sync((ServerPlayer) event.getPlayer());
+        sync((ServerPlayer) event.getEntity());
     }
 
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        sync((ServerPlayer) event.getPlayer());
+        sync((ServerPlayer) event.getEntity());
     }
 
     @SubscribeEvent
@@ -41,7 +41,7 @@ public final class CapabilitySync {
             event.getOriginal().getCapability(CapabilityFatigue.INSTANCE)
                 .ifPresent(props -> {
                     CompoundTag old = props.serializeNBT();
-                    event.getPlayer().getCapability(CapabilityFatigue.INSTANCE)
+                    event.getEntity().getCapability(CapabilityFatigue.INSTANCE)
                         .ifPresent(fatigue -> fatigue.deserializeNBT(old));
                 });
         }
@@ -49,7 +49,7 @@ public final class CapabilitySync {
 
     @SubscribeEvent
     public static void onLivingDeath(LivingDeathEvent event) {
-        event.getEntityLiving().getCapability(CapabilityFatigue.INSTANCE)
+        event.getEntity().getCapability(CapabilityFatigue.INSTANCE)
             .ifPresent(props -> {
                 props.setFatigue(0);
                 props.setReplenishedFatigue(0);

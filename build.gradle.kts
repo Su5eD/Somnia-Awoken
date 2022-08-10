@@ -32,7 +32,6 @@ val versionForge: String by project
 val curseForgeId: String by project
 val modrinthId: String by project
 
-val versionJEI: String by project
 val versionDarkUtils: String by project
 val versionCurios: String by project
 val versionBookshelf: String by project
@@ -52,7 +51,7 @@ java {
 }
 
 minecraft {
-    mappings("parchment", "2022.06.19-$versionMc")
+    mappings("parchment", "1.18.2-2022.08.07-$versionMc")
 
     accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
 
@@ -93,13 +92,12 @@ repositories {
 dependencies {
     minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
     
-    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.8")
+    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.9")
 
-    implementation(fg.deobf(group = "mezz.jei", name = "jei-1.18.2-forge-api", version = versionJEI))
-    compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.18.2", version = versionDarkUtils))
+    compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.19.1", version = versionDarkUtils))
     compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
-    compileOnly(fg.deobf(group = "net.darkhax.bookshelf", name = "Bookshelf-Forge-1.18.2", version = versionBookshelf))
-    compileOnly(fg.deobf(group = "net.darkhax.runelic", name = "Runelic-Forge-1.18.2", version = versionRunelic))
+    compileOnly(fg.deobf(group = "net.darkhax.bookshelf", name = "Bookshelf-Forge-1.19.2", version = versionBookshelf))
+    compileOnly(fg.deobf(group = "net.darkhax.runelic", name = "Runelic-Forge-1.19.1", version = versionRunelic))
 }
 
 tasks {
@@ -164,7 +162,7 @@ publishing {
 
 fun getGitVersion(): String {
     val jgitver = GitVersionCalculator.location(rootDir)
-        .setNonQualifierBranches("mc-1.18")
+        .setNonQualifierBranches("1.19.x")
         .setStrategy(Strategies.SCRIPT)
         .setScript("print \"\${metadata.CURRENT_VERSION_MAJOR};\${metadata.CURRENT_VERSION_MINOR};\${metadata.CURRENT_VERSION_PATCH + metadata.COMMIT_DISTANCE}\"")
     return jgitver.version

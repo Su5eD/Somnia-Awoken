@@ -4,7 +4,7 @@ import dev.su5ed.somnia.SomniaConfig;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.client.PlayerWakeUpPacket;
 import dev.su5ed.somnia.network.client.SpeedUpdatePacket;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.server.MinecraftServer;
@@ -16,7 +16,6 @@ import net.minecraft.world.level.GameRules;
 import net.minecraftforge.event.ForgeEventFactory;
 
 import java.util.Locale;
-import java.util.UUID;
 
 public class AccelerationHandler {
     public final ServerLevel level;
@@ -78,12 +77,12 @@ public class AccelerationHandler {
         Packet<?> packet = new ClientboundSetTimePacket(this.level.getGameTime(), this.level.getDayTime(), this.level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT));
         server.getPlayerList().broadcastAll(packet, this.level.dimension());
         
-        ForgeEventFactory.onPreWorldTick(this.level, server::haveTime);
+        ForgeEventFactory.onPreLevelTick(this.level, server::haveTime);
 
         this.level.players().forEach(ServerPlayer::doTick);
         this.level.tick(server::haveTime);
 
-        ForgeEventFactory.onPostWorldTick(this.level, server::haveTime);
+        ForgeEventFactory.onPostLevelTick(this.level, server::haveTime);
     }
     
     private void wakeUpPlayers() {
@@ -92,7 +91,7 @@ public class AccelerationHandler {
             .forEach(player -> {
                 SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
                 String key = "somnia.status." + this.state.name().toLowerCase(Locale.ROOT);
-                player.sendMessage(new TranslatableComponent(key), UUID.randomUUID());
+                player.displayClientMessage(Component.translatable(key), true);
             });
     }
 }

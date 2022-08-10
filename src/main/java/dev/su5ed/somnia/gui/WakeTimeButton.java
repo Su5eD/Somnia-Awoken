@@ -9,7 +9,6 @@ import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -39,7 +38,7 @@ public class WakeTimeButton extends Button {
         });
         
         this.buttonMessage = message;
-        this.hoverMessage = new TextComponent(SomniaUtil.timeStringForGameTime(wakeTime));
+        this.hoverMessage = Component.literal(SomniaUtil.timeStringForGameTime(wakeTime));
     }
 
     @Override

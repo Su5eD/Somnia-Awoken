@@ -8,8 +8,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class OpenGUIPacket {
-    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientPacketHandler::openGUI));
-        return true;
+    public void handle(Supplier<NetworkEvent.Context> ctx) {
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientPacketHandler::openGUI);
     }
 }

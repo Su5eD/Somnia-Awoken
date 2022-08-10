@@ -45,16 +45,13 @@ public class ActivateBlockPacket {
         return new ActivateBlockPacket(pos, side, hitX, hitY, hitZ);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
-            if (player != null) {
-                BlockState state = player.level.getBlockState(pos);
-                BlockHitResult hitResult = new BlockHitResult(new Vec3(this.hitX, this.hitY, this.hitZ), this.side, pos, false);
+    public void handle(Supplier<NetworkEvent.Context> ctx) {
+        ServerPlayer player = ctx.get().getSender();
+        if (player != null) {
+            BlockState state = player.level.getBlockState(pos);
+            BlockHitResult hitResult = new BlockHitResult(new Vec3(this.hitX, this.hitY, this.hitZ), this.side, pos, false);
 
-                state.use(player.level, player, MoreObjects.firstNonNull(player.swingingArm, InteractionHand.MAIN_HAND), hitResult);
-            }
-        });
-        return true;
+            state.use(player.level, player, MoreObjects.firstNonNull(player.swingingArm, InteractionHand.MAIN_HAND), hitResult);
+        }
     }
 }

@@ -12,7 +12,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.*;
@@ -51,7 +50,7 @@ public final class SomniaCommand {
 	}
 
 	private static int addOverride(ServerPlayer player) {
-		if (!OVERRIDES.add(player.getUUID())) player.displayClientMessage(new TextComponent("Override already exists"), true);
+		if (!OVERRIDES.add(player.getUUID())) player.displayClientMessage(Component.literal("Override already exists"), true);
 
 		return Command.SINGLE_SUCCESS;
 	}
@@ -66,10 +65,10 @@ public final class SomniaCommand {
 		List<String> overrides = OVERRIDES.stream()
 				.map(sender.level::getPlayerByUUID)
 				.filter(Objects::nonNull)
-				.map(player -> player.getName().getContents())
+				.map(player -> player.getName().getString())
 				.toList();
 
-		Component chatComponent = new TextComponent(!overrides.isEmpty() ? String.join(", ", overrides) : "Nothing to see here...");
+		Component chatComponent = Component.literal(!overrides.isEmpty() ? String.join(", ", overrides) : "Nothing to see here...");
 		sender.displayClientMessage(chatComponent, false);
 		return Command.SINGLE_SUCCESS;
 	}

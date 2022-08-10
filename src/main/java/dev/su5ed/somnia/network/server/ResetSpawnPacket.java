@@ -22,9 +22,8 @@ public class ResetSpawnPacket {
         return new ResetSpawnPacket(resetSpawn);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> ctx.get().getSender().getCapability(CapabilityFatigue.INSTANCE)
-            .ifPresent(props -> props.setResetSpawn(this.resetSpawn)));
-        return true;
+    public void handle(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().getSender().getCapability(CapabilityFatigue.INSTANCE)
+            .ifPresent(props -> props.setResetSpawn(this.resetSpawn));
     }
 }

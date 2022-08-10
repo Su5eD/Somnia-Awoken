@@ -25,10 +25,11 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.stream.Stream;
 
-@Mod.EventBusSubscriber(modid = Somnia.MODID)
+@Mod.EventBusSubscriber(modid = SomniaAwoken.MODID)
 public final class SomniaEventHandler {
 
     @SubscribeEvent
@@ -99,16 +100,16 @@ public final class SomniaEventHandler {
 
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        Level level = event.getWorld();
+        Level level = event.getLevel();
         if (!level.isClientSide) {
             BlockPos pos = event.getPos();
             BlockState state = level.getBlockState(pos);
-            Player player = event.getPlayer();
+            Player player = event.getEntity();
             ItemStack stack = player.getInventory().getSelected();
             
             if (state.hasProperty(HorizontalDirectionalBlock.FACING) && Compat.isBed(state, pos, level, player)
                 && ((ServerPlayer) player).bedInRange(pos, state.getValue(HorizontalDirectionalBlock.FACING))
-                && !stack.isEmpty() && stack.getItem().getRegistryName().toString().equals(SomniaConfig.COMMON.wakeTimeSelectItem.get())
+                && !stack.isEmpty() && ForgeRegistries.ITEMS.getKey(stack.getItem()).toString().equals(SomniaConfig.COMMON.wakeTimeSelectItem.get())
             ) {
                 SomniaNetwork.sendToClient(new OpenGUIPacket(), (ServerPlayer) player);
                 event.setCancellationResult(InteractionResult.SUCCESS);
@@ -126,7 +127,7 @@ public final class SomniaEventHandler {
             Stream.concat(SomniaConfig.COMMON.getReplenishingItems().stream(), SomniaAPI.getReplenishingItems().stream())
                 .filter(replenishingItem -> replenishingItem.item() == item)
                 .findFirst()
-                .ifPresent(replenishingItem -> event.getEntityLiving().getCapability(CapabilityFatigue.INSTANCE)
+                .ifPresent(replenishingItem -> event.getEntity().getCapability(CapabilityFatigue.INSTANCE)
                     .ifPresent(props -> {
                         double fatigue = props.getFatigue();
 

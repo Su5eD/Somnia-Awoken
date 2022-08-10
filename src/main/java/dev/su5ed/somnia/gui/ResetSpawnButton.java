@@ -7,19 +7,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 public class ResetSpawnButton extends AbstractButton {
     public boolean resetSpawn = true;
 
     public ResetSpawnButton(int xIn, int yIn, int widthIn, int heightIn) {
-        super(xIn, yIn, widthIn, heightIn, new TranslatableComponent("somnia.gui.reset_spawn"));
+        super(xIn, yIn, widthIn, heightIn, Component.translatable("somnia.gui.reset_spawn"));
     }
 
     @Override
     public void onPress() {
         this.resetSpawn = !this.resetSpawn;
-        setMessage(new TranslatableComponent(this.resetSpawn ? "somnia.gui.reset_spawn" : "somnia.gui.no_reset_spawn"));
+        setMessage(Component.translatable(this.resetSpawn ? "somnia.gui.reset_spawn" : "somnia.gui.no_reset_spawn"));
         
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {

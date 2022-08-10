@@ -24,8 +24,7 @@ public class SpeedUpdatePacket {
         return new SpeedUpdatePacket(speed);
     }
 
-    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientSleepHandler.INSTANCE.addSpeedValue(this.speed)));
-        return true;
+    public void handle(Supplier<NetworkEvent.Context> ctx) {
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientSleepHandler.INSTANCE.addSpeedValue(this.speed));
     }
 }
