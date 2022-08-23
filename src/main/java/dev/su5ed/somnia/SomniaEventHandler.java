@@ -45,26 +45,28 @@ public final class SomniaEventHandler {
             double extraFatigueRate = props.getExtraFatigueRate();
             double replenishedFatigue = props.getReplenishedFatigue();
 
-            if (isSleeping) {
-                double share = fatigueReplenishRate / fatigueRate;
-                double replenish = fatigueReplenishRate * share;
-                
-                fatigue -= fatigueReplenishRate;
-                extraFatigueRate -= fatigueRate / replenishedFatigue / 10;
-                replenishedFatigue -= replenish;
-            } else {
-                double adjustedRate = fatigueRate;
+            if (fatigueRate > 0) {
+                if (isSleeping) {
+                    double share = fatigueReplenishRate / fatigueRate;
+                    double replenish = fatigueReplenishRate * share;
 
-                MobEffectInstance wakefulness = event.player.getEffect(SomniaObjects.AWAKENING_EFFECT.get());
-                if (wakefulness != null) {
-                    adjustedRate -= wakefulness.getAmplifier() == 0 ? adjustedRate / 4 : adjustedRate / 3;
-                }
+                    fatigue -= fatigueReplenishRate;
+                    extraFatigueRate -= fatigueRate / replenishedFatigue / 10;
+                    replenishedFatigue -= replenish;
+                } else {
+                    double adjustedRate = fatigueRate;
 
-                MobEffectInstance insomnia = event.player.getEffect(SomniaObjects.INSOMNIA_EFFECT.get());
-                if (insomnia != null) {
-                    adjustedRate += insomnia.getAmplifier() == 0 ? adjustedRate / 2 : adjustedRate;
+                    MobEffectInstance wakefulness = event.player.getEffect(SomniaObjects.AWAKENING_EFFECT.get());
+                    if (wakefulness != null) {
+                        adjustedRate -= wakefulness.getAmplifier() == 0 ? adjustedRate / 4 : adjustedRate / 3;
+                    }
+
+                    MobEffectInstance insomnia = event.player.getEffect(SomniaObjects.INSOMNIA_EFFECT.get());
+                    if (insomnia != null) {
+                        adjustedRate += insomnia.getAmplifier() == 0 ? adjustedRate / 2 : adjustedRate;
+                    }
+                    fatigue += adjustedRate + props.getExtraFatigueRate();
                 }
-                fatigue += adjustedRate + props.getExtraFatigueRate();
             }
 
             fatigue = Mth.clamp(fatigue, 0, 100);
