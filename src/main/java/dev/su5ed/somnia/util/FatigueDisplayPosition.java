@@ -3,6 +3,11 @@ package dev.su5ed.somnia.util;
 import java.util.function.BiFunction;
 
 public enum FatigueDisplayPosition {
+    NONE((scaledWidth, stringWidth) -> {
+        throw new UnsupportedOperationException();
+    }, (scaledHeight, fontHeight) -> {
+        throw new UnsupportedOperationException();
+    }),
     TOP_CENTER((scaledWidth, stringWidth) -> scaledWidth / 2 - stringWidth / 2, (scaledHeight, fontHeight) -> fontHeight),
     TOP_LEFT((scaledWidth, stringWidth) -> 10, (scaledHeight, fontHeight) -> fontHeight),
     TOP_RIGHT((scaledWidth, stringWidth) -> scaledWidth - stringWidth - 10, (scaledHeight, fontHeight) -> fontHeight),

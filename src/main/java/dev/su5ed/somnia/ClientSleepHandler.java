@@ -77,9 +77,9 @@ public class ClientSleepHandler {
         this.mc.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(fatigue -> {
             PoseStack poseStack = new PoseStack();
             double fatigueAmount = fatigue.getFatigue();
-            if (event.phase == TickEvent.Phase.END && !this.mc.player.isCreative() && !this.mc.player.isSpectator() && !this.mc.options.hideGui) {
-                if (!this.mc.player.isSleeping() && !SomniaConfig.COMMON.fatigueSideEffects.get() && fatigueAmount > SomniaConfig.COMMON.minimumFatigueToSleep.get()) return;
-                
+            if (SomniaConfig.COMMON.enableFatigue.get() && event.phase == TickEvent.Phase.END && !this.mc.player.isCreative() && !this.mc.player.isSpectator() && !this.mc.options.hideGui
+                && (this.mc.player.isSleeping() || SomniaConfig.COMMON.fatigueSideEffects.get() || fatigueAmount <= SomniaConfig.COMMON.minimumFatigueToSleep.get())
+            ) {
                 renderFatigueDisplay(poseStack, fatigueAmount);
             }
 
@@ -99,14 +99,16 @@ public class ClientSleepHandler {
     }
     
     private void renderFatigueDisplay(PoseStack poseStack, double fatigue) {
-        String str = SpeedColor.WHITE.color + (SomniaConfig.CLIENT.simpleFatigueDisplay.get()
-            ? SideEffectStage.getSideEffectStageDescription(fatigue)
-            : I18n.get("somnia.gui.fatigue", FATIGUE_FORMAT.format(fatigue)));
-        int width = this.mc.font.width(str);
-        int scaledWidth = this.mc.getWindow().getGuiScaledWidth();
-        int scaledHeight = this.mc.getWindow().getGuiScaledHeight();
         FatigueDisplayPosition pos = this.mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : SomniaConfig.CLIENT.fatigueDisplayPos.get();
-        this.mc.font.draw(poseStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE);
+        if (pos != FatigueDisplayPosition.NONE) {
+            String str = SpeedColor.WHITE.color + (SomniaConfig.CLIENT.simpleFatigueDisplay.get()
+                ? SideEffectStage.getSideEffectStageDescription(fatigue)
+                : I18n.get("somnia.gui.fatigue", FATIGUE_FORMAT.format(fatigue)));
+            int width = this.mc.font.width(str);
+            int scaledWidth = this.mc.getWindow().getGuiScaledWidth();
+            int scaledHeight = this.mc.getWindow().getGuiScaledHeight();
+            this.mc.font.draw(poseStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE);
+        }
     }
 
     private void renderSleepOverlay(PoseStack poseStack, Screen screen, Fatigue fatigue, double currentSpeed) {

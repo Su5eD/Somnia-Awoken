@@ -60,15 +60,17 @@ public final class PlayerSleepController {
     public static void onSleepFinished(SleepFinishedTimeEvent event) {
         LevelAccessor level = event.getLevel();
         
-        level.players().stream()
-            .filter(Player::isSleepingLongEnough)
-            .forEach(player -> player.getCapability(CapabilityFatigue.INSTANCE)
-                .filter(props -> props.shouldSleepNormally() || DarkUtilsCompat.hasSleepCharm(player))
-                .ifPresent(props -> {
-                    long timeSlept = event.getNewTime() - level.dayTime();
-                    double replenish = SomniaConfig.COMMON.fatigueReplenishRate.get() * timeSlept;
-                    props.setFatigue(props.getFatigue() - replenish);
-                }));
+        if (SomniaConfig.COMMON.enableFatigue.get()) {
+            level.players().stream()
+                .filter(Player::isSleepingLongEnough)
+                .forEach(player -> player.getCapability(CapabilityFatigue.INSTANCE)
+                    .filter(props -> props.shouldSleepNormally() || DarkUtilsCompat.hasSleepCharm(player))
+                    .ifPresent(props -> {
+                        long timeSlept = event.getNewTime() - level.dayTime();
+                        double replenish = SomniaConfig.COMMON.fatigueReplenishRate.get() * timeSlept;
+                        props.setFatigue(props.getFatigue() - replenish);
+                    }));
+        }
     }
 
     @SubscribeEvent

@@ -68,16 +68,17 @@ public final class SomniaConfig {
     }
 
     public static final class CommonConfig {
-        public final ForgeConfigSpec.ConfigValue<Double> fatigueRate;
-        public final ForgeConfigSpec.ConfigValue<Double> fatigueReplenishRate;
+        public final ForgeConfigSpec.BooleanValue enableFatigue;
+        public final ForgeConfigSpec.DoubleValue fatigueRate;
+        public final ForgeConfigSpec.DoubleValue fatigueReplenishRate;
         public final ForgeConfigSpec.BooleanValue fatigueSideEffects;
         public final ForgeConfigSpec.ConfigValue<Integer> minimumFatigueToSleep;
         public final ForgeConfigSpec.ConfigValue<List<? extends List<Integer>>> sideEffectStages;
         public final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> replenishingItems;
 
-        public final ForgeConfigSpec.ConfigValue<Double> delta;
-        public final ForgeConfigSpec.ConfigValue<Double> minMultiplier;
-        public final ForgeConfigSpec.ConfigValue<Double> maxMultiplier;
+        public final ForgeConfigSpec.DoubleValue delta;
+        public final ForgeConfigSpec.DoubleValue minMultiplier;
+        public final ForgeConfigSpec.DoubleValue maxMultiplier;
 
         public final ForgeConfigSpec.BooleanValue fading;
         public final ForgeConfigSpec.BooleanValue ignoreMonsters;
@@ -88,20 +89,23 @@ public final class SomniaConfig {
 
         public final ForgeConfigSpec.BooleanValue disableCreatureSpawning;
 
-        public final ForgeConfigSpec.ConfigValue<Integer> enterSleepStart;
-        public final ForgeConfigSpec.ConfigValue<Integer> enterSleepEnd;
+        public final ForgeConfigSpec.IntValue enterSleepStart;
+        public final ForgeConfigSpec.IntValue enterSleepEnd;
 
-        public final ForgeConfigSpec.ConfigValue<Integer> validSleepStart;
-        public final ForgeConfigSpec.ConfigValue<Integer> validSleepEnd;
+        public final ForgeConfigSpec.IntValue validSleepStart;
+        public final ForgeConfigSpec.IntValue validSleepEnd;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
             builder.push("fatigue");
+            enableFatigue = builder
+                .comment("Master fatigue system override. Setting this to false will disable all fatigue-related logic as well as all config options in this category.")
+                .define("enableFatigue", true);
             fatigueRate = builder
                 .comment("Fatigue is incremented by this number every tick")
-                .define("fatigueRate", 0.00208);
+                .defineInRange("fatigueRate", 0.00208, 0.0, 1.0);
             fatigueReplenishRate = builder
                 .comment("Fatigue is decreased by this number every tick while you sleep")
-                .define("fatigueReplenishRate", 0.00833);
+                .defineInRange("fatigueReplenishRate", 0.00833, 0.0, 1.0);
             fatigueSideEffects = builder
                 .comment("Enables fatigue side effects")
                 .define("fatigueSideEffects", true);
@@ -129,15 +133,15 @@ public final class SomniaConfig {
             builder.push("logic");
             delta = builder
                 .comment("If the time difference (mc) between multiplied ticking is greater than this, the simulation multiplier is lowered. Otherwise, it's increased. Lowering this number might slow down simulation and improve performance. Don't mess around with it if you don't know what you're doing.")
-                .defineInRange("delta", 50D, 1D, 50D);
+                .defineInRange("delta", 50.0, 1.0, 50.0);
             minMultiplier = builder
                 .worldRestart()
                 .comment("Minimum tick speed multiplier, activated during sleep")
-                .define("minMultiplier", 1D);
+                .defineInRange("minMultiplier", 1.0, 1.0, 100.0);
             maxMultiplier = builder
                 .worldRestart()
                 .comment("Maximum tick speed multiplier, activated during sleep")
-                .define("maxMultiplier", 100D);
+                .defineInRange("maxMultiplier", 100.0, 1.0, 100.0);
             builder.pop();
 
             builder.push("options");

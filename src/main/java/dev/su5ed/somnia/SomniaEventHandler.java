@@ -34,13 +34,14 @@ public final class SomniaEventHandler {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.START || event.player.level.isClientSide || !event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping()) return;
+        if (!SomniaConfig.COMMON.enableFatigue.get() || event.phase != TickEvent.Phase.START || event.player.level.isClientSide
+            || !event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping()) return;
 
         event.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
             boolean isSleeping = props.sleepOverride() || event.player.isSleeping();
             double fatigueRate = SomniaConfig.COMMON.fatigueRate.get();
             double fatigueReplenishRate = SomniaConfig.COMMON.fatigueReplenishRate.get();
-            
+
             double fatigue = props.getFatigue();
             double extraFatigueRate = props.getExtraFatigueRate();
             double replenishedFatigue = props.getReplenishedFatigue();
@@ -108,7 +109,7 @@ public final class SomniaEventHandler {
             BlockState state = level.getBlockState(pos);
             Player player = event.getEntity();
             ItemStack stack = player.getInventory().getSelected();
-            
+
             if (state.hasProperty(HorizontalDirectionalBlock.FACING) && Compat.isBed(state, pos, level, player)
                 && ((ServerPlayer) player).bedInRange(pos, state.getValue(HorizontalDirectionalBlock.FACING))
                 && !stack.isEmpty() && ForgeRegistries.ITEMS.getKey(stack.getItem()).toString().equals(SomniaConfig.COMMON.wakeTimeSelectItem.get())
@@ -124,7 +125,7 @@ public final class SomniaEventHandler {
     public static void onLivingEntityUseItem(LivingEntityUseItemEvent.Finish event) {
         ItemStack stack = event.getItem();
         UseAnim action = stack.getUseAnimation();
-        if (action == UseAnim.EAT || action == UseAnim.DRINK) {
+        if (SomniaConfig.COMMON.enableFatigue.get() && (action == UseAnim.EAT || action == UseAnim.DRINK)) {
             Item item = stack.getItem();
             Stream.concat(SomniaConfig.COMMON.getReplenishingItems().stream(), SomniaAPI.getReplenishingItems().stream())
                 .filter(replenishingItem -> replenishingItem.item() == item)
