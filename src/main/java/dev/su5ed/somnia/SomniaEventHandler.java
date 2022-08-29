@@ -11,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -92,7 +91,7 @@ public final class SomniaEventHandler {
                         if (fatigue >= stage.minFatigue() && fatigue <= stage.maxFatigue()) {
                             props.setSideEffectStage(stage.minFatigue());
                             if (permanent || lastSideEffectStage < stage.minFatigue()) {
-                                event.player.addEffect(new MobEffectInstance(MobEffect.byId(stage.potionID()), permanent ? 150 : stage.duration(), stage.amplifier()));
+                                event.player.addEffect(new MobEffectInstance(stage.getEffect(), permanent ? 150 : stage.duration(), stage.amplifier()));
                             }
                         }
                     }

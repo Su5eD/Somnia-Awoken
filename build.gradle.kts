@@ -61,7 +61,7 @@ minecraft {
                 "forge.logging.console.level" to "debug"
             ))
             workingDirectory = project.file("run").canonicalPath
-            source(sourceSets["main"])
+            source(sourceSets.main.get())
             forceExit = false
         }
 
