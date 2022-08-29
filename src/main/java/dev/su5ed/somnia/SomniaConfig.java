@@ -72,7 +72,7 @@ public final class SomniaConfig {
         public final ForgeConfigSpec.ConfigValue<Double> fatigueReplenishRate;
         public final ForgeConfigSpec.BooleanValue fatigueSideEffects;
         public final ForgeConfigSpec.ConfigValue<Integer> minimumFatigueToSleep;
-        public final ForgeConfigSpec.ConfigValue<List<? extends List<Integer>>> sideEffectStages;
+        public final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> sideEffectStages;
         public final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> replenishingItems;
 
         public final ForgeConfigSpec.ConfigValue<Double> delta;
@@ -109,12 +109,12 @@ public final class SomniaConfig {
                 .comment("The required amount of fatigue to sleep")
                 .define("minimumFatigueToSleep", 20);
             sideEffectStages = builder
-                .comment("Definitions of each side effect stage in order: min fatigue, max fatigue, potion ID, duration, amplifier. For a permanent effect, set the duration to -1.")
+                .comment("Definitions of each side effect stage in order: min fatigue (int), max fatigue (int), effect name (resource location), duration (int), amplifier (int). For a permanent effect, set the duration to -1.")
                 .defineList("sideEffectStages", List.of(
-                    List.of(70, 80, 9, 150, 0),
-                    List.of(80, 90, 2, 300, 2),
-                    List.of(90, 95, 19, 200, 1),
-                    List.of(95, 100, 2, -1, 3)
+                    List.of(70, 80, "minecraft:nausea", 150, 0),
+                    List.of(80, 90, "minecraft:slowness", 300, 2),
+                    List.of(90, 95, "minecraft:poison", 200, 1),
+                    List.of(95, 100, "minecraft:nausea", -1, 3)
                 ), obj -> obj instanceof List);
             replenishingItems = builder
                 .comment("Definitions of fatigue replenishing items. Each list consist of an item registry name, the amount of fatigue it replenishes, and optionally a fatigue rate modifier")
