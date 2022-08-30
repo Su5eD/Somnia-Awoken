@@ -6,6 +6,7 @@ import com.modrinth.minotaur.dependencies.ModDependency
 import fr.brouillard.oss.jgitver.GitVersionCalculator
 import fr.brouillard.oss.jgitver.Strategies
 import net.minecraftforge.gradle.common.util.RunConfig
+import wtf.gofancy.changelog.generateChangelog
 import wtf.gofancy.fancygradle.script.extensions.deobf
 import java.time.LocalDateTime
 
@@ -21,7 +22,8 @@ plugins {
     id("net.minecraftforge.gradle") version "5.1.+"
     id("org.parchmentmc.librarian.forgegradle") version "1.+"
     id("wtf.gofancy.fancygradle") version "1.1.+"
-    id("wtf.gofancy.koremods.gradle") version "0.1.19"
+    id("wtf.gofancy.koremods.gradle") version "0.1.21"
+    id("wtf.gofancy.git-changelog") version "1.0.+"
     id("com.matthewprenger.cursegradle") version "1.4.+"
     id("com.modrinth.minotaur") version "2.+"
 }
@@ -43,6 +45,7 @@ group = "dev.su5ed"
 
 val publishVersionName = "Somnia Awoken ${project.version}"
 val publishReleaseType = System.getenv("PUBLISH_RELEASE_TYPE") ?: "release"
+val changelogText = generateChangelog(1, true)
 
 java {
     withSourcesJar()
@@ -124,7 +127,7 @@ modrinth {
     uploadFile.set(tasks.jar.get())
     gameVersions.addAll(versionMc)
     dependencies.add(ModDependency("EWmBPx3X", DependencyType.REQUIRED))
-    // TODO changelog
+    changelog.set(changelogText)
 }
 
 curseforge {
@@ -132,7 +135,7 @@ curseforge {
     project(closureOf<CurseProject> {
         id = curseForgeId
         changelogType = "markdown"
-//        changelog = System.getenv("CHANGELOG") ?: ""
+        changelog = changelogText
         releaseType = publishReleaseType
         mainArtifact(tasks.jar.get(), closureOf<CurseArtifact> {
             displayName = publishVersionName
