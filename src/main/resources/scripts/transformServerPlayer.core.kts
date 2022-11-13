@@ -23,8 +23,8 @@ fun transformStartSleepInBed(method: MethodNode) {
     monstersCheck.insert(1) {
         logger.info("Overriding monsters check")
         
-        getstatic("dev/su5ed/somnia/core/SomniaConfig", "COMMON", "dev/su5ed/somnia/core/SomniaConfig\$CommonConfig")
-        getfield("dev/su5ed/somnia/core/SomniaConfig\$CommonConfig", "ignoreMonsters", "net/minecraftforge/common/ForgeConfigSpec\$BooleanValue")
+        getstatic("dev/su5ed/somnia/SomniaConfig", "COMMON", "dev/su5ed/somnia/SomniaConfig\$CommonConfig")
+        getfield("dev/su5ed/somnia/SomniaConfig\$CommonConfig", "ignoreMonsters", "net/minecraftforge/common/ForgeConfigSpec\$BooleanValue")
         invokevirtual("net/minecraftforge/common/ForgeConfigSpec\$BooleanValue", "get", returnType = "java/lang/Object")
         checkcast("java/lang/Boolean")
         invokevirtual("java/lang/Boolean", "booleanValue", boolean)

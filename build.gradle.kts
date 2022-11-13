@@ -54,7 +54,7 @@ java {
 }
 
 minecraft {
-    mappings("parchment", "1.18.2-2022.08.07-$versionMc")
+    mappings("parchment", "2022.10.16-1.19.2")
 
     accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
 
@@ -97,10 +97,10 @@ dependencies {
     
     koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.9")
 
-    compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.19.1", version = versionDarkUtils))
+    compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.19.2", version = versionDarkUtils))
     compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
     compileOnly(fg.deobf(group = "net.darkhax.bookshelf", name = "Bookshelf-Forge-1.19.2", version = versionBookshelf))
-    compileOnly(fg.deobf(group = "net.darkhax.runelic", name = "Runelic-Forge-1.19.1", version = versionRunelic))
+    compileOnly(fg.deobf(group = "net.darkhax.runelic", name = "Runelic-Forge-1.19.2", version = versionRunelic))
 }
 
 tasks {
