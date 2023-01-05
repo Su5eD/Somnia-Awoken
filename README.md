@@ -32,7 +32,8 @@ Downloads are available on [CurseForge](https://www.curseforge.com/minecraft/mc-
 
 | Release Branch | Version |  Status   |
 |:--------------:|:-------:|:---------:|
-|     1.19.x     | 1.19.2  | ![Active] |
+|     1.19.x     | 1.19.3  | ![Active] |
+|     1.19.2     | 1.19.2  |  ![LTS]   |
 |    mc-1.18     | 1.18.2  |  ![LTS]   |
 
 ### Credits

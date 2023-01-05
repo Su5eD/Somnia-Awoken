@@ -3,18 +3,10 @@ import com.matthewprenger.cursegradle.CurseProject
 import com.matthewprenger.cursegradle.CurseRelation
 import com.modrinth.minotaur.dependencies.DependencyType
 import com.modrinth.minotaur.dependencies.ModDependency
-import fr.brouillard.oss.jgitver.GitVersionCalculator
-import fr.brouillard.oss.jgitver.Strategies
 import net.minecraftforge.gradle.common.util.RunConfig
 import wtf.gofancy.changelog.generateChangelog
 import wtf.gofancy.fancygradle.script.extensions.deobf
 import java.time.LocalDateTime
-
-buildscript {
-    dependencies {
-        classpath(group = "fr.brouillard.oss", name = "jgitver", version = "0.14.+")
-    }
-}
 
 plugins {
     java
@@ -22,10 +14,11 @@ plugins {
     id("net.minecraftforge.gradle") version "5.1.+"
     id("org.parchmentmc.librarian.forgegradle") version "1.+"
     id("wtf.gofancy.fancygradle") version "1.1.+"
-    id("wtf.gofancy.koremods.gradle") version "0.1.21"
+    id("wtf.gofancy.koremods.gradle") version "0.1.23"
     id("wtf.gofancy.git-changelog") version "1.0.+"
     id("com.matthewprenger.cursegradle") version "1.4.+"
     id("com.modrinth.minotaur") version "2.+"
+    id("me.qoomon.git-versioning") version "6.3.+"
 }
 
 val versionMc: String by project
@@ -39,13 +32,17 @@ val versionCurios: String by project
 val versionBookshelf: String by project
 val versionRunelic: String by project
 
-val baseVersion = getGitVersion()
-version = "$versionMc-$baseVersion"
 group = "dev.su5ed"
+version = "0.0.0-SNAPSHOT"
 
-val publishVersionName = "Somnia Awoken ${project.version}"
 val publishReleaseType = System.getenv("PUBLISH_RELEASE_TYPE") ?: "release"
 val changelogText = generateChangelog(1, true)
+
+gitVersioning.apply {
+    rev {
+        version = "$versionMc-\${describe.tag.version.major}.\${describe.tag.version.minor}.\${describe.tag.version.patch.plus.describe.distance}"
+    }
+}
 
 java {
     withSourcesJar()
@@ -54,7 +51,7 @@ java {
 }
 
 minecraft {
-    mappings("parchment", "2022.10.16-1.19.2")
+    mappings("parchment", "2022.12.18-1.19.3")
 
     accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
 
@@ -95,12 +92,9 @@ repositories {
 dependencies {
     minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
     
-    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.9")
+    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.5.7")
 
-    compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.19.2", version = versionDarkUtils))
     compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
-    compileOnly(fg.deobf(group = "net.darkhax.bookshelf", name = "Bookshelf-Forge-1.19.2", version = versionBookshelf))
-    compileOnly(fg.deobf(group = "net.darkhax.runelic", name = "Runelic-Forge-1.19.2", version = versionRunelic))
 }
 
 tasks {
@@ -122,11 +116,11 @@ tasks {
 modrinth {
     token.set(System.getenv("MODRINTH_TOKEN"))
     projectId.set(modrinthId)
-    versionName.set(publishVersionName)
+    versionName.set("Somnia Awoken ${project.version}")
     versionType.set(publishReleaseType)
     uploadFile.set(tasks.jar.get())
     gameVersions.addAll(versionMc)
-    dependencies.add(ModDependency("EWmBPx3X", DependencyType.REQUIRED))
+    dependencies.add(ModDependency("EWmBPx3X", DependencyType.REQUIRED)) // Koremods
     changelog.set(changelogText)
 }
 
@@ -138,7 +132,7 @@ curseforge {
         changelog = changelogText
         releaseType = publishReleaseType
         mainArtifact(tasks.jar.get(), closureOf<CurseArtifact> {
-            displayName = publishVersionName
+            displayName = "Somnia Awoken ${project.version}"
             relations(closureOf<CurseRelation> {
                 requiredDependency("koremods")
                 
@@ -161,12 +155,4 @@ publishing {
             from(components["java"])
         }
     }
-}
-
-fun getGitVersion(): String {
-    val jgitver = GitVersionCalculator.location(rootDir)
-        .setNonQualifierBranches("1.19.x")
-        .setStrategy(Strategies.SCRIPT)
-        .setScript("print \"\${metadata.CURRENT_VERSION_MAJOR};\${metadata.CURRENT_VERSION_MINOR};\${metadata.CURRENT_VERSION_PATCH + metadata.COMMIT_DISTANCE}\"")
-    return jgitver.version
 }

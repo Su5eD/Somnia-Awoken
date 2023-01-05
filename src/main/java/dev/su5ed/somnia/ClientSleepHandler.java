@@ -9,6 +9,7 @@ import dev.su5ed.somnia.util.RenderHelper;
 import dev.su5ed.somnia.util.SideEffectStage;
 import dev.su5ed.somnia.util.SpeedColor;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -38,7 +39,7 @@ public class ClientSleepHandler {
     public long sleepStartTime = -1;
     
     private boolean muted;
-    private float previousVolume;
+    private double previousVolume;
 
     static {
         //Disable Quark's clock display override
@@ -55,11 +56,13 @@ public class ClientSleepHandler {
         if (event.phase == TickEvent.Phase.END && this.mc.player != null) {
             if (this.mc.player.isSleeping() && SomniaConfig.COMMON.muteSoundWhenSleeping.get() && !this.muted) {
                 this.muted = true;
-                this.previousVolume = this.mc.options.getSoundSourceVolume(SoundSource.MASTER);
-                this.mc.options.setSoundCategoryVolume(SoundSource.MASTER, 0);
+
+                OptionInstance<Double> option = this.mc.options.getSoundSourceOptionInstance(SoundSource.MASTER);
+                this.previousVolume = option.get();
+                option.set(0.0);
             } else if (muted) {
                 this.muted = false;
-                this.mc.options.setSoundCategoryVolume(SoundSource.MASTER, this.previousVolume);
+                this.mc.options.getSoundSourceOptionInstance(SoundSource.MASTER).set(this.previousVolume);
             }
         }
     }

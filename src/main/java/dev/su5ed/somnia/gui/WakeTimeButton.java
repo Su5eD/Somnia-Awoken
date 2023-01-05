@@ -35,7 +35,7 @@ public class WakeTimeButton extends Button {
             }
 
             mc.setScreen(null);
-        });
+        }, DEFAULT_NARRATION);
         
         this.buttonMessage = message;
         this.hoverMessage = Component.literal(SomniaUtil.timeStringForGameTime(wakeTime));
