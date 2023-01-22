@@ -1,0 +1,34 @@
+{
+  "somnia.config.title": "梦醒时分的配置",
+  "somnia.config.fatigue": "疲劳值",
+  "somnia.config.sideEffects": "负面效果",
+  "somnia.config.sideEffects.tooltip": "进入每个负面效果阶段的疲劳水平、药剂ID、增幅和持续时间（单位：ticks）",
+  "somnia.config.logic": "运作逻辑",
+  "somnia.config.options": "选项",
+  "somnia.config.performance": "表现",
+  "somnia.config.timings": "时刻",
+
+  "somnia.status.armor": "我这套盔甲貌似睡不太舒服。",
+  "somnia.status.cooldown": "我还不累。",
+  "somnia.status.expired": "我不能永远睡下去。",
+  "somnia.status.not_now": "感觉有某种东西让我清醒了。",
+  "somnia.status.waiting": "等待服务器",
+  "somnia.status.waiting_players": "等待其他玩家睡觉",
+  "somnia.side_effect.0": "完全清醒",
+  "somnia.side_effect.1": "疲惫",
+  "somnia.side_effect.2": "筋疲力尽",
+  "somnia.side_effect.3": "睡眠不足",
+  "somnia.side_effect.4": "身体衰竭",
+
+  "effect.somnia.awakening": "清醒",
+  "item.minecraft.potion.effect.awakening": "清醒药水",
+  "item.minecraft.splash_potion.effect.awakening": "喷溅型清醒药水",
+  "item.minecraft.tipped_arrow.effect.awakening": "清醒之箭",
+  "item.minecraft.lingering_potion.effect.awakening": "滞留型清醒药水",
+
+  "effect.somnia.insomnia": "失眠",
+  "item.minecraft.potion.effect.insomnia": "失眠药水",
+  "item.minecraft.splash_potion.effect.insomnia": "喷溅型失眠药水",
+  "item.minecraft.tipped_arrow.effect.insomnia": "失眠之箭",
+  "item.minecraft.lingering_potion.effect.insomnia": "滞留型失眠药水"
+}
