@@ -120,7 +120,9 @@ modrinth {
     versionType.set(publishReleaseType)
     uploadFile.set(tasks.jar.get())
     gameVersions.addAll(versionMc)
-    dependencies.add(ModDependency("EWmBPx3X", DependencyType.REQUIRED)) // Koremods
+    dependencies { 
+        required.project("koremods")
+    }
     changelog.set(changelogText)
 }
 

@@ -24,7 +24,6 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.stream.Stream;
 
@@ -111,7 +110,7 @@ public final class SomniaEventHandler {
 
             if (state.hasProperty(HorizontalDirectionalBlock.FACING) && Compat.isBed(state, pos, level, player)
                 && ((ServerPlayer) player).bedInRange(pos, state.getValue(HorizontalDirectionalBlock.FACING))
-                && !stack.isEmpty() && ForgeRegistries.ITEMS.getKey(stack.getItem()).toString().equals(SomniaConfig.COMMON.wakeTimeSelectItem.get())
+                && SomniaConfig.COMMON.isWakeTimeSelectionItem(stack)
             ) {
                 SomniaNetwork.sendToClient(new OpenGUIPacket(), (ServerPlayer) player);
                 event.setCancellationResult(InteractionResult.SUCCESS);

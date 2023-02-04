@@ -4,6 +4,7 @@ import dev.su5ed.somnia.api.ReplenishingItem;
 import dev.su5ed.somnia.util.FatigueDisplayPosition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Pair;
@@ -158,7 +159,7 @@ public final class SomniaConfig {
                 .comment("Allows you to sleep with armor equipped")
                 .define("sleepWithArmor", false);
             wakeTimeSelectItem = builder
-                .comment("The item used to select wake time")
+                .comment("The item used to select wake time. Use an empty string to disable, or an asterisk ('*') to enable at all times.")
                 .define("wakeTimeSelectItem", "minecraft:clock");
             forceWakeUp = builder
                 .comment("Force the player to wake up when fatigue reaches 0")
@@ -198,6 +199,11 @@ public final class SomniaConfig {
                 })
                 .filter(replenishingItem -> replenishingItem.item() != null)
                 .toList();
+        }
+        
+        public boolean isWakeTimeSelectionItem(ItemStack stack) {
+            String matcher = wakeTimeSelectItem.get();
+            return !matcher.isEmpty() && (matcher.equals("*") || !stack.isEmpty() && ForgeRegistries.ITEMS.getKey(stack.getItem()).toString().equals(matcher));
         }
 
         private static Item getModItem(String registryName) {
