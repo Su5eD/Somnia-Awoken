@@ -38,18 +38,20 @@ public final class SomniaEventHandler {
             boolean isSleeping = props.sleepOverride() || event.player.isSleeping();
             double fatigueRate = SomniaConfig.COMMON.fatigueRate.get();
             double fatigueReplenishRate = SomniaConfig.COMMON.fatigueReplenishRate.get();
-            
+
             double fatigue = props.getFatigue();
             double extraFatigueRate = props.getExtraFatigueRate();
             double replenishedFatigue = props.getReplenishedFatigue();
 
             if (isSleeping) {
-                double share = fatigueReplenishRate / fatigueRate;
-                double replenish = fatigueReplenishRate * share;
-                
-                fatigue -= fatigueReplenishRate;
-                extraFatigueRate -= fatigueRate / replenishedFatigue / 10;
-                replenishedFatigue -= replenish;
+                if (fatigueReplenishRate > 0) {
+                    double share = fatigueReplenishRate / fatigueRate;
+                    double replenish = fatigueReplenishRate * share;
+
+                    fatigue -= fatigueReplenishRate;
+                    extraFatigueRate -= fatigueRate / replenishedFatigue / 10;
+                    replenishedFatigue -= replenish;
+                }
             } else {
                 double adjustedRate = fatigueRate;
 
@@ -104,7 +106,7 @@ public final class SomniaEventHandler {
             BlockState state = level.getBlockState(pos);
             Player player = event.getPlayer();
             ItemStack stack = player.getInventory().getSelected();
-            
+
             if (state.hasProperty(HorizontalDirectionalBlock.FACING) && Compat.isBed(state, pos, level, player)
                 && ((ServerPlayer) player).bedInRange(pos, state.getValue(HorizontalDirectionalBlock.FACING))
                 && !stack.isEmpty() && stack.getItem().getRegistryName().toString().equals(SomniaConfig.COMMON.wakeTimeSelectItem.get())
