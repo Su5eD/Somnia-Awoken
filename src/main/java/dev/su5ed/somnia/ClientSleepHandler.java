@@ -27,16 +27,16 @@ import java.util.Objects;
 
 public class ClientSleepHandler {
     public static final ClientSleepHandler INSTANCE = new ClientSleepHandler();
-    
+
     private static final DecimalFormat FATIGUE_FORMAT = new DecimalFormat("0.00");
     private static final DecimalFormat MULTIPLIER_FORMAT = new DecimalFormat("0.0");
     private static final ItemStack CLOCK = new ItemStack(Items.CLOCK);
-    
+
     private final Minecraft mc = Minecraft.getInstance();
     private final Deque<Double> speedValues = new ArrayDeque<>();
-    
+
     public long sleepStartTime = -1;
-    
+
     private boolean muted;
     private float previousVolume;
 
@@ -44,7 +44,7 @@ public class ClientSleepHandler {
         //Disable Quark's clock display override
         CLOCK.getOrCreateTag().putBoolean("quark:clock_calculated", true);
     }
-    
+
     public void addSpeedValue(double speed) {
         this.speedValues.add(speed);
         if (this.speedValues.size() > 5) this.speedValues.removeFirst();
@@ -63,23 +63,23 @@ public class ClientSleepHandler {
             }
         }
     }
-    
+
     @SubscribeEvent
     public void onWakeUp(PlayerWakeUpEvent event) {
         this.sleepStartTime = -1;
         this.speedValues.clear();
     }
-    
+
     @SubscribeEvent
     public void renderTick(TickEvent.RenderTickEvent event) {
         if (this.mc.screen != null && !(this.mc.screen instanceof PauseScreen) && (this.mc.player == null || !this.mc.player.isSleeping())) return;
-        
+
         this.mc.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(fatigue -> {
             PoseStack poseStack = new PoseStack();
             double fatigueAmount = fatigue.getFatigue();
             if (event.phase == TickEvent.Phase.END && !this.mc.player.isCreative() && !this.mc.player.isSpectator() && !this.mc.options.hideGui) {
                 if (!this.mc.player.isSleeping() && !SomniaConfig.COMMON.fatigueSideEffects.get() && fatigueAmount > SomniaConfig.COMMON.minimumFatigueToSleep.get()) return;
-                
+
                 renderFatigueDisplay(poseStack, fatigueAmount);
             }
 
@@ -90,23 +90,25 @@ public class ClientSleepHandler {
                 } else {
                     this.sleepStartTime = -1;
                 }
-                
+
                 if (this.mc.screen != null && fatigue.getWakeTime() != -1 && currentSpeed != 0) {
                     renderSleepOverlay(poseStack, this.mc.screen, fatigue, currentSpeed);
                 }
             }
         });
     }
-    
+
     private void renderFatigueDisplay(PoseStack poseStack, double fatigue) {
-        String str = SpeedColor.WHITE.color + (SomniaConfig.CLIENT.simpleFatigueDisplay.get()
-            ? SideEffectStage.getSideEffectStageDescription(fatigue)
-            : I18n.get("somnia.gui.fatigue", FATIGUE_FORMAT.format(fatigue)));
-        int width = this.mc.font.width(str);
-        int scaledWidth = this.mc.getWindow().getGuiScaledWidth();
-        int scaledHeight = this.mc.getWindow().getGuiScaledHeight();
         FatigueDisplayPosition pos = this.mc.player.isSleeping() ? FatigueDisplayPosition.BOTTOM_RIGHT : SomniaConfig.CLIENT.fatigueDisplayPos.get();
-        this.mc.font.draw(poseStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE);
+        if (pos != FatigueDisplayPosition.NONE) {
+            String str = SpeedColor.WHITE.color + (SomniaConfig.CLIENT.simpleFatigueDisplay.get()
+                ? SideEffectStage.getSideEffectStageDescription(fatigue)
+                : I18n.get("somnia.gui.fatigue", FATIGUE_FORMAT.format(fatigue)));
+            int width = this.mc.font.width(str);
+            int scaledWidth = this.mc.getWindow().getGuiScaledWidth();
+            int scaledHeight = this.mc.getWindow().getGuiScaledHeight();
+            this.mc.font.draw(poseStack, str, pos.getX(scaledWidth, width), pos.getY(scaledHeight, this.mc.font.lineHeight), Integer.MIN_VALUE);
+        }
     }
 
     private void renderSleepOverlay(PoseStack poseStack, Screen screen, Fatigue fatigue, double currentSpeed) {
@@ -144,12 +146,12 @@ public class ClientSleepHandler {
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1, 1, 1, 0.2F);
         doRenderProgressBar(screen, poseStack, width, 1);
-        
+
         RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1, 1, 1, 1);
         doRenderProgressBar(screen, poseStack, width, progress);
     }
-    
+
     private void doRenderProgressBar(Screen screen, PoseStack poseStack, int width, double progress) {
         for (int amount = (int) (progress * width), x = 20; amount > 0; amount -= 180, x += 180) {
             screen.blit(poseStack, x, 10, 0, 69, Math.min(amount, 180), 5);
