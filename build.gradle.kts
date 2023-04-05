@@ -92,7 +92,7 @@ repositories {
 dependencies {
     minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
     
-    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.5.7")
+    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.5.8")
 
     compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
 }
