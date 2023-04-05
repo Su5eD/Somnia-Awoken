@@ -15,6 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.GameRules;
 import net.minecraftforge.event.ForgeEventFactory;
 
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -80,7 +81,9 @@ public class AccelerationHandler {
         
         ForgeEventFactory.onPreWorldTick(this.level, server::haveTime);
 
-        this.level.players().forEach(ServerPlayer::doTick);
+        for (ServerPlayer player : new ArrayList<>(this.level.players())) {
+            player.doTick();
+        }
         this.level.tick(server::haveTime);
 
         ForgeEventFactory.onPostWorldTick(this.level, server::haveTime);
