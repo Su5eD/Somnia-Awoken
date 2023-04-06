@@ -34,6 +34,7 @@ val versionForge: String by project
 val curseForgeId: String by project
 val modrinthId: String by project
 
+val versionKoremods: String by project
 val versionDarkUtils: String by project
 val versionCurios: String by project
 val versionBookshelf: String by project
@@ -49,7 +50,7 @@ val changelogText = generateChangelog(1, true)
 
 java {
     withSourcesJar()
-    
+
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
@@ -90,12 +91,13 @@ repositories {
         name = "Garden of Fancy Releases"
         url = uri("https://maven.gofancy.wtf/releases")
     }
+    mavenLocal()
 }
 
 dependencies {
     minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
-    
-    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.4.9")
+
+    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = versionKoremods)
 
     compileOnly(fg.deobf(group = "net.darkhax.darkutilities", name = "DarkUtilities-Forge-1.19.2", version = versionDarkUtils))
     compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
@@ -141,7 +143,7 @@ curseforge {
             displayName = publishVersionName
             relations(closureOf<CurseRelation> {
                 requiredDependency("koremods")
-                
+
                 optionalDependency("cyclic")
                 optionalDependency("comforts")
                 optionalDependency("coffee-mod")
@@ -156,7 +158,7 @@ curseforge {
 }
 
 publishing {
-    publications { 
+    publications {
         register<MavenPublication>("mavenJava") {
             from(components["java"])
         }

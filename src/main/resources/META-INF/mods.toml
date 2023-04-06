@@ -26,6 +26,6 @@ description="Simulating the world while you sleep"
 [[dependencies.somnia]]
     modId="koremods"
     mandatory=true
-    versionRange="[0.4.8,)"
+    versionRange="[0.5.9, 0.6)"
     ordering="NONE"
     side="BOTH"
