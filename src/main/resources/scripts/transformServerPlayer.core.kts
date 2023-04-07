@@ -5,7 +5,7 @@ import org.objectweb.asm.tree.JumpInsnNode
 transformers {
     method(
         "net.minecraft.server.level.ServerPlayer",
-        mapMethodName("m_7720_"), // startSleepInBed
+        "m_7720_", // startSleepInBed
         constructMethodDescriptor("com/mojang/datafixers/util/Either", "net/minecraft/core/BlockPos"),
         ::transformStartSleepInBed
     )

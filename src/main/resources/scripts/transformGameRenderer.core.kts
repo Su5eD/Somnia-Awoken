@@ -6,7 +6,7 @@ import codes.som.koffee.types.void
 transformers {
     method(
         "net.minecraft.client.renderer.GameRenderer",
-        mapMethodName("m_109089_"), // renderLevel
+        "m_109089_", // renderLevel
         constructMethodDescriptor(void, float, long, "com/mojang/blaze3d/vertex/PoseStack"),
         ::transformRenderLevel
     )

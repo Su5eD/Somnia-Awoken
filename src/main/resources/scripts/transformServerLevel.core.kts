@@ -6,14 +6,14 @@ import wtf.gofancy.koremods.dsl.invokestatic
 transformers {
     method(
         "net.minecraft.server.level.ServerLevel",
-        mapMethodName("m_8714_"), // tickChunk
+        "m_8714_", // tickChunk
         constructMethodDescriptor(int, "net/minecraft/world/level/chunk/LevelChunk"),
         ::transformTickChunk
     )
-    
+
     method(
         "net.minecraft.server.level.ServerChunkCache",
-        mapMethodName("m_8490_"), // tickChunks
+        "m_8490_", // tickChunks
         constructMethodDescriptor(void),
         ::transformTickChunks
     )
@@ -25,7 +25,7 @@ fun transformTickChunk(method: MethodNode) {
         getstatic("net/minecraft/world/level/GameRules", mapFieldName("f_46134_"), "net/minecraft/world/level/GameRules\$Key") // RULE_DOMOBSPAWNING
         invokevirtual("net/minecraft/world/level/GameRules", mapMethodName("m_46207_"), boolean, "net/minecraft/world/level/GameRules\$Key") // getBoolean
     }
-    
+
     target.insertBefore {
         goto(L["skip"])
     }
@@ -43,11 +43,11 @@ fun transformTickChunks(method: MethodNode) {
         getstatic("net/minecraft/world/level/GameRules", mapFieldName("f_46134_"), "net/minecraft/world/level/GameRules\$Key") // RULE_DOMOBSPAWNING
         invokevirtual("net/minecraft/world/level/GameRules", mapMethodName("m_46207_"), boolean, "net/minecraft/world/level/GameRules\$Key") // getBoolean
     }
-    
+
     target.insert {
         goto(L["skip"])
     }
-    target.insertAfter { 
+    target.insertAfter {
         +L["skip"]
         getfield("net/minecraft/server/level/ServerChunkCache", mapFieldName("f_8329_"), "net/minecraft/server/level/ServerLevel") // level
         invokestatic("dev/su5ed/somnia/util/InjectHooks", "doMobSpawning", boolean, "net/minecraft/server/level/ServerLevel")
