@@ -6,14 +6,14 @@ import wtf.gofancy.koremods.dsl.invokestatic
 transformers {
     method(
         "net.minecraft.server.level.ServerLevel",
-        mapMethodName("m_8714_"), // tickChunk
+        "m_8714_", // tickChunk
         constructMethodDescriptor(int, "net/minecraft/world/level/chunk/LevelChunk"),
         ::transformTickChunk
     )
     
     method(
         "net.minecraft.server.level.ServerChunkCache",
-        mapMethodName("m_8490_"), // tickChunks
+        "m_8490_", // tickChunks
         constructMethodDescriptor(void),
         ::transformTickChunks
     )
