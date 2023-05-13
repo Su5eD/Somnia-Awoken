@@ -15,6 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.GameRules;
 import net.minecraftforge.event.ForgeEventFactory;
 
+import java.util.List;
 import java.util.Locale;
 
 public class AccelerationHandler {
@@ -79,7 +80,7 @@ public class AccelerationHandler {
         
         ForgeEventFactory.onPreLevelTick(this.level, server::haveTime);
 
-        this.level.players().forEach(ServerPlayer::doTick);
+        List.copyOf(this.level.players()).forEach(ServerPlayer::doTick);
         this.level.tick(server::haveTime);
 
         ForgeEventFactory.onPostLevelTick(this.level, server::haveTime);
