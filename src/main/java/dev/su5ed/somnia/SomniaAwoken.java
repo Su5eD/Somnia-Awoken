@@ -29,6 +29,7 @@ public class SomniaAwoken {
 
         MinecraftForge.EVENT_BUS.addListener(this::registerCapabilities);
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> bus.addListener(ClientSetup::registerGuiOverlays));
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(ClientSleepHandler.INSTANCE));
 
         SomniaObjects.register(bus);
@@ -52,7 +53,7 @@ public class SomniaAwoken {
         event.register(Fatigue.class);
     }
 
-    public void registerCommands(final RegisterCommandsEvent event) {
+    private void registerCommands(final RegisterCommandsEvent event) {
         SomniaCommand.register(event.getDispatcher());
     }
 }

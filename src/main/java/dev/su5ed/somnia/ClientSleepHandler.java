@@ -19,16 +19,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.text.DecimalFormat;
-import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Objects;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class ClientSleepHandler {
     public static final ClientSleepHandler INSTANCE = new ClientSleepHandler();
@@ -38,7 +38,7 @@ public class ClientSleepHandler {
     private static final ItemStack CLOCK = new ItemStack(Items.CLOCK);
 
     private final Minecraft mc = Minecraft.getInstance();
-    private final Deque<Double> speedValues = new ArrayDeque<>();
+    private final Deque<Double> speedValues = new LinkedBlockingDeque<>();
 
     public long sleepStartTime = -1;
 
@@ -78,17 +78,15 @@ public class ClientSleepHandler {
         this.speedValues.clear();
     }
 
-    @SubscribeEvent
-    public void renderGui(RenderGuiEvent.Post event) {
+    public void renderGuiOverlay(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
         if (this.mc.screen != null && !(this.mc.screen instanceof PauseScreen) && (this.mc.player == null || !this.mc.player.isSleeping())) return;
 
         this.mc.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(fatigue -> {
-            GuiGraphics guigraphics = event.getGuiGraphics();
             double fatigueAmount = fatigue.getFatigue();
             if (SomniaConfig.COMMON.enableFatigue.get() && !this.mc.player.isCreative() && !this.mc.player.isSpectator() && !this.mc.options.hideGui
                 && (this.mc.player.isSleeping() || SomniaConfig.COMMON.fatigueSideEffects.get() || fatigueAmount <= SomniaConfig.COMMON.minimumFatigueToSleep.get())
             ) {
-                renderFatigueDisplay(guigraphics, fatigueAmount);
+                renderFatigueDisplay(guiGraphics, fatigueAmount);
             }
         });
     }
