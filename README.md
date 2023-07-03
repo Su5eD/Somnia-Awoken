@@ -24,7 +24,8 @@ Instead of skipping the night, the world is accelerated while you sleep.
 You can now sleep at any time as long as you have enough fatigue, which you gain passively over time.
 Don't let it build up too high though - getting too tired comes with debuffs.
 
-Requires [Koremods](https://www.curseforge.com/minecraft/mc-mods/koremods), a Kotlin Script bytecode manipulation framework.  
+Requires [Koremods](https://www.curseforge.com/minecraft/mc-mods/koremods), a Kotlin Script bytecode manipulation
+framework.  
 Downloads are available on [CurseForge](https://www.curseforge.com/minecraft/mc-mods/somnia) and
 [Modrinth](https://modrinth.com/mod/somnia).
 
@@ -32,18 +33,19 @@ Downloads are available on [CurseForge](https://www.curseforge.com/minecraft/mc-
 
 | Release Branch | Version |  Status   |
 |:--------------:|:-------:|:---------:|
-|     1.19.x     | 1.19.3  | ![Active] |
-|     1.19.2     | 1.19.2  |  ![LTS]   |
-|    mc-1.18     | 1.18.2  |  ![LTS]   |
+|     1.20.x     | 1.20.1  | ![Active] |
+|     1.19.x     | 1.19.3  |  ![LTS]   |
 
 ### Credits
 
 Credit goes to MALfunction84 and Kingrunes, authors of the original Somnia mod.
 
 ## Getting started
+
 All information is available on our [wiki](https://github.com/Su5eD/Somnia/wiki).
 
 ## Highlighted Features
+
 - 🎮 Multiplayer Support
 - ⌚ Custom wake time selection
 - 🔧 Highly Configurable
@@ -54,4 +56,5 @@ All information is available on our [wiki](https://github.com/Su5eD/Somnia/wiki)
 ![Simulation](https://i.imgur.com/Ov1guPz.gif)
 
 [Active]:https://img.shields.io/badge/Support-Active-brightgreen
+
 [LTS]:https://img.shields.io/badge/Support-LTS-yellow
