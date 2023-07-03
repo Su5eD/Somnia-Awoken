@@ -2,6 +2,7 @@ package dev.su5ed.somnia;
 
 import dev.su5ed.somnia.api.ReplenishingItem;
 import dev.su5ed.somnia.util.FatigueDisplayPosition;
+import dev.su5ed.somnia.util.ScreenPosition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -33,9 +34,9 @@ public final class SomniaConfig {
     public static final class ClientConfig {
         public final ForgeConfigSpec.EnumValue<FatigueDisplayPosition> fatigueDisplayPos;
         public final ForgeConfigSpec.BooleanValue simpleFatigueDisplay;
-        public final ForgeConfigSpec.ConfigValue<String> displayETASleep;
+        public final ForgeConfigSpec.EnumValue<ScreenPosition> displayETASleep;
         public final ForgeConfigSpec.BooleanValue somniaGui;
-        public final ForgeConfigSpec.ConfigValue<String> somniaGuiClockPosition;
+        public final ForgeConfigSpec.EnumValue<ScreenPosition> somniaGuiClockPosition;
         public final ForgeConfigSpec.BooleanValue disableRendering;
 
         public ClientConfig(ForgeConfigSpec.Builder builder) {
@@ -47,8 +48,8 @@ public final class SomniaConfig {
                 .comment("Simplifies the numerical fatigue counter to words")
                 .define("simpleFatigueDisplay", false);
             displayETASleep = builder
-                .comment("The ETA and multiplier display position in Somnia's sleep gui. Accepted values: right, center, left")
-                .define("displayETASleep", "left");
+                .comment("The ETA and multiplier display position in Somnia's sleep gui.")
+                .defineEnum("displayETASleep", ScreenPosition.LEFT);
             builder.pop();
 
             builder.push("options");
@@ -56,8 +57,8 @@ public final class SomniaConfig {
                 .comment("Provides an enhanced sleeping gui")
                 .define("somniaGui", true);
             somniaGuiClockPosition = builder
-                .comment("The display position of the clock in somnia's enhanced sleeping gui. Accepted values: right, center, left")
-                .define("somniaGuiClockPosition", "right");
+                .comment("The display position of the clock in somnia's enhanced sleeping gui.")
+                .defineEnum("somniaGuiClockPosition", ScreenPosition.RIGHT);
             builder.pop();
 
             builder.push("performance");
@@ -200,7 +201,7 @@ public final class SomniaConfig {
                 .filter(replenishingItem -> replenishingItem.item() != null)
                 .toList();
         }
-        
+
         public boolean isWakeTimeSelectionItem(ItemStack stack) {
             String matcher = wakeTimeSelectItem.get();
             return !matcher.isEmpty() && (matcher.equals("*") || !stack.isEmpty() && ForgeRegistries.ITEMS.getKey(stack.getItem()).toString().equals(matcher));

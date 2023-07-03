@@ -1,7 +1,7 @@
 package dev.su5ed.somnia.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.su5ed.somnia.util.SomniaUtil;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -20,7 +20,7 @@ public class WakeTimeSelectScreen extends Screen {
 
         addRenderableWidget(new ResetSpawnButton(buttonCenterX, buttonCenterY - 22, buttonWidth, buttonHeight));
         addRenderableWidget(new CancelButton(buttonCenterX, buttonCenterY + 22, buttonWidth, buttonHeight));
-        
+
         addWakeTimeButton(buttonCenterX, buttonCenterY + 88, buttonWidth, buttonHeight, "midnight", 18000);
         addWakeTimeButton(buttonCenterX - 80, buttonCenterY + 66, buttonWidth, buttonHeight, "after_midnight", 20000);
         addWakeTimeButton(buttonCenterX - 110, buttonCenterY + 44, buttonWidth, buttonHeight, "before_sunrise", 22000);
@@ -40,14 +40,14 @@ public class WakeTimeSelectScreen extends Screen {
     }
 
     @Override
-    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        renderBackground(poseStack);
-        super.render(poseStack, mouseX, mouseY, partialTicks);
-        
-        drawCenteredString(poseStack, this.font, Component.translatable("somnia.gui.wts_title"), this.width / 2, this.height / 2 - 5, 16777215);
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(guiGraphics);
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+
+        guiGraphics.drawCenteredString(this.font, Component.translatable("somnia.gui.wts_title"), this.width / 2, this.height / 2 - 5, 16777215);
         if (this.minecraft != null && this.minecraft.player != null) {
             String time = SomniaUtil.timeStringForGameTime(SomniaUtil.getLevelDayTime(this.minecraft.level));
-            drawCenteredString(poseStack, this.font, time, this.width / 2, this.height / 2 - 66, 16777215);
+            guiGraphics.drawCenteredString(this.font, time, this.width / 2, this.height / 2 - 66, 16777215);
         }
     }
 
@@ -55,7 +55,7 @@ public class WakeTimeSelectScreen extends Screen {
     public boolean isPauseScreen() {
         return false;
     }
-    
+
     private void addWakeTimeButton(int x, int y, int width, int height, String translationKey, int wakeTime) {
         addRenderableWidget(new WakeTimeButton(x, y, width, height, Component.translatable("somnia.gui.time_" + translationKey), wakeTime));
     }

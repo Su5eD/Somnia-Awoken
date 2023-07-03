@@ -13,9 +13,9 @@ public final class Compat {
     public static final String COMFORTS_MODID = "comforts";
     public static final String CURIOS_MODID = "curios";
     public static final String DARK_UTILS_MODID = "darkutils";
-    
+
     public static final String COMFORTS_HAMMOCK = "hammock";
-    
+
     public static boolean comfortsLoaded;
     public static boolean curiosLoaded;
     public static boolean darkUtilsLoaded;
@@ -23,7 +23,7 @@ public final class Compat {
     public static boolean isSleepingInHammock(Player player) {
         return comfortsLoaded && player.getSleepingPos()
             .map(pos -> {
-                Block block = player.level.getBlockState(pos).getBlock();
+                Block block = player.level().getBlockState(pos).getBlock();
                 return ForgeRegistries.BLOCKS.getKey(block);
             })
             .map(name -> name.getNamespace().equals(COMFORTS_MODID) && name.getPath().startsWith(COMFORTS_HAMMOCK))
@@ -38,6 +38,6 @@ public final class Compat {
 
         return state.isBed(world, pos, sleeper);
     }
-    
+
     private Compat() {}
 }

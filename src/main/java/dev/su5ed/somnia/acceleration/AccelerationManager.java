@@ -13,7 +13,7 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = SomniaAwoken.MODID)
 public final class AccelerationManager {
     public static final List<AccelerationHandler> HANDLERS = new ArrayList<>();
-    
+
     public static int getActiveHandlers() {
         return (int) HANDLERS.stream().filter(AccelerationHandler::isActive).count();
     }
@@ -38,7 +38,7 @@ public final class AccelerationManager {
                 });
         }
     }
-    
+
     @SubscribeEvent
     public static void onTickEnd(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {

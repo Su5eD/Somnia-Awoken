@@ -20,6 +20,6 @@ public final class SomniaAPI {
     public static List<ReplenishingItem> getReplenishingItems() {
         return new ArrayList<>(REPLENISHING_ITEMS);
     }
-    
+
     private SomniaAPI() {}
 }

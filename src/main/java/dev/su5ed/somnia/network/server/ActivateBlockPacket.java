@@ -48,10 +48,10 @@ public class ActivateBlockPacket {
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ServerPlayer player = ctx.get().getSender();
         if (player != null) {
-            BlockState state = player.level.getBlockState(pos);
+            BlockState state = player.level().getBlockState(pos);
             BlockHitResult hitResult = new BlockHitResult(new Vec3(this.hitX, this.hitY, this.hitZ), this.side, pos, false);
 
-            state.use(player.level, player, MoreObjects.firstNonNull(player.swingingArm, InteractionHand.MAIN_HAND), hitResult);
+            state.use(player.level(), player, MoreObjects.firstNonNull(player.swingingArm, InteractionHand.MAIN_HAND), hitResult);
         }
     }
 }

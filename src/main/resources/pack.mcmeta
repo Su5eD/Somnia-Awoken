@@ -1,8 +1,6 @@
 {
-    "pack": {
-        "description": "Somnia Awoken resources",
-        "pack_format": 12,
-        "forge:resource_pack_format": 12,
-        "forge:data_pack_format": 10
-    }
+  "pack": {
+    "description": "Somnia Awoken resources",
+    "pack_format": 15
+  }
 }

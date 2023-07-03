@@ -1,7 +1,11 @@
 package dev.su5ed.somnia.network;
 
 import dev.su5ed.somnia.SomniaAwoken;
-import dev.su5ed.somnia.network.client.*;
+import dev.su5ed.somnia.network.client.ClientWakeTimeUpdatePacket;
+import dev.su5ed.somnia.network.client.FatigueUpdatePacket;
+import dev.su5ed.somnia.network.client.OpenGUIPacket;
+import dev.su5ed.somnia.network.client.PlayerWakeUpPacket;
+import dev.su5ed.somnia.network.client.SpeedUpdatePacket;
 import dev.su5ed.somnia.network.server.ActivateBlockPacket;
 import dev.su5ed.somnia.network.server.ResetSpawnPacket;
 import dev.su5ed.somnia.network.server.WakeTimeUpdatePacket;

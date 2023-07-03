@@ -37,7 +37,7 @@ public final class CapabilitySync {
 
     @SubscribeEvent
     public static void onPlayerClone(PlayerEvent.Clone event) {
-        if (!event.getEntity().level.isClientSide && event.isWasDeath()) {
+        if (!event.getEntity().level().isClientSide && event.isWasDeath()) {
             event.getOriginal().getCapability(CapabilityFatigue.INSTANCE)
                 .ifPresent(props -> {
                     CompoundTag old = props.serializeNBT();

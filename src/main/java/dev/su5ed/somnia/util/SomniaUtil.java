@@ -60,8 +60,8 @@ public final class SomniaUtil {
         player.getCapability(CapabilityFatigue.INSTANCE)
             .filter(props -> props.getWakeTime() < 0)
             .ifPresent(props -> {
-                long dayTime = SomniaUtil.getLevelDayTime(player.level);
-                long wakeTime = SomniaUtil.calculateWakeTime(player.level.getGameTime(), dayTime, dayTime > 12000 ? 0 : 12000);
+                long dayTime = SomniaUtil.getLevelDayTime(player.level());
+                long wakeTime = SomniaUtil.calculateWakeTime(player.level().getGameTime(), dayTime, dayTime > 12000 ? 0 : 12000);
                 props.setWakeTime(wakeTime);
                 SomniaNetwork.sendToClient(new ClientWakeTimeUpdatePacket(wakeTime), player);
             });

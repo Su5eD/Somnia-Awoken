@@ -33,22 +33,22 @@ public final class SomniaObjects {
     public static final RegistryObject<Potion> INSOMNIA_POTION = POTIONS.register("insomnia", () -> new Potion("insomnia", new MobEffectInstance(INSOMNIA_EFFECT.get(), 1800)));
     public static final RegistryObject<Potion> LONG_INSOMNIA_POTION = POTIONS.register("long_insomnia", () -> new Potion("insomnia", new MobEffectInstance(INSOMNIA_EFFECT.get(), 3000)));
     public static final RegistryObject<Potion> STRONG_INSOMNIA_POTION = POTIONS.register("strong_insomnia", () -> new Potion("insomnia", new MobEffectInstance(INSOMNIA_EFFECT.get(), 1800, 1)));
-    
+
     static void register(IEventBus bus) {
         MOB_EFFECTS.register(bus);
         POTIONS.register(bus);
     }
-    
+
     static void registerBrewingRecipes() {
         addBrewingRecipe(Potions.NIGHT_VISION, Items.GLISTERING_MELON_SLICE, SomniaObjects.AWAKENING_POTION.get());
         addBrewingRecipe(Potions.LONG_NIGHT_VISION, Items.GLISTERING_MELON_SLICE, SomniaObjects.LONG_AWAKENING_POTION.get());
         addBrewingRecipe(Potions.NIGHT_VISION, Items.BLAZE_POWDER, SomniaObjects.STRONG_AWAKENING_POTION.get());
-        
+
         addBrewingRecipe(SomniaObjects.AWAKENING_POTION.get(), Items.FERMENTED_SPIDER_EYE, SomniaObjects.INSOMNIA_POTION.get());
         addBrewingRecipe(SomniaObjects.LONG_AWAKENING_POTION.get(), Items.FERMENTED_SPIDER_EYE, SomniaObjects.LONG_INSOMNIA_POTION.get());
         addBrewingRecipe(SomniaObjects.STRONG_AWAKENING_POTION.get(), Items.FERMENTED_SPIDER_EYE, SomniaObjects.STRONG_INSOMNIA_POTION.get());
     }
-    
+
     private static void addBrewingRecipe(Potion input, Item ingredient, Potion output) {
         ItemStack outputStack = new ItemStack(Items.POTION);
         PotionUtils.setPotion(outputStack, output);
@@ -60,6 +60,6 @@ public final class SomniaObjects {
         tag.putString("Potion", ForgeRegistries.POTIONS.getKey(potion).toString());
         return PartialNBTIngredient.of(Items.POTION, tag);
     }
-    
+
     private SomniaObjects() {}
 }

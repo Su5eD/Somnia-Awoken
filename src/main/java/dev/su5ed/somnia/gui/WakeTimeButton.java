@@ -1,12 +1,12 @@
 package dev.su5ed.somnia.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.server.ActivateBlockPacket;
 import dev.su5ed.somnia.network.server.WakeTimeUpdatePacket;
 import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.BlockHitResult;
@@ -36,14 +36,14 @@ public class WakeTimeButton extends Button {
 
             mc.setScreen(null);
         }, DEFAULT_NARRATION);
-        
+
         this.buttonMessage = message;
         this.hoverMessage = Component.literal(SomniaUtil.timeStringForGameTime(wakeTime));
     }
 
     @Override
-    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        super.renderButton(poseStack, mouseX, mouseY, partialTicks);
+    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
         this.setMessage(this.isHovered ? this.hoverMessage : this.buttonMessage);
     }
 }

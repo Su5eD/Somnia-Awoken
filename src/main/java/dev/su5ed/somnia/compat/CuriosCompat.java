@@ -12,6 +12,6 @@ public final class CuriosCompat {
             .map(curio -> !curio.stack().isEmpty())
             .orElse(false);
     }
-    
+
     private CuriosCompat() {}
 }

@@ -14,15 +14,15 @@ public final class DarkUtilsCompat {
     public static boolean hasSleepCharm(Player player) {
         return Compat.curiosLoaded && CuriosCompat.hasCurio(player, SLEEP_CHARM)
             || Compat.darkUtilsLoaded && Arrays.stream(EquipmentSlot.values())
-                    .map(player::getItemBySlot)
-                    .anyMatch(DarkUtilsCompat::isSleepCharm)
-                || player.getInventory().items.stream()
-                    .anyMatch(DarkUtilsCompat::isSleepCharm);
+            .map(player::getItemBySlot)
+            .anyMatch(DarkUtilsCompat::isSleepCharm)
+            || player.getInventory().items.stream()
+            .anyMatch(DarkUtilsCompat::isSleepCharm);
     }
-    
+
     private static boolean isSleepCharm(ItemStack stack) {
         return !stack.isEmpty() && ForgeRegistries.ITEMS.getKey(stack.getItem()).equals(SLEEP_CHARM);
     }
-    
+
     private DarkUtilsCompat() {}
 }

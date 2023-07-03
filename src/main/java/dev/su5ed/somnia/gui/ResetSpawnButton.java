@@ -20,7 +20,7 @@ public class ResetSpawnButton extends AbstractButton {
     public void onPress() {
         this.resetSpawn = !this.resetSpawn;
         setMessage(Component.translatable(this.resetSpawn ? "somnia.gui.reset_spawn" : "somnia.gui.no_reset_spawn"));
-        
+
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
             mc.player.getCapability(CapabilityFatigue.INSTANCE)

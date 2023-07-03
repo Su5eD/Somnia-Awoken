@@ -26,7 +26,7 @@ public class SomniaAwoken {
     public SomniaAwoken() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.addListener(this::setup);
-        
+
         MinecraftForge.EVENT_BUS.addListener(this::registerCapabilities);
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(ClientSleepHandler.INSTANCE));
@@ -44,14 +44,14 @@ public class SomniaAwoken {
         Compat.comfortsLoaded = modList.isLoaded(Compat.COMFORTS_MODID);
         Compat.curiosLoaded = modList.isLoaded(Compat.CURIOS_MODID);
         Compat.darkUtilsLoaded = modList.isLoaded(Compat.DARK_UTILS_MODID);
-        
+
         event.enqueueWork(SomniaObjects::registerBrewingRecipes);
     }
-    
+
     private void registerCapabilities(final RegisterCapabilitiesEvent event) {
         event.register(Fatigue.class);
     }
-    
+
     public void registerCommands(final RegisterCommandsEvent event) {
         SomniaCommand.register(event.getDispatcher());
     }

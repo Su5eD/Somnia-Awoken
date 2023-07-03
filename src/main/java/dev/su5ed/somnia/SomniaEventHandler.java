@@ -32,7 +32,7 @@ public final class SomniaEventHandler {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (!SomniaConfig.COMMON.enableFatigue.get() || event.phase != TickEvent.Phase.START || event.player.level.isClientSide
+        if (!SomniaConfig.COMMON.enableFatigue.get() || event.phase != TickEvent.Phase.START || event.player.level().isClientSide
             || !event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping()) return;
 
         event.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
@@ -52,7 +52,8 @@ public final class SomniaEventHandler {
                     fatigue -= fatigueReplenishRate;
                     extraFatigueRate -= fatigueRate / replenishedFatigue / 10;
                     replenishedFatigue -= replenish;
-                } else {
+                }
+                else {
                     double adjustedRate = fatigueRate;
 
                     MobEffectInstance wakefulness = event.player.getEffect(SomniaObjects.AWAKENING_EFFECT.get());

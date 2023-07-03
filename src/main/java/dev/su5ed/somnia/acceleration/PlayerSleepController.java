@@ -11,6 +11,7 @@ import dev.su5ed.somnia.network.client.PlayerWakeUpPacket;
 import dev.su5ed.somnia.util.SomniaUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -35,7 +36,7 @@ public final class PlayerSleepController {
         Player player = event.getEntity();
         if (DarkUtilsCompat.hasSleepCharm(player) || player.getCapability(CapabilityFatigue.INSTANCE).map(Fatigue::shouldSleepNormally).orElse(false)) return;
 
-        if (!SomniaUtil.isEnterSleepTime(player.level)) event.setResult(Event.Result.DENY);
+        if (!SomniaUtil.isEnterSleepTime(player.level())) event.setResult(Event.Result.DENY);
         else event.setResult(Event.Result.ALLOW);
     }
 
@@ -45,7 +46,8 @@ public final class PlayerSleepController {
         if (!SomniaUtil.checkFatigue(player)) {
             player.displayClientMessage(Component.translatable("somnia.status.cooldown"), true);
             event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
-        } else if (!SomniaConfig.COMMON.sleepWithArmor.get() && !player.isCreative() && SomniaUtil.hasArmor(player)) {
+        }
+        else if (!SomniaConfig.COMMON.sleepWithArmor.get() && !player.isCreative() && SomniaUtil.hasArmor(player)) {
             player.displayClientMessage(Component.translatable("somnia.status.armor"), true);
             event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
         }
@@ -55,11 +57,11 @@ public final class PlayerSleepController {
 
         SomniaUtil.updateWakeTime((ServerPlayer) player);
     }
-    
+
     @SubscribeEvent
     public static void onSleepFinished(SleepFinishedTimeEvent event) {
         LevelAccessor level = event.getLevel();
-        
+
         if (SomniaConfig.COMMON.enableFatigue.get()) {
             level.players().stream()
                 .filter(Player::isSleepingLongEnough)
@@ -93,7 +95,7 @@ public final class PlayerSleepController {
                 if (!resetSpawn) event.setCanceled(true);
             });
     }
-    
+
     // we need the earliest PlayerEntity#hurt listener
     // because we have to set the sleep override to false before the mc stopSleeping call
     // otherwise PlayerSleepTickHandler#tickEnd will make the player to start sleeping again
@@ -103,7 +105,7 @@ public final class PlayerSleepController {
 
         if (entity instanceof ServerPlayer player && entity.isSleeping()) {
             if (player.isInvulnerableTo(event.getSource())
-                || player.isInvulnerable() && !event.getSource().isBypassInvul()
+                || player.isInvulnerable() && !event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)
                 || player.isOnFire() && player.hasEffect(MobEffects.FIRE_RESISTANCE)
             ) {
                 return;
@@ -130,7 +132,8 @@ public final class PlayerSleepController {
         if (player.isSleeping() && player.checkBedExists()) {
             if (fatigue.shouldSleepNormally() || player.getSleepTimer() >= 90 && DarkUtilsCompat.hasSleepCharm(player) || Compat.isSleepingInHammock(player)) {
                 fatigue.setSleepOverride(false);
-            } else {
+            }
+            else {
                 fatigue.setSleepOverride(true);
 
                 if (SomniaConfig.COMMON.fading.get()) {
@@ -144,10 +147,11 @@ public final class PlayerSleepController {
 
     private static void playerTickEnd(Fatigue fatigue, ServerPlayer player) {
         long wakeTime = fatigue.getWakeTime();
-        if (wakeTime != -1 && player.level.getGameTime() >= wakeTime || fatigue.getFatigue() == 0 && SomniaConfig.COMMON.forceWakeUp.get()) {
+        if (wakeTime != -1 && player.level().getGameTime() >= wakeTime || fatigue.getFatigue() == 0 && SomniaConfig.COMMON.forceWakeUp.get()) {
             player.stopSleepInBed(true, true);
             SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
-        } else if (fatigue.sleepOverride()) {
+        }
+        else if (fatigue.sleepOverride()) {
             fatigue.setSleepOverride(false);
 
             player.startSleeping(player.getSleepingPos().orElse(player.blockPosition()));

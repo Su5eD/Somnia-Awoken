@@ -12,7 +12,7 @@ public class InjectHooks {
         return level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)
             && (!SomniaConfig.COMMON.disableCreatureSpawning.get() || !isActiveTickHandler(level));
     }
-    
+
     private static boolean isActiveTickHandler(ServerLevel level) {
         return AccelerationManager.HANDLERS.stream()
             .filter(handler -> handler.level == level)

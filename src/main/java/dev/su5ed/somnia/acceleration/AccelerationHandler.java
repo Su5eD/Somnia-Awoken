@@ -22,10 +22,10 @@ public class AccelerationHandler {
     public final ServerLevel level;
     private final double minMultiplier = SomniaConfig.COMMON.minMultiplier.get();
     private final double maxMultiplier = SomniaConfig.COMMON.maxMultiplier.get();
-    
+
     private AccelerationState state;
     private int timer;
-    
+
     private double multiplier = this.minMultiplier;
 
     public AccelerationHandler(ServerLevel level) {
@@ -40,7 +40,7 @@ public class AccelerationHandler {
         if (this.timer++ % 10 == 0) {
             this.state = getNewState();
         }
-        
+
         if (this.state == AccelerationState.SIMULATING) {
             accelerateTicks();
         }
@@ -66,7 +66,7 @@ public class AccelerationHandler {
             tickLevel();
         }
         long deltaMillis = System.currentTimeMillis() - startMillis;
-        
+
         double tickLength = deltaMillis / (double) count;
         double accelerationRatio = SomniaConfig.COMMON.delta.get() / AccelerationManager.getActiveHandlers();
         double available = (accelerationRatio - deltaMillis) / tickLength / 5.0;
@@ -77,7 +77,7 @@ public class AccelerationHandler {
         MinecraftServer server = this.level.getServer();
         Packet<?> packet = new ClientboundSetTimePacket(this.level.getGameTime(), this.level.getDayTime(), this.level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT));
         server.getPlayerList().broadcastAll(packet, this.level.dimension());
-        
+
         ForgeEventFactory.onPreLevelTick(this.level, server::haveTime);
 
         List.copyOf(this.level.players()).forEach(ServerPlayer::doTick);
@@ -85,7 +85,7 @@ public class AccelerationHandler {
 
         ForgeEventFactory.onPostLevelTick(this.level, server::haveTime);
     }
-    
+
     private void wakeUpPlayers() {
         this.level.players().stream()
             .filter(LivingEntity::isSleeping)

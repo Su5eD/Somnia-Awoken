@@ -1,21 +1,18 @@
 import com.matthewprenger.cursegradle.CurseArtifact
 import com.matthewprenger.cursegradle.CurseProject
 import com.matthewprenger.cursegradle.CurseRelation
-import com.modrinth.minotaur.dependencies.DependencyType
-import com.modrinth.minotaur.dependencies.ModDependency
 import net.minecraftforge.gradle.common.util.RunConfig
-import wtf.gofancy.changelog.generateChangelog
 import wtf.gofancy.fancygradle.script.extensions.deobf
 import java.time.LocalDateTime
 
 plugins {
     java
     `maven-publish`
-    id("net.minecraftforge.gradle") version "5.1.+"
+    id("net.minecraftforge.gradle") version "[6.0,6.2)"
     id("org.parchmentmc.librarian.forgegradle") version "1.+"
     id("wtf.gofancy.fancygradle") version "1.1.+"
-    id("wtf.gofancy.koremods.gradle") version "0.1.23"
-    id("wtf.gofancy.git-changelog") version "1.0.+"
+    id("wtf.gofancy.koremods.gradle") version "0.2.0"
+    id("wtf.gofancy.git-changelog") version "1.1.+"
     id("com.matthewprenger.cursegradle") version "1.4.+"
     id("com.modrinth.minotaur") version "2.+"
     id("me.qoomon.git-versioning") version "6.3.+"
@@ -36,7 +33,7 @@ group = "dev.su5ed"
 version = "0.0.0-SNAPSHOT"
 
 val publishReleaseType = System.getenv("PUBLISH_RELEASE_TYPE") ?: "release"
-val changelogText = generateChangelog(1, true)
+val changelogText = changelog.generateChangelog(1, true)
 
 gitVersioning.apply {
     rev {
@@ -51,7 +48,7 @@ java {
 }
 
 minecraft {
-    mappings("parchment", "2022.12.18-1.19.3")
+    mappings("parchment", "2023.06.26-1.20.1")
 
     accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
 
@@ -62,7 +59,6 @@ minecraft {
             ))
             workingDirectory = project.file("run").canonicalPath
             source(sourceSets.main.get())
-            forceExit = false
         }
 
         create("client", config)
@@ -93,7 +89,7 @@ repositories {
 dependencies {
     minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
     
-    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.6.0")
+    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.7.0")
 
     compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
 }

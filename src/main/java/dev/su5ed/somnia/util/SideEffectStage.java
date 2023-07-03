@@ -44,7 +44,7 @@ public record SideEffectStage(int minFatigue, int maxFatigue, ResourceLocation e
     private static SideEffectStage parseStage(List<Object> stage) {
         return new SideEffectStage((int) stage.get(0), (int) stage.get(1), new ResourceLocation((String) stage.get(2)), (int) stage.get(3), (int) stage.get(4));
     }
-    
+
     public MobEffect getEffect() {
         return ForgeRegistries.MOB_EFFECTS.getValue(this.effect);
     }
