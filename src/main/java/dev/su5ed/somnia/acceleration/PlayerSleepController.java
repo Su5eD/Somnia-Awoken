@@ -147,7 +147,7 @@ public final class PlayerSleepController {
 
     private static void playerTickEnd(Fatigue fatigue, ServerPlayer player) {
         long wakeTime = fatigue.getWakeTime();
-        if (wakeTime != -1 && player.level().getGameTime() >= wakeTime || fatigue.getFatigue() == 0 && SomniaConfig.COMMON.forceWakeUp.get()) {
+        if (SomniaConfig.COMMON.forceWakeUp.get() && wakeTime != -1 && (player.level().getGameTime() >= wakeTime || fatigue.getFatigue() == 0)) {
             player.stopSleepInBed(true, true);
             SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
         }
