@@ -5,9 +5,9 @@ pluginManagement {
             name = "MinecraftForge"
             url = uri("https://maven.minecraftforge.net/")
         }
-        maven { 
-            name = "Parchment"
-            url = uri("https://maven.parchmentmc.org")
+        maven {
+            name = "NeoForged"
+            url = uri("https://maven.neoforged.net")
         }
         maven {
             name = "Su5eD"
@@ -17,6 +17,7 @@ pluginManagement {
             name = "Garden of Fancy"
             url = uri("https://maven.gofancy.wtf/releases")
         }
+        mavenLocal()
     }
     plugins {
         id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"

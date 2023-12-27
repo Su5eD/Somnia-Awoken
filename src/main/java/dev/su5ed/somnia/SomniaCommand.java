@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.client.FatigueUpdatePacket;
 import net.minecraft.commands.CommandSourceStack;
@@ -46,10 +47,11 @@ public final class SomniaCommand {
     }
 
     private static int setFatigue(double amount, ServerPlayer player) {
-        player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
-            props.setFatigue(amount);
-            SomniaNetwork.sendToClient(new FatigueUpdatePacket(props.getFatigue()), player);
-        });
+        Fatigue fatigue = player.getCapability(CapabilityFatigue.INSTANCE);
+        if (fatigue != null) {
+            fatigue.setFatigue(amount);
+            SomniaNetwork.sendToClient(new FatigueUpdatePacket(fatigue.getFatigue()), player);
+        }
         return Command.SINGLE_SUCCESS;
     }
 

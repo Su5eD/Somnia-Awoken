@@ -1,6 +1,7 @@
 package dev.su5ed.somnia.gui;
 
 import dev.su5ed.somnia.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.server.ActivateBlockPacket;
 import dev.su5ed.somnia.network.server.WakeTimeUpdatePacket;
@@ -24,8 +25,10 @@ public class WakeTimeButton extends Button {
 
             long targetWakeTime = SomniaUtil.calculateWakeTime(mc.level, wakeTime);
             SomniaNetwork.INSTANCE.sendToServer(new WakeTimeUpdatePacket(targetWakeTime));
-            mc.player.getCapability(CapabilityFatigue.INSTANCE)
-                .ifPresent(props -> props.setWakeTime(targetWakeTime));
+            Fatigue fatigue = mc.player.getCapability(CapabilityFatigue.INSTANCE);
+            if (fatigue != null) {
+                fatigue.setWakeTime(targetWakeTime);
+            }
 
             HitResult mouseOver = mc.hitResult;
             if (mouseOver instanceof BlockHitResult blockHit) {

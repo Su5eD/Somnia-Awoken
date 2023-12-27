@@ -2,6 +2,7 @@ package dev.su5ed.somnia.util;
 
 import dev.su5ed.somnia.SomniaConfig;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.client.ClientWakeTimeUpdatePacket;
 import net.minecraft.server.level.ServerLevel;
@@ -30,9 +31,8 @@ public final class SomniaUtil {
     }
 
     public static boolean checkFatigue(Player player) {
-        return player.getCapability(CapabilityFatigue.INSTANCE)
-            .map(props -> player.isCreative() || !SomniaConfig.COMMON.enableFatigue.get() || props.getFatigue() >= SomniaConfig.COMMON.minimumFatigueToSleep.get())
-            .orElse(false);
+        Fatigue fatigue = player.getCapability(CapabilityFatigue.INSTANCE);
+        return fatigue != null && (player.isCreative() || !SomniaConfig.COMMON.enableFatigue.get() || fatigue.getFatigue() >= SomniaConfig.COMMON.minimumFatigueToSleep.get());
     }
 
     public static String timeStringForGameTime(long gameTime) {
@@ -57,14 +57,13 @@ public final class SomniaUtil {
     }
 
     public static void updateWakeTime(ServerPlayer player) {
-        player.getCapability(CapabilityFatigue.INSTANCE)
-            .filter(props -> props.getWakeTime() < 0)
-            .ifPresent(props -> {
-                long dayTime = SomniaUtil.getLevelDayTime(player.level());
-                long wakeTime = SomniaUtil.calculateWakeTime(player.level().getGameTime(), dayTime, dayTime > 12000 ? 0 : 12000);
-                props.setWakeTime(wakeTime);
-                SomniaNetwork.sendToClient(new ClientWakeTimeUpdatePacket(wakeTime), player);
-            });
+        Fatigue fatigue = player.getCapability(CapabilityFatigue.INSTANCE);
+        if (fatigue != null && fatigue.getWakeTime() < 0) {
+            long dayTime = SomniaUtil.getLevelDayTime(player.level());
+            long wakeTime = SomniaUtil.calculateWakeTime(player.level().getGameTime(), dayTime, dayTime > 12000 ? 0 : 12000);
+            fatigue.setWakeTime(wakeTime);
+            SomniaNetwork.sendToClient(new ClientWakeTimeUpdatePacket(wakeTime), player);
+        }
     }
 
     private SomniaUtil() {}

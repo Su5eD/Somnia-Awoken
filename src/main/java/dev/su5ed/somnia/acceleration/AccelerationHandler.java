@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.GameRules;
-import net.minecraftforge.event.ForgeEventFactory;
+import net.neoforged.neoforge.event.EventHooks;
 
 import java.util.List;
 import java.util.Locale;
@@ -78,12 +78,12 @@ public class AccelerationHandler {
         Packet<?> packet = new ClientboundSetTimePacket(this.level.getGameTime(), this.level.getDayTime(), this.level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT));
         server.getPlayerList().broadcastAll(packet, this.level.dimension());
 
-        ForgeEventFactory.onPreLevelTick(this.level, server::haveTime);
+        EventHooks.onPreLevelTick(this.level, server::haveTime);
 
         List.copyOf(this.level.players()).forEach(ServerPlayer::doTick);
         this.level.tick(server::haveTime);
 
-        ForgeEventFactory.onPostLevelTick(this.level, server::haveTime);
+        EventHooks.onPostLevelTick(this.level, server::haveTime);
     }
 
     private void wakeUpPlayers() {

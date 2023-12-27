@@ -9,9 +9,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.neoforged.neoforge.network.NetworkEvent;
 
 public class ActivateBlockPacket {
     private final BlockPos pos;
@@ -45,8 +43,8 @@ public class ActivateBlockPacket {
         return new ActivateBlockPacket(pos, side, hitX, hitY, hitZ);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ServerPlayer player = ctx.get().getSender();
+    public void handle(NetworkEvent.Context ctx) {
+        ServerPlayer player = ctx.getSender();
         if (player != null) {
             BlockState state = player.level().getBlockState(pos);
             BlockHitResult hitResult = new BlockHitResult(new Vec3(this.hitX, this.hitY, this.hitZ), this.side, pos, false);

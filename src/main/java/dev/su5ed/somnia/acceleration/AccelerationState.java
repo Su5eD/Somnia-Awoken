@@ -50,9 +50,7 @@ public enum AccelerationState {
     }
 
     private static boolean shouldSleepNormally(Player player) {
-        boolean sleepNormally = player.getCapability(CapabilityFatigue.INSTANCE)
-            .map(Fatigue::shouldSleepNormally)
-            .orElse(false);
-        return sleepNormally || DarkUtilsCompat.hasSleepCharm(player);
+        Fatigue fatigue = player.getCapability(CapabilityFatigue.INSTANCE);
+        return fatigue != null && fatigue.shouldSleepNormally() || DarkUtilsCompat.hasSleepCharm(player);
     }
 }

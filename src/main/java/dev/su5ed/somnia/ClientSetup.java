@@ -1,6 +1,6 @@
 package dev.su5ed.somnia;
 
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiOverlaysEvent;
 
 public final class ClientSetup {
 

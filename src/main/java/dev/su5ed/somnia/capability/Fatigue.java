@@ -1,9 +1,6 @@
 package dev.su5ed.somnia.capability;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.INBTSerializable;
-
-public interface Fatigue extends INBTSerializable<CompoundTag> {
+public interface Fatigue {
     double getFatigue();
 
     void setFatigue(double fatigue);

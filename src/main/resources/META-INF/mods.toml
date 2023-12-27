@@ -1,7 +1,8 @@
 modLoader="javafml"
-loaderVersion="[47,)"
+loaderVersion="[1,)"
 license="GNU Lesser General Public License v3.0"
 issueTrackerURL="https://github.com/Su5eD/Somnia-Awoken/issues"
+
 [[mods]]
 modId="somnia"
 version="${file.jarVersion}"
@@ -11,21 +12,22 @@ logoFile="logo.png"
 credits="MALfunction84 and Kingrunes, authors of previous versions"
 authors="Su5eD"
 description="Simulating the world while you sleep"
+
 [[dependencies.somnia]]
-    modId="forge"
-    mandatory=true
-    versionRange="[47,)"
+    modId="neoforge"
+    type="required"
+    versionRange="[20.4,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.somnia]]
     modId="minecraft"
-    mandatory=true
-    versionRange="[1.20, 1.21)"
+    type="required"
+    versionRange="[1.20.4, 1.21)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.somnia]]
     modId="koremods"
-    mandatory=true
-    versionRange="[0.6,)"
+    type="required"
+    versionRange="[0.7,)"
     ordering="NONE"
     side="BOTH"

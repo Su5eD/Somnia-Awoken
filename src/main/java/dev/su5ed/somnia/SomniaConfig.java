@@ -3,28 +3,28 @@ package dev.su5ed.somnia;
 import dev.su5ed.somnia.api.ReplenishingItem;
 import dev.su5ed.somnia.util.FatigueDisplayPosition;
 import dev.su5ed.somnia.util.ScreenPosition;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
 public final class SomniaConfig {
-    public static final ForgeConfigSpec COMMON_SPEC;
-    public static final ForgeConfigSpec CLIENT_SPEC;
+    public static final ModConfigSpec COMMON_SPEC;
+    public static final ModConfigSpec CLIENT_SPEC;
 
     public static final CommonConfig COMMON;
     public static final ClientConfig CLIENT;
 
     static {
-        Pair<CommonConfig, ForgeConfigSpec> commonPair = new ForgeConfigSpec.Builder().configure(CommonConfig::new);
+        Pair<CommonConfig, ModConfigSpec> commonPair = new ModConfigSpec.Builder().configure(CommonConfig::new);
         COMMON = commonPair.getLeft();
         COMMON_SPEC = commonPair.getRight();
 
-        Pair<ClientConfig, ForgeConfigSpec> clientPair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
+        Pair<ClientConfig, ModConfigSpec> clientPair = new ModConfigSpec.Builder().configure(ClientConfig::new);
         CLIENT = clientPair.getLeft();
         CLIENT_SPEC = clientPair.getRight();
     }
@@ -32,14 +32,14 @@ public final class SomniaConfig {
     private SomniaConfig() {}
 
     public static final class ClientConfig {
-        public final ForgeConfigSpec.EnumValue<FatigueDisplayPosition> fatigueDisplayPos;
-        public final ForgeConfigSpec.BooleanValue simpleFatigueDisplay;
-        public final ForgeConfigSpec.EnumValue<ScreenPosition> displayETASleep;
-        public final ForgeConfigSpec.BooleanValue somniaGui;
-        public final ForgeConfigSpec.EnumValue<ScreenPosition> somniaGuiClockPosition;
-        public final ForgeConfigSpec.BooleanValue disableRendering;
+        public final ModConfigSpec.EnumValue<FatigueDisplayPosition> fatigueDisplayPos;
+        public final ModConfigSpec.BooleanValue simpleFatigueDisplay;
+        public final ModConfigSpec.EnumValue<ScreenPosition> displayETASleep;
+        public final ModConfigSpec.BooleanValue somniaGui;
+        public final ModConfigSpec.EnumValue<ScreenPosition> somniaGuiClockPosition;
+        public final ModConfigSpec.BooleanValue disableRendering;
 
-        public ClientConfig(ForgeConfigSpec.Builder builder) {
+        public ClientConfig(ModConfigSpec.Builder builder) {
             builder.push("fatigue");
             fatigueDisplayPos = builder
                 .comment("The fatigue counter's position")
@@ -70,34 +70,34 @@ public final class SomniaConfig {
     }
 
     public static final class CommonConfig {
-        public final ForgeConfigSpec.BooleanValue enableFatigue;
-        public final ForgeConfigSpec.DoubleValue fatigueRate;
-        public final ForgeConfigSpec.DoubleValue fatigueReplenishRate;
-        public final ForgeConfigSpec.BooleanValue fatigueSideEffects;
-        public final ForgeConfigSpec.ConfigValue<Integer> minimumFatigueToSleep;
-        public final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> sideEffectStages;
-        public final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> replenishingItems;
+        public final ModConfigSpec.BooleanValue enableFatigue;
+        public final ModConfigSpec.DoubleValue fatigueRate;
+        public final ModConfigSpec.DoubleValue fatigueReplenishRate;
+        public final ModConfigSpec.BooleanValue fatigueSideEffects;
+        public final ModConfigSpec.ConfigValue<Integer> minimumFatigueToSleep;
+        public final ModConfigSpec.ConfigValue<List<? extends List<Object>>> sideEffectStages;
+        public final ModConfigSpec.ConfigValue<List<? extends List<Object>>> replenishingItems;
 
-        public final ForgeConfigSpec.DoubleValue delta;
-        public final ForgeConfigSpec.DoubleValue minMultiplier;
-        public final ForgeConfigSpec.DoubleValue maxMultiplier;
+        public final ModConfigSpec.DoubleValue delta;
+        public final ModConfigSpec.DoubleValue minMultiplier;
+        public final ModConfigSpec.DoubleValue maxMultiplier;
 
-        public final ForgeConfigSpec.BooleanValue fading;
-        public final ForgeConfigSpec.BooleanValue ignoreMonsters;
-        public final ForgeConfigSpec.BooleanValue muteSoundWhenSleeping;
-        public final ForgeConfigSpec.BooleanValue sleepWithArmor;
-        public final ForgeConfigSpec.ConfigValue<String> wakeTimeSelectItem;
-        public final ForgeConfigSpec.BooleanValue forceWakeUp;
+        public final ModConfigSpec.BooleanValue fading;
+        public final ModConfigSpec.BooleanValue ignoreMonsters;
+        public final ModConfigSpec.BooleanValue muteSoundWhenSleeping;
+        public final ModConfigSpec.BooleanValue sleepWithArmor;
+        public final ModConfigSpec.ConfigValue<String> wakeTimeSelectItem;
+        public final ModConfigSpec.BooleanValue forceWakeUp;
 
-        public final ForgeConfigSpec.BooleanValue disableCreatureSpawning;
+        public final ModConfigSpec.BooleanValue disableCreatureSpawning;
 
-        public final ForgeConfigSpec.IntValue enterSleepStart;
-        public final ForgeConfigSpec.IntValue enterSleepEnd;
+        public final ModConfigSpec.IntValue enterSleepStart;
+        public final ModConfigSpec.IntValue enterSleepEnd;
 
-        public final ForgeConfigSpec.IntValue validSleepStart;
-        public final ForgeConfigSpec.IntValue validSleepEnd;
+        public final ModConfigSpec.IntValue validSleepStart;
+        public final ModConfigSpec.IntValue validSleepEnd;
 
-        public CommonConfig(ForgeConfigSpec.Builder builder) {
+        public CommonConfig(ModConfigSpec.Builder builder) {
             builder.push("fatigue");
             enableFatigue = builder
                 .comment("Master fatigue system override. Setting this to false will disable all fatigue-related logic as well as all config options in this category.")
@@ -204,11 +204,11 @@ public final class SomniaConfig {
 
         public boolean isWakeTimeSelectionItem(ItemStack stack) {
             String matcher = wakeTimeSelectItem.get();
-            return !matcher.isEmpty() && (matcher.equals("*") || !stack.isEmpty() && ForgeRegistries.ITEMS.getKey(stack.getItem()).toString().equals(matcher));
+            return !matcher.isEmpty() && (matcher.equals("*") || !stack.isEmpty() && BuiltInRegistries.ITEM.getKey(stack.getItem()).toString().equals(matcher));
         }
 
         private static Item getModItem(String registryName) {
-            return ForgeRegistries.ITEMS.getValue(new ResourceLocation(registryName));
+            return BuiltInRegistries.ITEM.get(new ResourceLocation(registryName));
         }
     }
 }

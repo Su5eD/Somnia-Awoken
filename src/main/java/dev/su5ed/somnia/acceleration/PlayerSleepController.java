@@ -16,17 +16,19 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
-import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
-import net.minecraftforge.event.entity.player.SleepingTimeCheckEvent;
-import net.minecraftforge.event.level.SleepFinishedTimeEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingAttackEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerSleepInBedEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
+import net.neoforged.neoforge.event.entity.player.SleepingTimeCheckEvent;
+import net.neoforged.neoforge.event.level.SleepFinishedTimeEvent;
+
+import java.util.Optional;
 
 @Mod.EventBusSubscriber(modid = SomniaAwoken.MODID)
 public final class PlayerSleepController {
@@ -34,10 +36,9 @@ public final class PlayerSleepController {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onSleepingTimeCheck(SleepingTimeCheckEvent event) {
         Player player = event.getEntity();
-        if (DarkUtilsCompat.hasSleepCharm(player) || player.getCapability(CapabilityFatigue.INSTANCE).map(Fatigue::shouldSleepNormally).orElse(false)) return;
-
-        if (!SomniaUtil.isEnterSleepTime(player.level())) event.setResult(Event.Result.DENY);
-        else event.setResult(Event.Result.ALLOW);
+        if (!DarkUtilsCompat.hasSleepCharm(player) && !Optional.ofNullable(player.getCapability(CapabilityFatigue.INSTANCE)).map(Fatigue::shouldSleepNormally).orElse(false)) {
+            event.setResult(!SomniaUtil.isEnterSleepTime(player.level()) ? Event.Result.DENY : Event.Result.ALLOW);
+        }
     }
 
     @SubscribeEvent
@@ -52,8 +53,10 @@ public final class PlayerSleepController {
             event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
         }
 
-        player.getCapability(CapabilityFatigue.INSTANCE)
-            .ifPresent(props -> props.setSleepNormally(player.isShiftKeyDown()));
+        Fatigue fatigue = player.getCapability(CapabilityFatigue.INSTANCE);
+        if (fatigue != null) {
+            fatigue.setSleepNormally(player.isShiftKeyDown());
+        }
 
         SomniaUtil.updateWakeTime((ServerPlayer) player);
     }
@@ -65,7 +68,7 @@ public final class PlayerSleepController {
         if (SomniaConfig.COMMON.enableFatigue.get()) {
             level.players().stream()
                 .filter(Player::isSleepingLongEnough)
-                .forEach(player -> player.getCapability(CapabilityFatigue.INSTANCE)
+                .forEach(player -> Optional.ofNullable(player.getCapability(CapabilityFatigue.INSTANCE))
                     .filter(props -> props.shouldSleepNormally() || DarkUtilsCompat.hasSleepCharm(player))
                     .ifPresent(props -> {
                         long timeSlept = event.getNewTime() - level.dayTime();
@@ -78,22 +81,22 @@ public final class PlayerSleepController {
     @SubscribeEvent
     public static void onWakeUp(PlayerWakeUpEvent event) {
         Player player = event.getEntity();
-        player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
-            props.maxFatigueCounter();
-            props.setResetSpawn(true);
-            props.setSleepNormally(false);
-            props.setSleepOverride(false);
-            props.setWakeTime(-1);
-        });
+        Fatigue fatigue = player.getCapability(CapabilityFatigue.INSTANCE);
+        if (fatigue != null) {
+            fatigue.maxFatigueCounter();
+            fatigue.setResetSpawn(true);
+            fatigue.setSleepNormally(false);
+            fatigue.setSleepOverride(false);
+            fatigue.setWakeTime(-1);
+        }
     }
 
     @SubscribeEvent
     public static void onPlayerSetSpawn(PlayerSetSpawnEvent event) {
-        event.getEntity().getCapability(CapabilityFatigue.INSTANCE)
-            .map(Fatigue::getResetSpawn)
-            .ifPresent(resetSpawn -> {
-                if (!resetSpawn) event.setCanceled(true);
-            });
+        Fatigue fatigue = event.getEntity().getCapability(CapabilityFatigue.INSTANCE);
+        if (fatigue != null && !fatigue.getResetSpawn()) {
+            event.setCanceled(true);
+        }
     }
 
     // we need the earliest PlayerEntity#hurt listener
@@ -111,7 +114,10 @@ public final class PlayerSleepController {
                 return;
             }
 
-            entity.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> props.setSleepOverride(false));
+            Fatigue fatigue = entity.getCapability(CapabilityFatigue.INSTANCE);
+            if (fatigue != null) {
+                fatigue.setSleepOverride(false);
+            }
             entity.stopSleeping();
             SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
         }
@@ -120,11 +126,11 @@ public final class PlayerSleepController {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.getCapability(CapabilityFatigue.INSTANCE)
-                .ifPresent(fatigue -> {
-                    if (event.phase == TickEvent.Phase.START) playerTickStart(fatigue, serverPlayer);
-                    else playerTickEnd(fatigue, serverPlayer);
-                });
+            Fatigue fatigue = serverPlayer.getCapability(CapabilityFatigue.INSTANCE);
+            if (fatigue != null) {
+                if (event.phase == TickEvent.Phase.START) playerTickStart(fatigue, serverPlayer);
+                else playerTickEnd(fatigue, serverPlayer);
+            }
         }
     }
 
@@ -147,7 +153,7 @@ public final class PlayerSleepController {
 
     private static void playerTickEnd(Fatigue fatigue, ServerPlayer player) {
         long wakeTime = fatigue.getWakeTime();
-        if (SomniaConfig.COMMON.forceWakeUp.get() && wakeTime != -1 && (player.level().getGameTime() >= wakeTime || fatigue.getFatigue() == 0)) {
+        if (wakeTime != -1 && (player.level().getGameTime() >= wakeTime || fatigue.getFatigue() == 0 && SomniaConfig.COMMON.forceWakeUp.get() && !player.isCreative())) {
             player.stopSleepInBed(true, true);
             SomniaNetwork.sendToClient(new PlayerWakeUpPacket(), player);
         }

@@ -1,14 +1,13 @@
 package dev.su5ed.somnia.network.client;
 
 import dev.su5ed.somnia.network.ClientPacketHandler;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.neoforge.network.NetworkEvent;
 
 public class PlayerWakeUpPacket {
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientPacketHandler::wakeUpPlayer);
+    public void handle(NetworkEvent.Context ctx) {
+        if (FMLLoader.getDist().isClient()) {
+            ClientPacketHandler.wakeUpPlayer();
+        }
     }
 }

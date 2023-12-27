@@ -2,11 +2,8 @@ package dev.su5ed.somnia.network.client;
 
 import dev.su5ed.somnia.network.ClientPacketHandler;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.neoforge.network.NetworkEvent;
 
 public class ClientWakeTimeUpdatePacket {
     private final long wakeTime;
@@ -24,7 +21,9 @@ public class ClientWakeTimeUpdatePacket {
         return new ClientWakeTimeUpdatePacket(wakeTime);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ClientPacketHandler.updateWakeTime(this.wakeTime));
+    public void handle(NetworkEvent.Context ctx) {
+        if (FMLLoader.getDist().isClient()) {
+            ClientPacketHandler.updateWakeTime(this.wakeTime);
+        }
     }
 }

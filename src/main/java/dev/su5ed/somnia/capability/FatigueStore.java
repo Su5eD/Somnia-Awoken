@@ -1,8 +1,17 @@
 package dev.su5ed.somnia.capability;
 
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public class FatigueStore implements Fatigue {
+    public static final Codec<FatigueStore> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+        Codec.DOUBLE.fieldOf("fatigue").forGetter(FatigueStore::getFatigue),
+        Codec.DOUBLE.fieldOf("extraFatigueRate").forGetter(FatigueStore::getExtraFatigueRate),
+        Codec.DOUBLE.fieldOf("replenishedFatigue").forGetter(FatigueStore::getReplenishedFatigue),
+        Codec.INT.fieldOf("sideEffectStage").forGetter(FatigueStore::getSideEffectStage),
+        Codec.BOOL.fieldOf("resetSpawn").forGetter(FatigueStore::getResetSpawn)
+    ).apply(instance, FatigueStore::new));
+    
     private double fatigue;
     private double extraFatigueRate;
     private double replenishedFatigue;
@@ -12,6 +21,20 @@ public class FatigueStore implements Fatigue {
     private boolean sleepOverride;
     private boolean sleepNormally;
     private long wakeTime = -1;
+
+    public FatigueStore() {}
+
+    private FatigueStore(double fatigue, double extraFatigueRate, double replenishedFatigue, int sideEffectStage, boolean resetSpawn) {
+        this.fatigue = fatigue;
+        this.extraFatigueRate = extraFatigueRate;
+        this.replenishedFatigue = replenishedFatigue;
+        this.sideEffectStage = sideEffectStage;
+        this.resetSpawn = resetSpawn;
+    }
+
+    private int getFatigueUpdateCounter() {
+        return this.fatigueUpdateCounter;
+    }
 
     @Override
     public double getFatigue() {
@@ -101,25 +124,5 @@ public class FatigueStore implements Fatigue {
     @Override
     public void setReplenishedFatigue(double replenishedFatigue) {
         this.replenishedFatigue = replenishedFatigue;
-    }
-
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = new CompoundTag();
-        tag.putDouble("fatigue", this.fatigue);
-        tag.putDouble("extraFatigueRate", this.extraFatigueRate);
-        tag.putDouble("replenishedFatigue", this.replenishedFatigue);
-        tag.putInt("sideEffectStage", this.sideEffectStage);
-        tag.putBoolean("resetSpawn", this.resetSpawn);
-        return tag;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        this.fatigue = nbt.getDouble("fatigue");
-        this.extraFatigueRate = nbt.getDouble("extraFatigueRate");
-        this.replenishedFatigue = nbt.getDouble("replenishedFatigue");
-        this.sideEffectStage = nbt.getInt("sideEffectStage");
-        this.resetSpawn = nbt.getBoolean("resetSpawn");
     }
 }

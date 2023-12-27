@@ -1,10 +1,10 @@
 package dev.su5ed.somnia.compat;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
 
@@ -21,7 +21,7 @@ public final class DarkUtilsCompat {
     }
 
     private static boolean isSleepCharm(ItemStack stack) {
-        return !stack.isEmpty() && ForgeRegistries.ITEMS.getKey(stack.getItem()).equals(SLEEP_CHARM);
+        return !stack.isEmpty() && BuiltInRegistries.ITEM.getKey(stack.getItem()).equals(SLEEP_CHARM);
     }
 
     private DarkUtilsCompat() {}

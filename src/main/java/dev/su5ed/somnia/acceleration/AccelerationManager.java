@@ -2,10 +2,10 @@ package dev.su5ed.somnia.acceleration;
 
 import dev.su5ed.somnia.SomniaAwoken;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 
 import java.util.ArrayList;
 import java.util.List;

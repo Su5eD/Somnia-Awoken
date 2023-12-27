@@ -2,9 +2,9 @@ package dev.su5ed.somnia.util;
 
 import dev.su5ed.somnia.SomniaConfig;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
@@ -46,6 +46,6 @@ public record SideEffectStage(int minFatigue, int maxFatigue, ResourceLocation e
     }
 
     public MobEffect getEffect() {
-        return ForgeRegistries.MOB_EFFECTS.getValue(this.effect);
+        return BuiltInRegistries.MOB_EFFECT.get(this.effect);
     }
 }

@@ -1,13 +1,17 @@
 package dev.su5ed.somnia.network;
 
 import dev.su5ed.somnia.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.gui.WakeTimeSelectScreen;
 import net.minecraft.client.Minecraft;
 
 public final class ClientPacketHandler {
 
     public static void updateWakeTime(long wakeTime) {
-        Minecraft.getInstance().player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> props.setWakeTime(wakeTime));
+        Fatigue fatigue = Minecraft.getInstance().player.getCapability(CapabilityFatigue.INSTANCE);
+        if (fatigue != null) {
+            fatigue.setWakeTime(wakeTime);
+        }
     }
 
     public static void openGUI() {
@@ -20,8 +24,10 @@ public final class ClientPacketHandler {
     }
 
     public static void updateFatigue(double fatigue) {
-        Minecraft.getInstance().player.getCapability(CapabilityFatigue.INSTANCE)
-            .ifPresent(props -> props.setFatigue(fatigue));
+        Fatigue props = Minecraft.getInstance().player.getCapability(CapabilityFatigue.INSTANCE);
+        if (props != null) {
+            props.setFatigue(fatigue);
+        }
     }
 
     private ClientPacketHandler() {}

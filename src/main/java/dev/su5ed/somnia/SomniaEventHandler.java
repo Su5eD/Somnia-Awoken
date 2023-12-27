@@ -2,6 +2,7 @@ package dev.su5ed.somnia;
 
 import dev.su5ed.somnia.api.SomniaAPI;
 import dev.su5ed.somnia.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.compat.Compat;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.client.FatigueUpdatePacket;
@@ -19,12 +20,13 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(modid = SomniaAwoken.MODID)
@@ -35,7 +37,8 @@ public final class SomniaEventHandler {
         if (!SomniaConfig.COMMON.enableFatigue.get() || event.phase != TickEvent.Phase.START || event.player.level().isClientSide
             || !event.player.isAlive() || event.player.isCreative() || event.player.isSpectator() && !event.player.isSleeping()) return;
 
-        event.player.getCapability(CapabilityFatigue.INSTANCE).ifPresent(props -> {
+        Fatigue props = event.player.getCapability(CapabilityFatigue.INSTANCE);
+        if (props != null) {
             boolean isSleeping = props.sleepOverride() || event.player.isSleeping();
             double fatigueRate = SomniaConfig.COMMON.fatigueRate.get();
             double fatigueReplenishRate = SomniaConfig.COMMON.fatigueReplenishRate.get();
@@ -97,7 +100,7 @@ public final class SomniaEventHandler {
                     }
                 }
             }
-        });
+        }
     }
 
     @SubscribeEvent
@@ -129,7 +132,7 @@ public final class SomniaEventHandler {
             Stream.concat(SomniaConfig.COMMON.getReplenishingItems().stream(), SomniaAPI.getReplenishingItems().stream())
                 .filter(replenishingItem -> replenishingItem.item() == item)
                 .findFirst()
-                .ifPresent(replenishingItem -> event.getEntity().getCapability(CapabilityFatigue.INSTANCE)
+                .ifPresent(replenishingItem -> Optional.ofNullable(event.getEntity().getCapability(CapabilityFatigue.INSTANCE))
                     .ifPresent(props -> {
                         double fatigue = props.getFatigue();
 

@@ -41,7 +41,6 @@ public class WakeTimeSelectScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         guiGraphics.drawCenteredString(this.font, Component.translatable("somnia.gui.wts_title"), this.width / 2, this.height / 2 - 5, 16777215);

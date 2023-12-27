@@ -1,25 +1,18 @@
-import com.matthewprenger.cursegradle.CurseArtifact
-import com.matthewprenger.cursegradle.CurseProject
-import com.matthewprenger.cursegradle.CurseRelation
-import net.minecraftforge.gradle.common.util.RunConfig
-import wtf.gofancy.fancygradle.script.extensions.deobf
+import me.modmuss50.mpp.ReleaseType
 import java.time.LocalDateTime
 
 plugins {
     java
     `maven-publish`
-    id("net.minecraftforge.gradle") version "[6.0,6.2)"
-    id("org.parchmentmc.librarian.forgegradle") version "1.+"
-    id("wtf.gofancy.fancygradle") version "1.1.+"
-    id("wtf.gofancy.koremods.gradle") version "0.2.0"
+    id("net.neoforged.gradle.userdev") version "7.0.+"
+    id("wtf.gofancy.koremods.gradle") version "2.0.0"
+    id("me.modmuss50.mod-publish-plugin") version "0.3.+"
     id("wtf.gofancy.git-changelog") version "1.1.+"
-    id("com.matthewprenger.cursegradle") version "1.4.+"
-    id("com.modrinth.minotaur") version "2.+"
     id("me.qoomon.git-versioning") version "6.3.+"
 }
 
 val versionMc: String by project
-val versionForge: String by project
+val neoVersion: String by project
 
 val curseForgeId: String by project
 val modrinthId: String by project
@@ -32,9 +25,6 @@ val versionRunelic: String by project
 group = "dev.su5ed"
 version = "0.0.0-SNAPSHOT"
 
-val publishReleaseType = System.getenv("PUBLISH_RELEASE_TYPE") ?: "release"
-val changelogText = changelog.generateChangelog(1, true)
-
 gitVersioning.apply {
     rev {
         version = "$versionMc-\${describe.tag.version.major}.\${describe.tag.version.minor}.\${describe.tag.version.patch.plus.describe.distance}"
@@ -43,26 +33,27 @@ gitVersioning.apply {
 
 java {
     withSourcesJar()
-    
+
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
+println("Configured version: $version, Java: ${System.getProperty("java.version")}, JVM: ${System.getProperty("java.vm.version")} (${System.getProperty("java.vendor")}), Arch: ${System.getProperty("os.arch")}")
 minecraft {
-    mappings("parchment", "2023.06.26-1.20.1")
+    accessTransformers.file("src/main/resources/META-INF/accesstransformer.cfg")
+}
 
-    accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
+runs {
+    configureEach {
+        systemProperty("forge.logging.markers", "REGISTRIES")
+        systemProperty("forge.logging.console.level", "debug")
 
-    runs {
-        val config = Action<RunConfig> {
-            properties(mapOf(
-                "forge.logging.console.level" to "debug"
-            ))
-            workingDirectory = project.file("run").canonicalPath
-            source(sourceSets.main.get())
-        }
+        modSource(project.sourceSets.main.get())
+    }
 
-        create("client", config)
-        create("server", config)
+    create("client")
+
+    create("server") {
+        programArgument("--nogui")
     }
 }
 
@@ -87,11 +78,11 @@ repositories {
 }
 
 dependencies {
-    minecraft("net.minecraftforge:forge:$versionMc-$versionForge")
-    
-    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "0.7.0")
+    implementation(group = "net.neoforged", name = "neoforge", version = neoVersion)
 
-    compileOnly(fg.deobf(group = "top.theillusivec4.curios", name = "curios-forge", version = versionCurios))
+    koremods(group = "wtf.gofancy.koremods", name = "koremods-modlauncher", version = "2.0.0")
+
+    compileOnly(group = "top.theillusivec4.curios", name = "curios-neoforge", version = versionCurios)
 }
 
 tasks {
@@ -110,46 +101,38 @@ tasks {
     }
 }
 
-modrinth {
-    token.set(System.getenv("MODRINTH_TOKEN"))
-    projectId.set(modrinthId)
-    versionName.set("Somnia Awoken ${project.version}")
-    versionType.set(publishReleaseType)
-    uploadFile.set(tasks.jar.get())
-    gameVersions.addAll(versionMc)
-    dependencies { 
-        required.project("koremods")
-    }
-    changelog.set(changelogText)
-}
+publishMods {
+    file.set(tasks.jar.flatMap { it.archiveFile })
+    changelog.set(provider { project.changelog.generateChangelog(1, true) })
+    type.set(providers.environmentVariable("PUBLISH_RELEASE_TYPE").map(ReleaseType::of).orElse(ReleaseType.STABLE))
+    modLoaders.add("forge")
+    dryRun.set(!providers.environmentVariable("CI").isPresent)
+    displayName.set("Somnia Awoken ${project.version}")
 
-curseforge {
-    apiKey = System.getenv("CURSEFORGE_TOKEN") ?: "UNKNOWN"
-    project(closureOf<CurseProject> {
-        id = curseForgeId
-        changelogType = "markdown"
-        changelog = changelogText
-        releaseType = publishReleaseType
-        mainArtifact(tasks.jar.get(), closureOf<CurseArtifact> {
-            displayName = "Somnia Awoken ${project.version}"
-            relations(closureOf<CurseRelation> {
-                requiredDependency("koremods")
-                
-                optionalDependency("cyclic")
-                optionalDependency("comforts")
-                optionalDependency("coffee-mod")
-                optionalDependency("coffee-spawner")
-                optionalDependency("dark-utilities")
-                optionalDependency("sleeping-bags")
-            })
-        })
-        addGameVersion("Forge")
-        addGameVersion(versionMc)
-    })
+    curseforge {
+        accessToken.set(providers.environmentVariable("CURSEFORGE_TOKEN"))
+        projectId.set(curseForgeId)
+        minecraftVersions.add(versionMc)
+        requires { slug.set("koremods") }
+        optional { slug.set("cyclic") }
+        optional { slug.set("comforts") }
+        optional { slug.set("coffee-mod") }
+        optional { slug.set("coffee-spawner") }
+        optional { slug.set("dark-utilities") }
+        optional { slug.set("sleeping-bags") }
+    }
+    modrinth {
+        accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
+        projectId.set(modrinthId)
+        minecraftVersions.add(versionMc)
+        requires {
+            slug.set("koremods")
+        }
+    }
 }
 
 publishing {
-    publications { 
+    publications {
         register<MavenPublication>("mavenJava") {
             from(components["java"])
         }

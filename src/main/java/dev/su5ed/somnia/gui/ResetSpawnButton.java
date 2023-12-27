@@ -1,6 +1,7 @@
 package dev.su5ed.somnia.gui;
 
 import dev.su5ed.somnia.capability.CapabilityFatigue;
+import dev.su5ed.somnia.capability.Fatigue;
 import dev.su5ed.somnia.network.SomniaNetwork;
 import dev.su5ed.somnia.network.server.ResetSpawnPacket;
 import net.minecraft.client.Minecraft;
@@ -23,8 +24,10 @@ public class ResetSpawnButton extends AbstractButton {
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
-            mc.player.getCapability(CapabilityFatigue.INSTANCE)
-                .ifPresent(props -> SomniaNetwork.INSTANCE.sendToServer(new ResetSpawnPacket(this.resetSpawn)));
+            Fatigue fatigue = mc.player.getCapability(CapabilityFatigue.INSTANCE);
+            if (fatigue != null) {
+                SomniaNetwork.INSTANCE.sendToServer(new ResetSpawnPacket(this.resetSpawn));
+            }
         }
     }
 
