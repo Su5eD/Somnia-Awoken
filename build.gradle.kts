@@ -98,6 +98,7 @@ tasks {
                 "Implementation-Timestamp" to LocalDateTime.now()
             )
         }
+        exclude("classpath.index")
     }
 }
 
@@ -105,7 +106,7 @@ publishMods {
     file.set(tasks.jar.flatMap { it.archiveFile })
     changelog.set(provider { project.changelog.generateChangelog(1, true) })
     type.set(providers.environmentVariable("PUBLISH_RELEASE_TYPE").map(ReleaseType::of).orElse(ReleaseType.STABLE))
-    modLoaders.add("forge")
+    modLoaders.add("neoforge")
     dryRun.set(!providers.environmentVariable("CI").isPresent)
     displayName.set("Somnia Awoken ${project.version}")
 
