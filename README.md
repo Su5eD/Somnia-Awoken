@@ -42,7 +42,7 @@ Credit goes to MALfunction84 and Kingrunes, authors of the original Somnia mod.
 
 ## Getting started
 
-All information is available on our [wiki](https://github.com/Su5eD/Somnia/wiki).
+All information is available on our [wiki](https://github.com/Su5eD/Somnia-Awoken/wiki).
 
 ## Highlighted Features
 
